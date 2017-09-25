@@ -1,0 +1,17 @@
+# Dolibarr language file - es_AR - admin 
+CHARSET=UTF-8
+Module30Name=Facturas y notas de crédito
+Module30Desc=Gestión de facturas y notas de crédito a clientes. Gestión facturas de proveedores
+BillsNumberingModule=Módulo de numeración de facturas y notas de crédito
+CreditNoteSetup=Configuración del módulo notas de crédito
+CreditNotePDFModules=Modelo de documento de notas de crédito
+CreditNote=Nota de crédito
+CreditNotes=Notas de crédito
+# Modules
+Module10001Name=Ordenes de venta
+Module10001Desc=Gestión de órdenes de venta
+SalesOrdersSetup=Configuración del módulo de órdenes de venta
+SalesOrdersNumberingModules=Módulos de numeración de órdenes de venta
+SalesOrdersModelModule=Modelo de documentos de órdenes de venta
+FreeLegalTextOnSalesOrders=Texto libre en órdenes de venta
+WatermarkOnDraftSalesOrders=Marca de agua en órdenes de venta borrador (en caso de estar vacío)

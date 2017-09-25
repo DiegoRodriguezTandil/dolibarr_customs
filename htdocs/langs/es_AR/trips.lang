@@ -1,0 +1,23 @@
+# Dolibarr language file - es_ES - trips
+CHARSET=UTF-8
+Trip=Desplazamiento
+Trips=Desplazamientos
+TripsAndExpenses=Gastos
+TripsAndExpensesStatistics=Estadísticas de gastos
+TripId=Id gasto
+TripCard=Ficha gasto
+AddTrip=Crear gasto
+ListOfTrips=Listado de gastos
+ListOfFees=Listado notas de gastos
+NewTrip=Nuevo gasto
+CompanyVisited=Empresa/institución visitada
+Kilometers=Kilometros
+FeesKilometersOrAmout=Importe o kilómetros
+DeleteTrip=Eliminar gasto
+ConfirmDeleteTrip=¿Está seguro de querer eliminar este gasto?
+TF_OTHER=Otro
+TF_LUNCH=Dieta
+TF_TRIP=Viaje
+ListTripsAndExpenses=Listado notas de gastos
+ExpensesArea=Área de Notas de gastos
+SearchATripAndExpense=Buscar un gasto

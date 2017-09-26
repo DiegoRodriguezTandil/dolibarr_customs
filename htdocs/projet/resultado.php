@@ -61,7 +61,9 @@ if ($projectid == '' && $ref == '')
 }
 
 
-// visualizar o ocultar form de consolidation
+/************************************************************************
+ show o hide form de consolidation
+*/
 print '<script>
 		function abrirForm(){
 			if($("#conf_consolidation").css("display")=="none"){
@@ -73,10 +75,10 @@ print '<script>
 				}
 		}		 	
 </script>';
+/*************************************************************************/
 
 
-
-/*
+/*************************************************************************************************************
 	insert if consolidation is true
 	when send post for save consolidation currencies of projet the insert this into consolidation scheme
 */
@@ -102,7 +104,7 @@ if(!empty($_POST['consolidation'])){
 
 }
 
-
+/**************************************************************************************************************/
 
 $mine = $_REQUEST['mode']=='mine' ? 1 : 0;
 //if (! $user->rights->projet->all->lire) $mine=1;	// Special for projects

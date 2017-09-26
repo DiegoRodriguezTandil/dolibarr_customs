@@ -625,7 +625,7 @@ print '</tr>';
 print "</table>";
 
 */
-print '<h3>Totales<h3>';
+echo "<h4>Totales consolidadios en la divisa {$moneda_consolidada}</h4>";
 print '<table class="noborder" width="100%">
 <thead  >
 	<tr class="liste_titre">
@@ -665,10 +665,10 @@ foreach ($importeTotales as $title => $currencies) {
 
 	}	
 	print '<td  align="center">';
-	print $sum ;
+	print price($sum) ;
 	print '</td>';
 	print '<td  align="center">';
-	print $sum_c;
+	print price($sum_c);
 	print '</td>';
 	print '</tr>';
 }

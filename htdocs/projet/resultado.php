@@ -58,6 +58,36 @@ if ($projectid == '' && $ref == '')
 	exit;
 }
 
+/*
+	insert if consolidation is true
+	when send post for save consolidation currencies of projet the insert this into consolidation scheme
+*/
+
+if(!empty(GETPOST('consolidation'))){
+
+    $moneda_consolidacion=GETPOST('seleccion_de_divisa');
+	$sql ="INSERT INTO ".MAIN_DB_PREFIX."consolidation (fk_projet, fk_currency)";
+	$sql.= " VALUES (".$projectid.",'".$moneda_consolidacion."')";
+    $sql.= " ON DUPLICATE KEY UPDATE fk_currency= '".$moneda_consolidacion."';";
+	
+	if(!empty($_POST['divisas'])){
+		$arrDivisas=$_POST['divisas'];
+		foreach ($arrDivisas as $divisa => $valor_consolidado) {
+			$sql.="INSERT INTO ".MAIN_DB_PREFIX."consolidation_detail (fk_projet, fk_currency, value)";
+			$sql.= " VALUES (".$projectid.",'".$divisa."',".$valor_consolidado.")";
+			$sql.= " ON DUPLICATE KEY UPDATE fk_currency= '".$moneda_consolidacion."'";
+			//$sql.= ""
+		}
+		var_dump( $sql);die();	
+	$resql = $db->query($sql);
+	
+		
+ }
+
+}
+
+
+
 $mine = $_REQUEST['mode']=='mine' ? 1 : 0;
 //if (! $user->rights->projet->all->lire) $mine=1;	// Special for projects
 
@@ -166,6 +196,7 @@ print '</div>';
 
 			.seleccion_de_divisa{
 				float: right;
+				width:200px
 			}
 			.btn_submit{
 				float: right;
@@ -195,23 +226,23 @@ print '</div>';
 
 print '
 	<div  class="tabBar div_convention" >
-		<form action="" class"convention_form">
+		<form action="/projet/resultado.php?id='.$project->id.'" class="convention_form"  method="post">
+		<input type="hidden" name="consolidation" value="1">
 			Seleccionar Divisa de Consolidación :
-			<select class="seleccion_de_divisa" style="width:100px" name="carlist" playholder="asdasdasda">';
-			//values of select currencies
-			
+			<select class="seleccion_de_divisa" name="seleccion_de_divisa" playholder="">';
+			/***********************************************************************************
+			values of select currencies
+			*/
 			$exist_convention=$db->query("
 				SELECT FK_CURRENCY 
 				FROM  ".MAIN_DB_PREFIX."consolidation
 				WHERE FK_PROJET ={$project->id}
 			");	
-				
-
-			if($exist_convention && $db->num_rows($exist_convention)>0){	
+			//if existe tuplas enotnces existe una consolidacion para el poyecto
+			if($exist_convention && $db->num_rows($exist_convention)>0){
 				$objp = $db->fetch_object($exist_convention);
-				var_dump($objp);die();
-				$moneda_consolidacion=$objp->code_iso;
-				echo "<option value={$objp->label}>{$objp->code_iso} </option>";
+				$moneda_consolidacion=$objp->FK_CURRENCY;
+				echo "<option value={$objp->code_iso}></option>";
 				$db->free($exist_convention);
 			}else{	
 				
@@ -229,7 +260,7 @@ print '
 					{
 						$objp = $db->fetch_object($result);
 						$moneda_consolidacion=$objp->code_iso;
-						echo "<option value={$objp->label}>{$objp->code_iso} </option>";
+						echo "<option value={$moneda_consolidacion}>{$objp->label} </option>";
 						//$currencies[$objp->code_iso]=$objp->label;
 						$i++;
 					}
@@ -240,16 +271,22 @@ print '
 				}
 			}
 			print '</select><br>';
-			// end of valores del select currencies
-
-			if($exist_convention){
+			/*
+			 	end of valores del select currencies
+			 ****************************************************************
+			*/
+			/******************************************************************
+			  currencies of projet
+			*/
+			//if existe una consolidacion quiere decir que existen divisas con su valor de conversion 
+			if($exist_convention && $db->num_rows($exist_convention)>0){
 				$result=$db->query("
 					SELECT FK_CURRENCY,VALUE 
 					FROM  llx_consolidation_detail
 					WHERE FK_PROJET ={$project->id}
 			");	
 			}else{
-				// currencies of projet
+				//si no existe entonces se recupera la divisa y su valor esta en blanco 
 				$result=$db->query("
 					SELECT FK_CURRENCY 
 					FROM  PROJET_CURRENCY
@@ -275,7 +312,7 @@ print '
 							$objp = $db->fetch_object($result);
 							echo "	<tr>
 										<td>{$objp->FK_CURRENCY}</td>
-										<td><input type='text' name={$objp->FK_CURRENCY} required>";
+										<td><input type='text' name='divisas[{$objp->FK_CURRENCY}]' required>";
 										if(!empty($objp->VALUE)){ echo $objp->VALUE;};
 							echo"     		</input>
 										</td>
@@ -287,10 +324,14 @@ print '
 					{
 						dol_print_error($db);
 					}
+			/*
+				end currencies of projet
+				************************************************************************************
+			*/		
         print
 			'</tbody>
 		</table>
-			<input class="btn_submit" type="submit" value="Submit">	
+			<button type="submit"  class="btn_submit" value="Submit">Confirmar</button>
 		</form>
 	</div>';
 
@@ -542,34 +583,8 @@ llxFooter();
 $db->close();
 
 
-print 
-"<script>
-
-	function consolidation(id_projet) {
-		insertConention();
-	};
 
 
-</script>";
-
-
-function insertConention(){
-	$sql ="INSERT INTO ".MAIN_DB_PREFIX."consolidation (fk_projet, fk_currency)";
-	$sql.= " VALUES (".$project->id.",'".$moneda_consolidacion."')";
-    $sql.= "ON DUPLICATE KEY UPDATE fk_currency= {$fk_currency}";
-	$resql = $this->db->query($sql);
-	if ($resql)
-	{
-		return $this->db->last_insert_id(MAIN_DB_PREFIX."cotisation");
-	}
-	else
-	{
-		$this->error=$this->db->error();
-		dol_syslog($this->error, LOG_ERR);
-		return -1;
-	}
-	
-}
 
 ?>
 

@@ -399,6 +399,7 @@ foreach ($listofreferent as $key => $value)
 	$title=$value['title'];
 	$classname=$value['class'];
 	$qualified=$value['test'];
+	$importeTotales[$title];
 	if ($qualified)
 	{
 		print '<br>';
@@ -498,15 +499,15 @@ foreach ($listofreferent as $key => $value)
 				if(!array_key_exists($element->fk_currency,$arrayCurrencys)){
 					$arrayCurrencys[$element->fk_currency]['ht']=$element->total_ht;
 					$arrayCurrencys[$element->fk_currency]['c']=$element->cost;
-					$importeTotales[$title][$element->fk_currency]['ht']=$element->total_ht;
-					$importeTotales[$title][$element->fk_currency]['c']=$element->cost;
+			//		$importeTotales[$title][$element->fk_currency]['ht']=$element->total_ht;
+				//	$importeTotales[$title][$element->fk_currency]['c']=$element->cost;
 				}else{
 					$arrayCurrencys[$element->fk_currency]['ht']= $arrayCurrencys[$element->fk_currency]['ht']+$element->total_ht;
 					$arrayCurrencys[$element->fk_currency]['c']= $arrayCurrencys[$element->fk_currency]['c']+$element->cost;
-					$importeTotales[$title][$element->fk_currency]['ht']= $arrayCurrencys[$element->fk_currency]['ht']+$element->total_ht;
-					$importeTotales[$title][$element->fk_currency]['c']= $arrayCurrencys[$element->fk_currency]['c']+$element->cost;
+				//	$importeTotales[$title][$element->fk_currency]['ht']= $arrayCurrencys[$element->fk_currency]['ht']+$element->total_ht;
+				//	$importeTotales[$title][$element->fk_currency]['c']= $arrayCurrencys[$element->fk_currency]['c']+$element->cost;
 				}	
-				
+
 				/**********************************************************************************************************************/
 				$total_ht = $total_ht + $element->total_ht;
 				$total_ttc = $total_ttc + $element->total_ttc*$rate;
@@ -515,7 +516,7 @@ foreach ($listofreferent as $key => $value)
 		//	print_r($arrayCurrencys);
 			$total[$value['class']]=$total_ttc;
 			$costo[$value['class']]=$total_cost;
-			
+			$importeTotales[$title]=$arrayCurrencys;
 				/*
 			************************************************************************************
 			Subtotal Base imponible	y Importe total	por moneda
@@ -609,6 +610,7 @@ foreach ($listofreferent as $key => $value)
 		
 	}
 }
+/*
 print '<table class="noborder" width="100%">';
 print '<tr class="liste_titre">';
 print '<td width="90%">Resultado</td>';
@@ -622,7 +624,7 @@ print '<td></td>';
 print '</tr>';
 print "</table>";
 
-
+*/
 
 print '<table class="noborder" width="100%">
 <thead  >
@@ -635,20 +637,22 @@ print '<table class="noborder" width="100%">
 </thead>
 <tbody>';
 
+
+		
 foreach ($importeTotales as $title => $currencies) {
 	print '<tr>';
 	print '<td>';
-	print  $title ;
+	print_titre($langs->trans($title)); ;
 	print '</td>';
 	print '<td>';
 	print  $moneda_consolidada ;
 	print '</td>';	
-	
-	$total_c=0;
-	$total_i=0;
+	$sum=0;
+	$sum_c=0;
 	foreach($currencies as $currency=>$arrayValues){
+		
 	/***********************************************************************************
-		the values currencies of project
+		the  currencies values of project
 	*/
 		$sql="	SELECT VALUE 
 				FROM  llx_consolidation_detail
@@ -656,24 +660,15 @@ foreach ($importeTotales as $title => $currencies) {
 		$sql.=" AND FK_CURRENCY ='".$currency."'";
 	 	$value_currency_projet=$db->query($sql);	
 		$value_currency_projet=$db->fetch_object($value_currency_projet);
-		$sum=0;
-		$sum_c=0;
-		foreach ($arrayValues as $key => $value) {
-			if($key==='c'){
-				$sum_c+=$sum_c+$value*$value_currency_projet->VALUE;
-			}else{
-				$sum+=$sum+$value*$value_currency_projet->VALUE;
-			}
-				
-		}
-		$total_c+=$total_c+$sum_c;
-		$total_i+=$total_i+$sum;
-	}
-	print '<td>';
-	print $total_i;
+		$sum_c+=$arrayValues['c']*$value_currency_projet->VALUE;
+		$sum+=$arrayValues['ht']*$value_currency_projet->VALUE;
+
+	}	
+	print '<td  align="center">';
+	print $sum ;
 	print '</td>';
-	print '<td>';
-	print $total_c;
+	print '<td  align="center">';
+	print $sum_c;
 	print '</td>';
 	print '</tr>';
 }
@@ -682,7 +677,6 @@ print '</td>';
 print '<td></td>';
 print '</tr><tbody>';
 print "</table>";
-var_dump($importeTotales);
 
 llxFooter();
 

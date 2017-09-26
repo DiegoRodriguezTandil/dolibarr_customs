@@ -181,7 +181,7 @@ $listofreferent=array(
     'disableamount'=>1,
 	'test'=>$conf->agenda->enabled)
 );
-
+ 
 $arrayCurrencys = array();
 
 foreach ($listofreferent as $key => $value)

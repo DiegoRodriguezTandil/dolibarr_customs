@@ -259,6 +259,7 @@ print '
 			if($exist_convention && $db->num_rows($exist_convention)>0){	
 				$objp = $db->fetch_object($exist_convention);
 				$objp->fk_currency;
+				$moneda_consolidada=$objp->fk_currency;
 				$all_currencies=$db->query("
 									SELECT code_iso,label 
 									FROM 	".MAIN_DB_PREFIX."c_currencies
@@ -385,9 +386,14 @@ $listofreferent=array(
 'policy'=>array(
 	'title'=>"Listado de pólizas asociadas al proyecto",
 	'class'=>'Policy',
-	'test'=>$conf->deplacement->enabled)
+	'test'=>$conf->deplacement->enabled),
+/*'Resultado'=>array(
+	'title'=>"Totales",
+	'class'=>'Policy',
+	'test'=>$conf->deplacement->enabled)	*/
 );
 $arrayCurrencys = array();
+$importeTotales = array();
 foreach ($listofreferent as $key => $value)
 {
 	$title=$value['title'];
@@ -492,10 +498,15 @@ foreach ($listofreferent as $key => $value)
 				if(!array_key_exists($element->fk_currency,$arrayCurrencys)){
 					$arrayCurrencys[$element->fk_currency]['ht']=$element->total_ht;
 					$arrayCurrencys[$element->fk_currency]['c']=$element->cost;
+					$importeTotales[$title][$element->fk_currency]['ht']=$element->total_ht;
+					$importeTotales[$title][$element->fk_currency]['c']=$element->cost;
 				}else{
 					$arrayCurrencys[$element->fk_currency]['ht']= $arrayCurrencys[$element->fk_currency]['ht']+$element->total_ht;
 					$arrayCurrencys[$element->fk_currency]['c']= $arrayCurrencys[$element->fk_currency]['c']+$element->cost;
+					$importeTotales[$title][$element->fk_currency]['ht']= $arrayCurrencys[$element->fk_currency]['ht']+$element->total_ht;
+					$importeTotales[$title][$element->fk_currency]['c']= $arrayCurrencys[$element->fk_currency]['c']+$element->cost;
 				}	
+				
 				/**********************************************************************************************************************/
 				$total_ht = $total_ht + $element->total_ht;
 				$total_ttc = $total_ttc + $element->total_ttc*$rate;
@@ -519,12 +530,12 @@ foreach ($listofreferent as $key => $value)
 					if($tipo_total==='ht'){
 						print '<td>&nbsp;</td>';
 						print '<td>&nbsp;</td>';
-						print '<td align="right" title="Gasto"><b><I>'.$divisa.' '.price($total).'</I></b></td>';
+						print '<td align="right" title="Importe"><b><I>'.$divisa.' '.price($total).'</I></b></td>';
 						print '<td>&nbsp;</td>';
 					}else{
 						print '<td>&nbsp;</td>';
+						print '<td align="right" title="Gasto"><b><I> '.$divisa.' '.price($total).'</I></b></td>';
 						print '<td>&nbsp;</td>';
-						//print '<td align="right" title="Importe"><b><I> '.$divisa.' '.price($total).'</I></b></td>';
 					}
 				
 				}
@@ -606,10 +617,72 @@ print '<td></td>';
 print '</tr>';
 print '<tr>';
 print '<td width="90%">Resultado</td>';
-print '<td width="10%" align="right">'.price($total['Salesorder']-$costo['Salesorder']-$costo['Deplacement']-$costo['Policy'],0,'',0,2,2).'</td>';
+//print '<td width="10%" align="right">'.price($total['Salesorder']-$costo['Salesorder']-$costo['Deplacement']-$costo['Policy'],0,'',0,2,2).'</td>';
 print '<td></td>';
 print '</tr>';
 print "</table>";
+
+
+
+print '<table class="noborder" width="100%">
+<thead  >
+	<tr class="liste_titre">
+		<th >Titulo</th>
+		<th >Divisa Consolidada</th>
+		<th>Importe</th>
+		<th>Costo</th>
+	</tr>
+</thead>
+<tbody>';
+
+foreach ($importeTotales as $title => $currencies) {
+	print '<tr>';
+	print '<td>';
+	print  $title ;
+	print '</td>';
+	print '<td>';
+	print  $moneda_consolidada ;
+	print '</td>';	
+	
+	$total_c=0;
+	$total_i=0;
+	foreach($currencies as $currency=>$arrayValues){
+	/***********************************************************************************
+		the values currencies of project
+	*/
+		$sql="	SELECT VALUE 
+				FROM  llx_consolidation_detail
+				WHERE FK_PROJET ={$project->id} ";
+		$sql.=" AND FK_CURRENCY ='".$currency."'";
+	 	$value_currency_projet=$db->query($sql);	
+		$value_currency_projet=$db->fetch_object($value_currency_projet);
+		$sum=0;
+		$sum_c=0;
+		foreach ($arrayValues as $key => $value) {
+			if($key==='c'){
+				$sum_c+=$sum_c+$value*$value_currency_projet->VALUE;
+			}else{
+				$sum+=$sum+$value*$value_currency_projet->VALUE;
+			}
+				
+		}
+		$total_c+=$total_c+$sum_c;
+		$total_i+=$total_i+$sum;
+	}
+	print '<td>';
+	print $total_i;
+	print '</td>';
+	print '<td>';
+	print $total_c;
+	print '</td>';
+	print '</tr>';
+}
+print '</td>';
+//print '<td width="10%" align="right">'.price($total['Salesorder']-$costo['Salesorder']-$costo['Deplacement']-$costo['Policy'],0,'',0,2,2).'</td>';
+print '<td></td>';
+print '</tr><tbody>';
+print "</table>";
+var_dump($importeTotales);
 
 llxFooter();
 

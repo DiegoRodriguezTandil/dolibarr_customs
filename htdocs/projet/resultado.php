@@ -625,7 +625,7 @@ print '</tr>';
 print "</table>";
 
 */
-
+print '<h3>Totales<h3>';
 print '<table class="noborder" width="100%">
 <thead  >
 	<tr class="liste_titre">

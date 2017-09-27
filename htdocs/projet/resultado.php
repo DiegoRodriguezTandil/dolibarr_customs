@@ -400,6 +400,7 @@ foreach ($listofreferent as $key => $value)
 	$classname=$value['class'];
 	$qualified=$value['test'];
 	$importeTotales[$title];
+	$view_tcc=false;
 	if ($qualified)
 	{
 		print '<br>';
@@ -411,9 +412,11 @@ foreach ($listofreferent as $key => $value)
 		print '<td width="100">'.$langs->trans("Ref").'</td>';
 		print '<td width="100" align="center">'.$langs->trans("Date").'</td>';
 		print '<td>'.$langs->trans("ThirdParty").'</td>';
-		if (empty($value['disableamount'])) print '<td align="right" width="120">'.$langs->trans("Importe").'</td>';
 		//FEDE
 		print '<td align="right" width="120">'.$langs->trans("Divisa").'</td>';
+		
+		if (empty($value['disableamount'])) print '<td align="right" width="120">'.$langs->trans("Importe").'</td>';
+
 		//FIN FEDE
 
 		if (empty($value['disableamount']))
@@ -429,7 +432,9 @@ foreach ($listofreferent as $key => $value)
 		
 		
 		print '<td align="right" width="200">'.$langs->trans("Status").'</td>';
+		print '<td class=""></td>';
 		print '</tr>';
+		
 		$elementarray = $project->get_element_list($key);
 		if (count($elementarray)>0 && is_array($elementarray))
 		{
@@ -466,11 +471,13 @@ foreach ($listofreferent as $key => $value)
                 if (is_object($element->client)) print $element->client->getNomUrl(1,'',48);
 				print '</td>';
 
+			
+                print '<td align="right">'.$element->fk_currency.'</td>';
+
                 // Amount
 				if (empty($value['disableamount'])) print '<td align="right">'.(isset($element->total_ht)?price($element->total_ht):'&nbsp;').'</td>';
 
-				
-                print '<td align="right">'.$element->fk_currency.'</td>';
+	
 				
 				//FEDE
 				$rate=$element->getRate($elementarray[$i],$conf->currency);
@@ -484,8 +491,27 @@ foreach ($listofreferent as $key => $value)
 				
 				
 				// Amount
-				if (empty($value['disableamount'])) print '<td align="right">'.(isset($element->total_ttc)?price($element->total_ttc*$rate,0,'',0,2,2):'&nbsp;').'</td>';
+				//if (empty($value['disableamount'])) print '<td align="right">'.(isset($element->total_ttc)?price($element->total_ttc*$rate,0,'',0,2,2):'&nbsp;').'</td>';
 				
+					// Amount
+				if (empty($value['disableamount'])){
+					 print '<td align="right">';
+						if(isset($element->total_ttc)){
+							$view_tcc=true;
+							echo price($element->total_ttc*$rate,0,'',0,2,2);
+							if(!array_key_exists($element->fk_currency,$arrayCurrencys)){
+								$arrayCurrencys[$element->fk_currency]['tcc']=$element->total_ttc*$rate;
+							}else{
+								$arrayCurrencys[$element->fk_currency]['tcc']= $arrayCurrencys[$element->fk_currency]['tcc']+($element->total_ttc*$rate);
+							}	
+
+						}else{
+							print '&nbsp;';
+						}
+					print'</td>';
+					
+					};
+
 					print '<td align="right">'.(isset($element->cost)?price($element->cost*$rate,0,'',0,2,2):'&nbsp;').'</td>';
 				
 				// Status
@@ -498,14 +524,10 @@ foreach ($listofreferent as $key => $value)
 				*/
 				if(!array_key_exists($element->fk_currency,$arrayCurrencys)){
 					$arrayCurrencys[$element->fk_currency]['ht']=$element->total_ht;
-					$arrayCurrencys[$element->fk_currency]['c']=$element->cost;
-			//		$importeTotales[$title][$element->fk_currency]['ht']=$element->total_ht;
-				//	$importeTotales[$title][$element->fk_currency]['c']=$element->cost;
+					$arrayCurrencys[$element->fk_currency]['c']=$element->cost*$rate;
 				}else{
 					$arrayCurrencys[$element->fk_currency]['ht']= $arrayCurrencys[$element->fk_currency]['ht']+$element->total_ht;
-					$arrayCurrencys[$element->fk_currency]['c']= $arrayCurrencys[$element->fk_currency]['c']+$element->cost;
-				//	$importeTotales[$title][$element->fk_currency]['ht']= $arrayCurrencys[$element->fk_currency]['ht']+$element->total_ht;
-				//	$importeTotales[$title][$element->fk_currency]['c']= $arrayCurrencys[$element->fk_currency]['c']+$element->cost;
+					$arrayCurrencys[$element->fk_currency]['c']= $arrayCurrencys[$element->fk_currency]['c']+($element->cost*$rate);
 				}	
 
 				/**********************************************************************************************************************/
@@ -524,28 +546,32 @@ foreach ($listofreferent as $key => $value)
 			foreach ($arrayCurrencys as $divisa => $arrayTotales)	{
 				print '<tr class="liste_total">';
 				print '<td>Total</td>';
-				
-				
-				
-				foreach ($arrayTotales as $tipo_total => $total)	{
-					if($tipo_total==='ht'){
-						print '<td>&nbsp;</td>';
-						print '<td>&nbsp;</td>';
-						print '<td align="right" title="Importe"><b><I>'.$divisa.' '.price($total).'</I></b></td>';
-						print '<td>&nbsp;</td>';
-					}else{
-						print '<td>&nbsp;</td>';
-						print '<td align="right" title="Gasto"><b><I> '.$divisa.' '.price($total).'</I></b></td>';
-						print '<td>&nbsp;</td>';
-					}
-				
-				}
-				print '<td></td>';
 				print '<td>&nbsp;</td>';
-				print '<td> </td>';
-				print '<td> </td>';
+				print '<td>&nbsp;</td>';
+				print '<td>&nbsp;</td>';
+				if(isset($arrayTotales['ht'])){
+					print '<td align="right" title="Importe"><b><I>'.$divisa.' '.price($arrayTotales['ht']).'</I></b></td>';
+				}else{
+					print '<td>&nbsp;</td>';
+				}				
+				if(isset($arrayTotales['tcc']) && 	$view_tcc ){
+					print '<td align="right" title="venta"><b><I> '.$divisa.' '.price($arrayTotales['tcc']).'</I></b></td>';
+				}else{
+					print '<td>&nbsp;</td>';
+				}
+				if(isset($arrayTotales['c'])){											
+					print '<td align="right" title="Gasto"><b><I> '.$divisa.' '.price($arrayTotales['c'],0,'',0,2,2).'</I></b></td>';
+				}else{
+					print '<td>&nbsp;</td>';
+				}					
+				print '<td>&nbsp;</td>';
+			
+				print '<td></td>';
+				
+			
+	
 				print '</tr>';
-			}
+			}	$view_tcc=false;
 			print '</tr>';
 		
 			$arrayCurrencys=array();
@@ -630,9 +656,9 @@ print '<table class="noborder" width="100%">
 <thead  >
 	<tr class="liste_titre">
 		<th >Titulo</th>
-		<th >Divisa Consolidada</th>
-		<th>Importe</th>
-		<th>Costo</th>
+		<th align=center >Divisa Consolidada</th>
+		<th  align=right>Importe</th>
+		<th  align=right>Costo</th>
 	</tr>
 </thead>
 <tbody>';
@@ -644,7 +670,7 @@ foreach ($importeTotales as $title => $currencies) {
 	print '<td>';
 	print_titre($langs->trans($title)); ;
 	print '</td>';
-	print '<td>';
+	print '<td align=center>';
 	print  $moneda_consolidada ;
 	print '</td>';	
 	$sum=0;
@@ -664,11 +690,11 @@ foreach ($importeTotales as $title => $currencies) {
 		$sum+=$arrayValues['ht']*$value_currency_projet->VALUE;
 
 	}	
-	print '<td  align="center">';
-	print price($sum) ;
+	print '<td  align=right>';
+	print price($sum,0,'',0,2,2);
 	print '</td>';
-	print '<td  align="center">';
-	print price($sum_c);
+	print '<td   align=right>';
+	print price($sum_c,0,'',0,2,2);
 	print '</td>';
 	print '</tr>';
 }

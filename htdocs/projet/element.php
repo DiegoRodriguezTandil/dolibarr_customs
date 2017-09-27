@@ -297,7 +297,14 @@ foreach ($listofreferent as $key => $value)
 				print '</tr>';
 			}
 			print '</tr>';
-			print '<tr class="liste_total"><td colspan="3">'.$langs->trans("Number").': '.$i.'</td></tr>';
+			print '<tr class="liste_total">
+				<td colspan="3">'.$langs->trans("Number").': '.$i.'</td>
+				<td> </td>
+				<td> </td>
+				<td> </td>
+				<td> </td>
+				<td> </td>
+				</tr>';
 			$arrayCurrencys=array();
 			/*************************************************************************************/
 		}

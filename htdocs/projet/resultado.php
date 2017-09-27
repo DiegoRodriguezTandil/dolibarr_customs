@@ -656,7 +656,7 @@ print '<table class="noborder" width="100%">
 <thead  >
 	<tr class="liste_titre">
 		<th >Titulo</th>
-		<th >Divisa Consolidada</th>
+		<th align=center >Divisa Consolidada</th>
 		<th  align=right>Importe</th>
 		<th  align=right>Costo</th>
 	</tr>
@@ -670,7 +670,7 @@ foreach ($importeTotales as $title => $currencies) {
 	print '<td>';
 	print_titre($langs->trans($title)); ;
 	print '</td>';
-	print '<td>';
+	print '<td align=center>';
 	print  $moneda_consolidada ;
 	print '</td>';	
 	$sum=0;

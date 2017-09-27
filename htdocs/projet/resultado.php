@@ -241,7 +241,7 @@ print '</div>';
 
 print '
 	<div  class="tabBar div_convention"  id="conf_consolidation">
-		<form action="/projet/resultado.php?id='.$project->id.'" class="convention_form"  method="post">
+		<form action="'.DOL_URL_ROOT.'/projet/resultado.php?id='.$project->id.'" class="convention_form"  method="post">
 		<input type="hidden" name="consolidation" value="1">
 			<label> Divisa de Consolidación :</label>
 			<select class="seleccion_de_divisa" name="seleccion_de_divisa" >';

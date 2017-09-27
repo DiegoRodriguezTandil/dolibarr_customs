@@ -852,12 +852,12 @@ function pdf_writelinedesc(&$pdf,$object,$i,$outputlangs,$w,$h,$posx,$posy,$hide
 	else
 	{
 		// Qwavee Agregado de ID de Linea
-                $line_number = str_pad($i+1, 3, "0", STR_PAD_LEFT).' '.str_pad('_', 50, "_", STR_PAD_LEFT);
+                $line_number = str_pad($i+1, 3, "0", STR_PAD_LEFT);
+                $pdf->writeHTMLCell($w, $h, $posx, $posy, $outputlangs->convToOutputCharset($line_number), 0, 1,$fill);
 
-                $labelproductservice=$line_number.'<br>'.pdf_getlinedesc($object,$i,$outputlangs,$hideref,$hidedesc,$issupplierline);
-                
+                $labelproductservice=pdf_getlinedesc($object,$i,$outputlangs,$hideref,$hidedesc,$issupplierline);
 		// Description
-                $pdf->writeHTMLCell($w, $h, $posx, $posy, $outputlangs->convToOutputCharset($labelproductservice), 0, 1,$fill);
+                $pdf->writeHTMLCell($w-10, $h, $posx+10, $posy, $outputlangs->convToOutputCharset($labelproductservice), 0, 1,$fill);
 		return $labelproductservice;
 	}
 }

@@ -567,9 +567,9 @@ foreach ($listofreferent as $key => $value)
 				print '<td>&nbsp;</td>';
 			
 				print '<td></td>';
-				print '<td>&nbsp;</td>';
-				print '<td> </td>';
-				print '<td> </td>';
+				
+			
+	
 				print '</tr>';
 			}	$view_tcc=false;
 			print '</tr>';

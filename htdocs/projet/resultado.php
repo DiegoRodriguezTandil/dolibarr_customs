@@ -50,6 +50,8 @@ if (! empty($conf->commande->enabled)) 	$langs->load("orders");
 if (! empty($conf->propal->enabled))   	$langs->load("propal");
 if (! empty($conf->ficheinter->enabled))	$langs->load("interventions");
 
+
+
 $projectid=GETPOST('id');
 $ref=GETPOST('ref');
 if ($projectid == '' && $ref == '')
@@ -58,35 +60,51 @@ if ($projectid == '' && $ref == '')
 	exit;
 }
 
-/*
+
+/************************************************************************
+ show o hide form de consolidation
+*/
+print '<script>
+		function abrirForm(){
+			if($("#conf_consolidation").css("display")=="none"){
+				$("#conf_consolidation").css("display", "block");
+				$("#conf_consolidation").css("margin-top","15px");
+			}else{
+					$("#conf_consolidation").css("display", "none");
+					$("#conf_consolidation").css("margin-top","15px");	
+				}
+		}		 	
+</script>';
+/*************************************************************************/
+
+
+/*************************************************************************************************************
 	insert if consolidation is true
 	when send post for save consolidation currencies of projet the insert this into consolidation scheme
 */
 
-if(!empty(GETPOST('consolidation'))){
-
-    $moneda_consolidacion=GETPOST('seleccion_de_divisa');
+if(!empty($_POST['consolidation'])){
+    $moneda_consolidacion=$_POST['seleccion_de_divisa'];
 	$sql ="INSERT INTO ".MAIN_DB_PREFIX."consolidation (fk_projet, fk_currency)";
 	$sql.= " VALUES (".$projectid.",'".$moneda_consolidacion."')";
     $sql.= " ON DUPLICATE KEY UPDATE fk_currency= '".$moneda_consolidacion."';";
+	$resql = $db->query($sql);
+	
 	
 	if(!empty($_POST['divisas'])){
 		$arrDivisas=$_POST['divisas'];
 		foreach ($arrDivisas as $divisa => $valor_consolidado) {
+			$sql='';
 			$sql.="INSERT INTO ".MAIN_DB_PREFIX."consolidation_detail (fk_projet, fk_currency, value)";
 			$sql.= " VALUES (".$projectid.",'".$divisa."',".$valor_consolidado.")";
-			$sql.= " ON DUPLICATE KEY UPDATE fk_currency= '".$moneda_consolidacion."'";
-			//$sql.= ""
+			$sql.= " ON DUPLICATE KEY UPDATE VALUE=". $valor_consolidado .";";
+			$resql = $db->query($sql);			
 		}
-		var_dump( $sql);die();	
-	$resql = $db->query($sql);
-	
-		
- }
+ 	}
 
 }
 
-
+/**************************************************************************************************************/
 
 $mine = $_REQUEST['mode']=='mine' ? 1 : 0;
 //if (! $user->rights->projet->all->lire) $mine=1;	// Special for projects
@@ -179,45 +197,42 @@ print '</div>';
 	print '<style>
 			.div_convention{
 					width:500px;
-					margin-left:25px;
+					heigth:25px;
+					margin-left:15px;
+					margin-top:15px;
 					color: -internal-quirk-inherit;
 					font-family: arial,tahoma,verdana,helvetica;
 					background: rgb(222, 231, 236);	
+					display:none;
 			}
 			.convention_form{
-					width:250px;
-					margin-left:25px;
+					width:435px;
+					margin-left:35px;
 				}
 
 			.tabla_conversion{
-				width:400px;
+				margin-top:5px;
+				width:435px;
 
 			}	
 
 			.seleccion_de_divisa{
-				float: right;
-				width:200px
+				width:250px
 			}
 			.btn_submit{
 				float: right;
 			}
 		</style>';
-/*
-	end style of the table form	
-	**************************************************************************************************++
-*/
+/*	***************************************************************************************************/
 
 /*
-	**************************************************************************************************++
+	**************************************************************************************************
 	button convention
 */
 
-	print '<a class="butAction" id="cotization">Seleccionar moneda de consolidación</a><br>';
+	print '<a class="butAction" onclick="abrirForm()"  id="cotization">Seleccionar moneda de consolidación</a><br>';
 
-/*
-	end button convention
-	**************************************************************************************************++
-*/
+/*	**************************************************************************************************/
 
 /*
 	**************************************************************************************************++
@@ -225,25 +240,42 @@ print '</div>';
 */
 
 print '
-	<div  class="tabBar div_convention" >
+	<div  class="tabBar div_convention"  id="conf_consolidation">
 		<form action="/projet/resultado.php?id='.$project->id.'" class="convention_form"  method="post">
 		<input type="hidden" name="consolidation" value="1">
-			Seleccionar Divisa de Consolidación :
-			<select class="seleccion_de_divisa" name="seleccion_de_divisa" playholder="">';
+			<label> Divisa de Consolidación :</label>
+			<select class="seleccion_de_divisa" name="seleccion_de_divisa" >';
 			/***********************************************************************************
 			values of select currencies
 			*/
 			$exist_convention=$db->query("
-				SELECT FK_CURRENCY 
-				FROM  ".MAIN_DB_PREFIX."consolidation
-				WHERE FK_PROJET ={$project->id}
+				SELECT c.fk_currency,cc.label
+				FROM  ".MAIN_DB_PREFIX."consolidation c
+				JOIN ".MAIN_DB_PREFIX."c_currencies cc ON(c.fk_currency=cc.code_iso)
+				WHERE  c.fk_projet ={$projectid}
 			");	
+			
 			//if existe tuplas enotnces existe una consolidacion para el poyecto
-			if($exist_convention && $db->num_rows($exist_convention)>0){
+			if($exist_convention && $db->num_rows($exist_convention)>0){	
 				$objp = $db->fetch_object($exist_convention);
-				$moneda_consolidacion=$objp->FK_CURRENCY;
-				echo "<option value={$objp->code_iso}></option>";
-				$db->free($exist_convention);
+				$objp->fk_currency;
+				$moneda_consolidada=$objp->fk_currency;
+				$all_currencies=$db->query("
+									SELECT code_iso,label 
+									FROM 	".MAIN_DB_PREFIX."c_currencies
+								");
+				echo "<option value={$objp->fk_currency}>".$objp->fk_currency ."(".$objp->label.")"." </option>";
+				$num = $db->num_rows($all_currencies);
+				$i = 0;
+				while ($i < $num)
+				{
+					$objp = $db->fetch_object($all_currencies);
+					$objp->code_iso;
+					echo "<option value={$objp->code_iso}>".$objp->code_iso ."(".$objp->label.")"." </option>";
+					//$currencies[$objp->code_iso]=$objp->label;
+					$i++;
+				}
+				$db->free($all_currencies);
 			}else{	
 				
 				//get all currencies
@@ -260,7 +292,7 @@ print '
 					{
 						$objp = $db->fetch_object($result);
 						$moneda_consolidacion=$objp->code_iso;
-						echo "<option value={$moneda_consolidacion}>{$objp->label} </option>";
+						echo "<option value={$moneda_consolidacion}>".$moneda_consolidacion ."(".$objp->label.")"." </option>";
 						//$currencies[$objp->code_iso]=$objp->label;
 						$i++;
 					}
@@ -284,7 +316,8 @@ print '
 					SELECT FK_CURRENCY,VALUE 
 					FROM  llx_consolidation_detail
 					WHERE FK_PROJET ={$project->id}
-			");	
+			");
+	
 			}else{
 				//si no existe entonces se recupera la divisa y su valor esta en blanco 
 				$result=$db->query("
@@ -312,9 +345,10 @@ print '
 							$objp = $db->fetch_object($result);
 							echo "	<tr>
 										<td>{$objp->FK_CURRENCY}</td>
-										<td><input type='text' name='divisas[{$objp->FK_CURRENCY}]' required>";
-										if(!empty($objp->VALUE)){ echo $objp->VALUE;};
-							echo"     		</input>
+										<td>
+											<input type='NUMBER' step='any' name='divisas[{$objp->FK_CURRENCY}]' value="; 
+												 if(!empty($objp->VALUE)){ echo number_format($objp->VALUE, 2, '.', ' ');}
+											 echo" required>
 										</td>
 								   </tr>";
 							$i++;
@@ -331,7 +365,7 @@ print '
         print
 			'</tbody>
 		</table>
-			<button type="submit"  class="btn_submit" value="Submit">Confirmar</button>
+			<button type="submit"  class="btn_submit" value="Submit">Confirmar</button></br>
 		</form>
 	</div>';
 
@@ -352,14 +386,20 @@ $listofreferent=array(
 'policy'=>array(
 	'title'=>"Listado de pólizas asociadas al proyecto",
 	'class'=>'Policy',
-	'test'=>$conf->deplacement->enabled)
+	'test'=>$conf->deplacement->enabled),
+/*'Resultado'=>array(
+	'title'=>"Totales",
+	'class'=>'Policy',
+	'test'=>$conf->deplacement->enabled)	*/
 );
 $arrayCurrencys = array();
+$importeTotales = array();
 foreach ($listofreferent as $key => $value)
 {
 	$title=$value['title'];
 	$classname=$value['class'];
 	$qualified=$value['test'];
+	$importeTotales[$title];
 	if ($qualified)
 	{
 		print '<br>';
@@ -459,10 +499,15 @@ foreach ($listofreferent as $key => $value)
 				if(!array_key_exists($element->fk_currency,$arrayCurrencys)){
 					$arrayCurrencys[$element->fk_currency]['ht']=$element->total_ht;
 					$arrayCurrencys[$element->fk_currency]['c']=$element->cost;
+			//		$importeTotales[$title][$element->fk_currency]['ht']=$element->total_ht;
+				//	$importeTotales[$title][$element->fk_currency]['c']=$element->cost;
 				}else{
 					$arrayCurrencys[$element->fk_currency]['ht']= $arrayCurrencys[$element->fk_currency]['ht']+$element->total_ht;
 					$arrayCurrencys[$element->fk_currency]['c']= $arrayCurrencys[$element->fk_currency]['c']+$element->cost;
+				//	$importeTotales[$title][$element->fk_currency]['ht']= $arrayCurrencys[$element->fk_currency]['ht']+$element->total_ht;
+				//	$importeTotales[$title][$element->fk_currency]['c']= $arrayCurrencys[$element->fk_currency]['c']+$element->cost;
 				}	
+
 				/**********************************************************************************************************************/
 				$total_ht = $total_ht + $element->total_ht;
 				$total_ttc = $total_ttc + $element->total_ttc*$rate;
@@ -471,7 +516,7 @@ foreach ($listofreferent as $key => $value)
 		//	print_r($arrayCurrencys);
 			$total[$value['class']]=$total_ttc;
 			$costo[$value['class']]=$total_cost;
-			
+			$importeTotales[$title]=$arrayCurrencys;
 				/*
 			************************************************************************************
 			Subtotal Base imponible	y Importe total	por moneda
@@ -486,12 +531,12 @@ foreach ($listofreferent as $key => $value)
 					if($tipo_total==='ht'){
 						print '<td>&nbsp;</td>';
 						print '<td>&nbsp;</td>';
-						print '<td align="right" title="Gasto"><b><I>'.$divisa.' '.price($total).'</I></b></td>';
+						print '<td align="right" title="Importe"><b><I>'.$divisa.' '.price($total).'</I></b></td>';
 						print '<td>&nbsp;</td>';
 					}else{
 						print '<td>&nbsp;</td>';
+						print '<td align="right" title="Gasto"><b><I> '.$divisa.' '.price($total).'</I></b></td>';
 						print '<td>&nbsp;</td>';
-						//print '<td align="right" title="Importe"><b><I> '.$divisa.' '.price($total).'</I></b></td>';
 					}
 				
 				}
@@ -565,6 +610,7 @@ foreach ($listofreferent as $key => $value)
 		
 	}
 }
+/*
 print '<table class="noborder" width="100%">';
 print '<tr class="liste_titre">';
 print '<td width="90%">Resultado</td>';
@@ -573,9 +619,63 @@ print '<td></td>';
 print '</tr>';
 print '<tr>';
 print '<td width="90%">Resultado</td>';
-print '<td width="10%" align="right">'.price($total['Salesorder']-$costo['Salesorder']-$costo['Deplacement']-$costo['Policy'],0,'',0,2,2).'</td>';
+//print '<td width="10%" align="right">'.price($total['Salesorder']-$costo['Salesorder']-$costo['Deplacement']-$costo['Policy'],0,'',0,2,2).'</td>';
 print '<td></td>';
 print '</tr>';
+print "</table>";
+
+*/
+echo "<h4>Totales consolidadios en la divisa {$moneda_consolidada}</h4>";
+print '<table class="noborder" width="100%">
+<thead  >
+	<tr class="liste_titre">
+		<th >Titulo</th>
+		<th >Divisa Consolidada</th>
+		<th>Importe</th>
+		<th>Costo</th>
+	</tr>
+</thead>
+<tbody>';
+
+
+		
+foreach ($importeTotales as $title => $currencies) {
+	print '<tr>';
+	print '<td>';
+	print_titre($langs->trans($title)); ;
+	print '</td>';
+	print '<td>';
+	print  $moneda_consolidada ;
+	print '</td>';	
+	$sum=0;
+	$sum_c=0;
+	foreach($currencies as $currency=>$arrayValues){
+		
+	/***********************************************************************************
+		the  currencies values of project
+	*/
+		$sql="	SELECT VALUE 
+				FROM  llx_consolidation_detail
+				WHERE FK_PROJET ={$project->id} ";
+		$sql.=" AND FK_CURRENCY ='".$currency."'";
+	 	$value_currency_projet=$db->query($sql);	
+		$value_currency_projet=$db->fetch_object($value_currency_projet);
+		$sum_c+=$arrayValues['c']*$value_currency_projet->VALUE;
+		$sum+=$arrayValues['ht']*$value_currency_projet->VALUE;
+
+	}	
+	print '<td  align="center">';
+	print price($sum) ;
+	print '</td>';
+	print '<td  align="center">';
+	print price($sum_c);
+	print '</td>';
+	print '</tr>';
+}
+print '</td>';
+//print '<td width="10%" align="right">'.price($total['Salesorder']-$costo['Salesorder']-$costo['Deplacement']-$costo['Policy'],0,'',0,2,2).'</td>';
+print '<td></td>';
+print '</tr><tbody>';
 print "</table>";
 
 llxFooter();

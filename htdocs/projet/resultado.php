@@ -750,34 +750,44 @@ foreach ($importeTotales as $title => $currencies) {
 	print '<td   align=right>';
 	print price($sum_c,0,'',0,2,2);
 	print '</td>';
-	print '</tr>';
+
 
 					
 	$arr_result[$currencies['operation']]['c']+=$sum_c;
 	$arr_result[$currencies['operation']]['ht']+=$sum;
 	
 }
-
+	print '</tr>';
 	$tt_c=$arr_result['+']['c']-$arr_result['-']['c'] ;
 	$tt_ht=$arr_result['+']['ht']-$arr_result['-']['ht'] ;
-	print '<td>';
+	print '<tr>';
+	print '</tr>';
+	print '<tr>';	
+	print '<td>
+			<I><b>
+				Total
+			</I></b>';
 	print '</td>';
-	print '<td>';
+	print '<td  align=center>';
+		print 	 '<I><b>';
+			echo $moneda_consolidacion;	
+		print 	 '<I><b>';			
 	print '</td>';	
 	print '<td  align=right>';
-	print price($tt_ht,0,'',0,2,2);
+	print 	 '<I><b>';
+			print price($tt_ht,0,'',0,2,2);
+	print 	 '</I></b>';
 	print '</td>';
-	print '<td   align=right>';
-	print price($tt_c,0,'',0,2,2);
+	print '<td align=right>';
+	print 	 '<I><b>';
+			print price($tt_c,0,'',0,2,2);
+	print 	 '</I></b>';
 	print '</td>';
 	print '</tr>';	
 
-
-
-print '</td>';
 //print '<td width="10%" align="right">'.price($total['Salesorder']-$costo['Salesorder']-$costo['Deplacement']-$costo['Policy'],0,'',0,2,2).'</td>';
-print '<td></td>';
-print '</tr><tbody>';
+
+print '<tbody>';
 print "</table>";
 
 llxFooter();

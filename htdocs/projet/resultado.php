@@ -73,6 +73,14 @@ print '<script>
 					$("#conf_consolidation").css("display", "none");
 					$("#conf_consolidation").css("margin-top","15px");	
 				}
+		}
+
+		function moneda_seleccionada(){
+			$valor_moneda_conversion= $(".seleccion_de_divisa").val();
+			$(".moneda_seleccionada_para_conversion").html($valor_moneda_conversion);
+			$(".moneda_seleccionada_para_conversion").data("moneda",$valor_moneda_conversion);
+		
+
 		}	
 
 		
@@ -93,21 +101,18 @@ if(!empty($_POST['consolidation'])){
 	$sql.= " VALUES (".$projectid.",'".$moneda_consolidacion."')";
     $sql.= " ON DUPLICATE KEY UPDATE fk_currency= '".$moneda_consolidacion."';";
 	$resql = $db->query($sql);
-	
-	
+
 	if(!empty($_POST['divisas'])){
-		var_dump($_POST['divisas']);die();
 		$arrDivisas=$_POST['divisas'];
 		foreach ($arrDivisas as $divisa => $valores_conversion) {
-			foreach ($valores_conversion as $c => $v) {
 				$sql='';
-				$sql.="INSERT INTO ".MAIN_DB_PREFIX."consolidation_detail (fk_projet, fk_currency, value)";
-				$sql.= " VALUES (".$projectid.",'".$divisa."',".$valor_consolidado.")";
-				$sql.= " ON DUPLICATE KEY UPDATE VALUE=". $valor_consolidado .";";
+				$sql.="INSERT INTO ".MAIN_DB_PREFIX."consolidation_detail (fk_projet, fk_currency, value,CURRENCY_CONVERTION_VALUE )";
+				$sql.= " VALUES (".$projectid.",'". $divisa."',".$valores_conversion['val_original'].",".$valores_conversion['val_conversion'].")";
+				$sql.= " ON DUPLICATE KEY UPDATE VALUE=".$valores_conversion['val_original'].",CURRENCY_CONVERTION_VALUE=".$valores_conversion['val_conversion'].";";
 				$resql = $db->query($sql);			
-			}
 		}
  	}
+	 
 
 }
 
@@ -229,6 +234,13 @@ print '</div>';
 			.btn_submit{
 				float: right;
 			}
+			.id_monedas{
+					margin-left:5px;
+					float: left;
+				}
+
+
+
 		</style>';
 /*	***************************************************************************************************/
 
@@ -251,7 +263,7 @@ print '
 		<form action="resultado.php?id='.$project->id.'" class="convention_form"  method="post">
 		<input type="hidden" name="consolidation" value="1">
 			<label> Divisa de Consolidación :</label>
-			<select class="seleccion_de_divisa" name="seleccion_de_divisa" >';
+			<select class="seleccion_de_divisa" onclick="moneda_seleccionada()"  name="seleccion_de_divisa" >';
 			/***********************************************************************************
 			values of select currencies
 			*/
@@ -320,7 +332,7 @@ print '
 			//if existe una consolidacion quiere decir que existen divisas con su valor de conversion 
 			if($exist_convention && $db->num_rows($exist_convention)>0){
 				$result=$db->query("
-					SELECT FK_CURRENCY,VALUE 
+					SELECT FK_CURRENCY,VALUE,CURRENCY_CONVERTION_VALUE
 					FROM  llx_consolidation_detail
 					WHERE FK_PROJET ={$project->id}
 			");
@@ -356,10 +368,23 @@ print '
 												 if(!empty($objp->VALUE)){ echo number_format($objp->VALUE, 2, '.', ' ');}
 											 echo" required>
 										</td>
-										<td>".$moneda_consolidada."
-											<input type='NUMBER' step='any' name='divisas[{$objp->FK_CURRENCY}][val_conversion]' value="; 
-												 if(!empty($objp->VALUE)){ echo number_format($objp->VALUE, 2, '.', ' ');}
-											 echo" required>
+										<td>";
+									 		echo
+											  "<div >";
+												if(!empty($moneda_consolidada)){
+														echo  "<div class='moneda_seleccionada_para_conversion id_monedas'  >". $moneda_consolidada."</div>";
+														echo "<input class='id_monedas' data-moneda='{$moneda_consolidada}' type='NUMBER' step='any' name='divisas[{$objp->FK_CURRENCY}][val_conversion]' value="; 
+														if(!empty($objp->VALUE)){ echo number_format($objp->CURRENCY_CONVERTION_VALUE, 2, '.', ' ');}
+														echo" required>";
+													}
+													else {
+														echo 	"<div class='moneda_seleccionada_para_conversion id_monedas'>". $moneda_consolidada."</div>";
+														echo "<input class='id_monedas' type='NUMBER' step='any'data-moneda='' name='divisas[{$objp->FK_CURRENCY}][val_conversion]' value="; 
+														if(!empty($objp->VALUE)){ echo number_format($objp->CURRENCY_CONVERTION_VALUE, 2, '.', ' ');}
+														echo" required>";
+													}				
+												echo"	
+											   </div>
 										</td>
 								   </tr>";
 							$i++;
@@ -389,15 +414,19 @@ $listofreferent=array(
 'salesorder'=>array(
 	'title'=>"Listado de Ordenes de Venta asociadas al proyecto",
 	'class'=>'Salesorder',
-	'test'=>$conf->salesorder->enabled),
+	'test'=>$conf->salesorder->enabled,
+	'operation'=>'+'),
 'trip'=>array(
 	'title'=>"ListTripAssociatedProject",
 	'class'=>'Deplacement',
-	'test'=>$conf->deplacement->enabled),
+	'test'=>$conf->deplacement->enabled,
+	'operation'=>'-'),
+	
 'policy'=>array(
 	'title'=>"Listado de pólizas asociadas al proyecto",
 	'class'=>'Policy',
-	'test'=>$conf->deplacement->enabled),
+	'test'=>$conf->deplacement->enabled,
+	'operation'=>'-'),
 /*'Resultado'=>array(
 	'title'=>"Totales",
 	'class'=>'Policy',
@@ -408,9 +437,11 @@ $importeTotales = array();
 foreach ($listofreferent as $key => $value)
 {
 	$title=$value['title'];
+	$operation=$value['operation'];
 	$classname=$value['class'];
 	$qualified=$value['test'];
-	$importeTotales[$title];
+	$importeTotales[$title]['operation']=$operation;
+	
 	$view_tcc=false;
 	if ($qualified)
 	{
@@ -549,7 +580,7 @@ foreach ($listofreferent as $key => $value)
 		//	print_r($arrayCurrencys);
 			$total[$value['class']]=$total_ttc;
 			$costo[$value['class']]=$total_cost;
-			$importeTotales[$title]=$arrayCurrencys;
+			$importeTotales[$title]['currencies']=$arrayCurrencys;
 				/*
 			************************************************************************************
 			Subtotal Base imponible	y Importe total	por moneda
@@ -675,7 +706,7 @@ print '<table class="noborder" width="100%">
 <tbody>';
 
 
-		
+$arr_result=array();
 foreach ($importeTotales as $title => $currencies) {
 	print '<tr>';
 	print '<td>';
@@ -686,21 +717,33 @@ foreach ($importeTotales as $title => $currencies) {
 	print '</td>';	
 	$sum=0;
 	$sum_c=0;
-	foreach($currencies as $currency=>$arrayValues){
-		
+	$sum_c_haber=0;
+	$sum_haber=0;
+	$result_sum=0;
+	$resul_c=0;
+	
+	foreach($currencies['currencies'] as $currency=>$arrayValues){
+
 	/***********************************************************************************
 		the  currencies values of project
 	*/
-		$sql="	SELECT VALUE 
+		$sql="	SELECT VALUE,CURRENCY_CONVERTION_VALUE 
 				FROM  llx_consolidation_detail
 				WHERE FK_PROJET ={$project->id} ";
 		$sql.=" AND FK_CURRENCY ='".$currency."'";
 	 	$value_currency_projet=$db->query($sql);	
 		$value_currency_projet=$db->fetch_object($value_currency_projet);
-		$sum_c+=$arrayValues['c']*$value_currency_projet->VALUE;
-		$sum+=$arrayValues['ht']*$value_currency_projet->VALUE;
+		if(empty($value_currency_projet->VALUE)){
+			$valor_divsa_original=1;
+		}else{
+			$valor_divsa_original=$value_currency_projet->VALUE;
+		}
+	
+			$sum_c+=$arrayValues['c']*$value_currency_projet->CURRENCY_CONVERTION_VALUE / $valor_divsa_original;
+			$sum+=$arrayValues['ht']*$value_currency_projet->CURRENCY_CONVERTION_VALUE /  $valor_divsa_original;
 
-	}	
+	}
+
 	print '<td  align=right>';
 	print price($sum,0,'',0,2,2);
 	print '</td>';
@@ -708,7 +751,29 @@ foreach ($importeTotales as $title => $currencies) {
 	print price($sum_c,0,'',0,2,2);
 	print '</td>';
 	print '</tr>';
+
+					
+	$arr_result[$currencies['operation']]['c']+=$sum_c;
+	$arr_result[$currencies['operation']]['ht']+=$sum;
+	
 }
+
+	$tt_c=$arr_result['+']['c']-$arr_result['-']['c'] ;
+	$tt_ht=$arr_result['+']['ht']-$arr_result['-']['ht'] ;
+	print '<td>';
+	print '</td>';
+	print '<td>';
+	print '</td>';	
+	print '<td  align=right>';
+	print price($tt_ht,0,'',0,2,2);
+	print '</td>';
+	print '<td   align=right>';
+	print price($tt_c,0,'',0,2,2);
+	print '</td>';
+	print '</tr>';	
+
+
+
 print '</td>';
 //print '<td width="10%" align="right">'.price($total['Salesorder']-$costo['Salesorder']-$costo['Deplacement']-$costo['Policy'],0,'',0,2,2).'</td>';
 print '<td></td>';

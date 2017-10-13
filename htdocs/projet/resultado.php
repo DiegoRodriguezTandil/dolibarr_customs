@@ -73,7 +73,10 @@ print '<script>
 					$("#conf_consolidation").css("display", "none");
 					$("#conf_consolidation").css("margin-top","15px");	
 				}
-		}		 	
+		}	
+
+		
+
 </script>';
 /*************************************************************************/
 
@@ -84,6 +87,7 @@ print '<script>
 */
 
 if(!empty($_POST['consolidation'])){
+	
     $moneda_consolidacion=$_POST['seleccion_de_divisa'];
 	$sql ="INSERT INTO ".MAIN_DB_PREFIX."consolidation (fk_projet, fk_currency)";
 	$sql.= " VALUES (".$projectid.",'".$moneda_consolidacion."')";
@@ -92,13 +96,16 @@ if(!empty($_POST['consolidation'])){
 	
 	
 	if(!empty($_POST['divisas'])){
+		var_dump($_POST['divisas']);die();
 		$arrDivisas=$_POST['divisas'];
-		foreach ($arrDivisas as $divisa => $valor_consolidado) {
-			$sql='';
-			$sql.="INSERT INTO ".MAIN_DB_PREFIX."consolidation_detail (fk_projet, fk_currency, value)";
-			$sql.= " VALUES (".$projectid.",'".$divisa."',".$valor_consolidado.")";
-			$sql.= " ON DUPLICATE KEY UPDATE VALUE=". $valor_consolidado .";";
-			$resql = $db->query($sql);			
+		foreach ($arrDivisas as $divisa => $valores_conversion) {
+			foreach ($valores_conversion as $c => $v) {
+				$sql='';
+				$sql.="INSERT INTO ".MAIN_DB_PREFIX."consolidation_detail (fk_projet, fk_currency, value)";
+				$sql.= " VALUES (".$projectid.",'".$divisa."',".$valor_consolidado.")";
+				$sql.= " ON DUPLICATE KEY UPDATE VALUE=". $valor_consolidado .";";
+				$resql = $db->query($sql);			
+			}
 		}
  	}
 
@@ -330,8 +337,8 @@ print '
 			<table class='border tabla_conversion'>
 				<thead>
 					<tr>
-						<th>Divisa</th>
-						<th>Valor de Coversión</th>
+						<th>Divisa Original</th>
+						<th>Divisa de Coversión</th>
 					</tr>
 				</thead>
 				 <tbody>";
@@ -344,9 +351,13 @@ print '
 						{
 							$objp = $db->fetch_object($result);
 							echo "	<tr>
-										<td>{$objp->FK_CURRENCY}</td>
-										<td>
-											<input type='NUMBER' step='any' name='divisas[{$objp->FK_CURRENCY}]' value="; 
+										<td>{$objp->FK_CURRENCY}
+										<input type='NUMBER' step='any' name='divisas[{$objp->FK_CURRENCY}][val_original]' value="; 
+												 if(!empty($objp->VALUE)){ echo number_format($objp->VALUE, 2, '.', ' ');}
+											 echo" required>
+										</td>
+										<td>".$moneda_consolidada."
+											<input type='NUMBER' step='any' name='divisas[{$objp->FK_CURRENCY}][val_conversion]' value="; 
 												 if(!empty($objp->VALUE)){ echo number_format($objp->VALUE, 2, '.', ' ');}
 											 echo" required>
 										</td>

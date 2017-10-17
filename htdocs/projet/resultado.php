@@ -79,7 +79,8 @@ print '<script>
 			$valor_moneda_conversion= $(".seleccion_de_divisa").val();
 			$(".moneda_seleccionada_para_conversion").html($valor_moneda_conversion);
 			$(".moneda_seleccionada_para_conversion").data("moneda",$valor_moneda_conversion);
-		
+			 $(".id_monedas").removeAttr("readonly");
+			$(".input_divisa_original").removeAttr("readonly"); 
 
 		}	
 
@@ -271,7 +272,7 @@ print '
 				SELECT c.fk_currency,cc.label
 				FROM  ".MAIN_DB_PREFIX."consolidation c
 				JOIN ".MAIN_DB_PREFIX."c_currencies cc ON(c.fk_currency=cc.code_iso)
-				WHERE  c.fk_projet ={$projectid}
+				WHERE  c.fk_projet ={$projectid} 
 			");	
 			
 			//if existe tuplas enotnces existe una consolidacion para el poyecto
@@ -330,13 +331,13 @@ print '
 			  currencies of projet
 			*/
 			//if existe una consolidacion quiere decir que existen divisas con su valor de conversion 
+	
 			if($exist_convention && $db->num_rows($exist_convention)>0){
 				$result=$db->query("
-					SELECT FK_CURRENCY,VALUE,CURRENCY_CONVERTION_VALUE
-					FROM  llx_consolidation_detail
-					WHERE FK_PROJET ={$project->id}
+					SELECT cd.FK_CURRENCY,VALUE,CURRENCY_CONVERTION_VALUE 
+					FROM  llx_consolidation_detail cd join llx_consolidation c 
+					WHERE   cd.FK_PROJET=c.FK_PROJET and c.FK_PROJET ={$project->id}
 			");
-	
 			}else{
 				//si no existe entonces se recupera la divisa y su valor esta en blanco 
 				$result=$db->query("
@@ -362,9 +363,10 @@ print '
 						while ($i < $num)
 						{
 							$objp = $db->fetch_object($result);
+							if( ($objp->FK_CURRENCY!=$moneda_consolidada)){
 							echo "	<tr>
 										<td>{$objp->FK_CURRENCY}
-										<input type='NUMBER' step='any' name='divisas[{$objp->FK_CURRENCY}][val_original]' value="; 
+										<input type='NUMBER' class='input_divisa_original' step='any' name='divisas[{$objp->FK_CURRENCY}][val_original]' value="; 
 												 if(!empty($objp->VALUE)){ echo number_format($objp->VALUE, 2, '.', ' ');}
 											 echo" required>
 										</td>
@@ -387,6 +389,36 @@ print '
 											   </div>
 										</td>
 								   </tr>";
+							}else{
+									echo "	<tr>
+										<td>{$objp->FK_CURRENCY}
+										<input type='NUMBER' step='any' class='input_divisa_original' name='divisas[{$objp->FK_CURRENCY}][val_original]' value="; 
+												 if(!empty($objp->VALUE)){ echo number_format($objp->VALUE, 2, '.', ' ');}
+											 echo" readonly>
+										</td>
+										<td>";
+									 		echo
+											  "<div >";
+												if(!empty($moneda_consolidada)){
+														echo  "<div class='moneda_seleccionada_para_conversion id_monedas'  >". $moneda_consolidada."</div>";
+														echo "<input class='id_monedas' data-moneda='{$moneda_consolidada}' type='NUMBER' step='any' name='divisas[{$objp->FK_CURRENCY}][val_conversion]' value="; 
+														if(!empty($objp->VALUE)){ echo number_format($objp->CURRENCY_CONVERTION_VALUE, 2, '.', ' ');}
+														echo" readonly>";
+													}
+													else {
+														echo 	"<div class='moneda_seleccionada_para_conversion id_monedas'>". $moneda_consolidada."</div>";
+														echo "<input class='id_monedas' type='NUMBER' step='any'data-moneda='' name='divisas[{$objp->FK_CURRENCY}][val_conversion]' value="; 
+														if(!empty($objp->VALUE)){ echo number_format($objp->CURRENCY_CONVERTION_VALUE, 2, '.', ' ');}
+														echo" readonly>";
+													}				
+												echo"	
+											   </div>
+										</td>
+								   </tr>";
+
+							}
+
+
 							$i++;
 						}
 						$db->free($result);

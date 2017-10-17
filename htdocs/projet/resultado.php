@@ -386,7 +386,6 @@ print '
 						while ($i < $num)
 						{
 							$objp = $db->fetch_object($result);
-						//	if( ($objp->FK_CURRENCY!=$moneda_consolidada)){
 							echo "	<tr>
 										<td> <div class='modeda_seleccionada_origen id_monedas'  >".$objp->FK_CURRENCY."</div>
 										<input type='NUMBER' class='input_divisa_original' step='any' name='divisas[{$objp->FK_CURRENCY}][val_original]' value="; 
@@ -412,34 +411,6 @@ print '
 											   </div>
 										</td>
 								   </tr>";
-							/*}else{
-									echo "	<tr>
-											<td> <div class='modeda_seleccionada_origen id_monedas'   >".$objp->FK_CURRENCY."</div>
-										<input type='NUMBER' step='any' class='input_divisa_original' name='divisas[{$objp->FK_CURRENCY}][val_original]' value="; 
-												 if(!empty($objp->VALUE)){ echo number_format($objp->VALUE, 2, '.', ' ');}
-											 echo" readonly>
-										</td>
-										<td>";
-									 		echo
-											  "<div >";
-												if(!empty($moneda_consolidada)){
-														echo  "<div class='moneda_seleccionada_para_conversion id_monedas'  >". $moneda_consolidada."</div>";
-														echo "<input class='id_monedas' data-moneda='{$moneda_consolidada}' type='NUMBER' step='any' name='divisas[{$objp->FK_CURRENCY}][val_conversion]' value="; 
-														if(!empty($objp->VALUE)){ echo number_format($objp->CURRENCY_CONVERTION_VALUE, 2, '.', ' ');}
-														echo" readonly>";
-													}
-													else {
-														echo 	"<div class='moneda_seleccionada_para_conversion id_monedas'>". $moneda_consolidada."</div>";
-														echo "<input class='id_monedas' type='NUMBER' step='any'data-moneda='' name='divisas[{$objp->FK_CURRENCY}][val_conversion]' value="; 
-														if(!empty($objp->VALUE)){ echo number_format($objp->CURRENCY_CONVERTION_VALUE, 2, '.', ' ');}
-														echo" readonly>";
-													}				
-												echo"	
-											   </div>
-										</td>
-								   </tr>";
-
-							}*/
 
 
 							$i++;

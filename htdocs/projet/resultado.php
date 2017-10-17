@@ -784,6 +784,15 @@ foreach ($importeTotales as $title => $currencies) {
 	
 }
 	print '</tr>';
+	var_dump($arr_result['-']['c']);
+	var_dump($arr_result['+']['c']);
+/*	if($arr_result['+']['c']> 0){
+			$tt_c=$arr_result['+']['c']-$arr_result['-']['c'] ;
+	}else{
+		$tt_c=$arr_result['-']['c'];
+	}
+*/
+
 	$tt_c=$arr_result['+']['c']-$arr_result['-']['c'] ;
 	$tt_ht=$arr_result['+']['ht']-$arr_result['-']['ht'] ;
 	print '<tr>';

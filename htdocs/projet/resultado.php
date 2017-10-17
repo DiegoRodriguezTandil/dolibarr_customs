@@ -73,6 +73,17 @@ print '<script>
 					$("#conf_consolidation").css("display", "none");
 					$("#conf_consolidation").css("margin-top","15px");	
 				}
+$valor_moneda_conversion= $(".seleccion_de_divisa").val();
+
+			$( ".modeda_seleccionada_origen" ).each(function() {
+				if($( this ).text() == $valor_moneda_conversion){
+					var li=$(this).parent().parent();
+					li.find("input").each(function() {
+							$( this ).attr("readonly", true);
+							$( this ).val(1);
+						});
+					}
+			}); 
 		}
 
 		function moneda_seleccionada(){
@@ -80,8 +91,20 @@ print '<script>
 			$(".moneda_seleccionada_para_conversion").html($valor_moneda_conversion);
 			$(".moneda_seleccionada_para_conversion").data("moneda",$valor_moneda_conversion);
 			 $(".id_monedas").removeAttr("readonly");
-			$(".input_divisa_original").removeAttr("readonly"); 
+			$(".input_divisa_original").removeAttr("readonly");
 
+
+			$( ".modeda_seleccionada_origen" ).each(function() {
+				if($( this ).text() == $valor_moneda_conversion){
+					var li=$(this).parent().parent();
+					li.find("input").each(function() {
+							$( this ).attr("readonly", true);
+							$( this ).val(1);
+						});
+					}
+			}); 
+			
+			
 		}	
 
 		
@@ -363,11 +386,11 @@ print '
 						while ($i < $num)
 						{
 							$objp = $db->fetch_object($result);
-							if( ($objp->FK_CURRENCY!=$moneda_consolidada)){
+						//	if( ($objp->FK_CURRENCY!=$moneda_consolidada)){
 							echo "	<tr>
-										<td>{$objp->FK_CURRENCY}
+										<td> <div class='modeda_seleccionada_origen id_monedas'  >".$objp->FK_CURRENCY."</div>
 										<input type='NUMBER' class='input_divisa_original' step='any' name='divisas[{$objp->FK_CURRENCY}][val_original]' value="; 
-												 if(!empty($objp->VALUE)){ echo number_format($objp->VALUE, 2, '.', ' ');}
+												 if(!empty($objp->VALUE)){ echo number_format($objp->VALUE, 2, '.', '');}
 											 echo" required>
 										</td>
 										<td>";
@@ -376,22 +399,22 @@ print '
 												if(!empty($moneda_consolidada)){
 														echo  "<div class='moneda_seleccionada_para_conversion id_monedas'  >". $moneda_consolidada."</div>";
 														echo "<input class='id_monedas' data-moneda='{$moneda_consolidada}' type='NUMBER' step='any' name='divisas[{$objp->FK_CURRENCY}][val_conversion]' value="; 
-														if(!empty($objp->VALUE)){ echo number_format($objp->CURRENCY_CONVERTION_VALUE, 2, '.', ' ');}
+														if(!empty($objp->VALUE)){ echo number_format($objp->CURRENCY_CONVERTION_VALUE, 2, '.', '');}
 														echo" required>";
 													}
 													else {
 														echo 	"<div class='moneda_seleccionada_para_conversion id_monedas'>". $moneda_consolidada."</div>";
 														echo "<input class='id_monedas' type='NUMBER' step='any'data-moneda='' name='divisas[{$objp->FK_CURRENCY}][val_conversion]' value="; 
-														if(!empty($objp->VALUE)){ echo number_format($objp->CURRENCY_CONVERTION_VALUE, 2, '.', ' ');}
+														if(!empty($objp->VALUE)){ echo number_format($objp->CURRENCY_CONVERTION_VALUE, 2, '.', '');}
 														echo" required>";
 													}				
 												echo"	
 											   </div>
 										</td>
 								   </tr>";
-							}else{
+							/*}else{
 									echo "	<tr>
-										<td>{$objp->FK_CURRENCY}
+											<td> <div class='modeda_seleccionada_origen id_monedas'   >".$objp->FK_CURRENCY."</div>
 										<input type='NUMBER' step='any' class='input_divisa_original' name='divisas[{$objp->FK_CURRENCY}][val_original]' value="; 
 												 if(!empty($objp->VALUE)){ echo number_format($objp->VALUE, 2, '.', ' ');}
 											 echo" readonly>
@@ -416,7 +439,7 @@ print '
 										</td>
 								   </tr>";
 
-							}
+							}*/
 
 
 							$i++;

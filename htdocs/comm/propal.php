@@ -660,6 +660,7 @@ else if ($action == "addline" && $user->rights->propal->creer)
 	$product_desc = (GETPOST('product_desc')?GETPOST('product_desc'):(GETPOST('np_desc')?GETPOST('np_desc'):(GETPOST('dp_desc')?GETPOST('dp_desc'):'')));
 	$price_ht = GETPOST('price_ht');
 	$tva_tx = (GETPOST('tva_tx')?GETPOST('tva_tx'):0);
+        $line_ref = GETPOST('line_ref')?GETPOST('line_ref'):NULL;
 
 	if (empty($idprod) && GETPOST('type') < 0)
 	{
@@ -840,7 +841,8 @@ else if ($action == "addline" && $user->rights->propal->creer)
 				GETPOST('fk_parent_line'),
 				$fournprice,
 				$buyingprice,
-				$label
+				$label,
+                                $line_ref
 			);
 
 			if ($result > 0)

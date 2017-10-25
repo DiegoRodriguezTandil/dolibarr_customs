@@ -319,11 +319,11 @@ class Propal extends CommonObject
      *
      *    	@see       	add_product
      */
-	function addline($propalid, $desc, $pu_ht, $qty, $txtva, $txlocaltax1=0, $txlocaltax2=0, $fk_product=0, $remise_percent=0, $price_base_type='HT', $pu_ttc=0, $info_bits=0, $type=0, $rang=-1, $special_code=0, $fk_parent_line=0, $fk_fournprice=0, $pa_ht=0, $label='')
+	function addline($propalid, $desc, $pu_ht, $qty, $txtva, $txlocaltax1=0, $txlocaltax2=0, $fk_product=0, $remise_percent=0, $price_base_type='HT', $pu_ttc=0, $info_bits=0, $type=0, $rang=-1, $special_code=0, $fk_parent_line=0, $fk_fournprice=0, $pa_ht=0, $label='', $line_ref=NULL)
     {
         global $conf;
 
-        dol_syslog(get_class($this)."::addline propalid=$propalid, desc=$desc, pu_ht=$pu_ht, qty=$qty, txtva=$txtva, fk_product=$fk_product, remise_except=$remise_percent, price_base_type=$price_base_type, pu_ttc=$pu_ttc, info_bits=$info_bits, type=$type");
+        dol_syslog(get_class($this)."::addline propalid=$propalid, desc=$desc, pu_ht=$pu_ht, qty=$qty, txtva=$txtva, fk_product=$fk_product, remise_except=$remise_percent, price_base_type=$price_base_type, pu_ttc=$pu_ttc, info_bits=$info_bits, type=$type, line_ref=$line_ref");
         include_once DOL_DOCUMENT_ROOT.'/core/lib/price.lib.php';
 
         // Clean parameters
@@ -390,7 +390,7 @@ class Propal extends CommonObject
 
             // Insert line
             $this->line=new PropaleLigne($this->db);
-
+            $this->line->line_ref = $line_ref;
             $this->line->fk_propal=$propalid;
             $this->line->label=$label;
             $this->line->desc=$desc;
@@ -2606,6 +2606,8 @@ class PropaleLigne
     var $total_localtax2;
 
     var $skip_update_total; // Skip update price total for special lines
+    
+    var $line_ref;
 
     /**
      * 	Class line Contructor
@@ -2740,7 +2742,9 @@ class PropaleLigne
         $sql.= ' info_bits, ';
         $sql.= ' total_ht, total_tva, total_localtax1, total_localtax2,'; 
         $sql.= ' total_ttc, fk_product_fournisseur_price, buy_price_ht,'; 
-        $sql.= ' special_code, rang)';
+        $sql.= ' special_code, rang';
+        $sql.= isset($this->line_ref)?', line_ref':'';
+        $sql.= ')';
         $sql.= " VALUES (".$this->fk_propal.",";
         $sql.= " ".($this->fk_parent_line>0?"'".$this->fk_parent_line."'":"null").",";
         $sql.= " ".(! empty($this->label)?"'".$this->db->escape($this->label)."'":"null").",";
@@ -2770,6 +2774,7 @@ class PropaleLigne
         $sql.= " ".(isset($this->pa_ht)?"'".price2num($this->pa_ht)."'":"null").",";
         $sql.= ' '.$this->special_code.',';
         $sql.= ' '.$this->rang;
+        $sql.= isset($this->line_ref)?", '{$this->line_ref}'":'';
         $sql.= ')';
 
         dol_syslog(get_class($this).'::insert sql='.$sql, LOG_DEBUG);

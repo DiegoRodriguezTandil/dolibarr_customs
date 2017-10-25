@@ -742,7 +742,7 @@ class Propal extends CommonObject
         //FEDE
         $sql.= ", ".$this->office;
         //FIN FEDE
-        $sql.= " '{$this->line_ref}'";
+        $sql.= ", ".($this->line_ref?"'".$this->line_ref."'":"null");
 	$sql.= ")";
        
 

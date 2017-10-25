@@ -33,7 +33,7 @@ if (! empty($conf->margin->enabled) && ! empty($object->element) && in_array($ob
 <!-- BEGIN PHP TEMPLATE predefinedproductline_create.tpl.php -->
 
 <tr class="liste_titre nodrag nodrop">
-	<td<?php echo (! empty($conf->global->MAIN_VIEW_LINE_NUMBER) ? ' colspan="4"' : ' colspan="6"'); ?>>
+	<td<?php echo (! empty($conf->global->MAIN_VIEW_LINE_NUMBER) ? ' colspan="4"' : ' colspan="3"'); ?>>
 	<?php
 	echo $langs->trans("AddNewLine").' - ';
 	if (! empty($conf->product->enabled) && empty($conf->service->enabled)) echo $langs->trans('RecordedProducts');
@@ -41,10 +41,11 @@ if (! empty($conf->margin->enabled) && ! empty($object->element) && in_array($ob
 	else echo $langs->trans('RecordedProductsAndServices');
 	?>
 	</td>
+	<td align="right">Ref. Línea</td>        
 	<td align="right"><?php echo $langs->trans('Qty'); ?></td>
 	<td align="right"><?php echo $langs->trans('ReductionShort'); ?></td>
 <?php
-$colspan = 4;
+$colspan = 7;
 if (! empty($usemargins)) 
 {
 	if (! empty($conf->global->DISPLAY_MARGIN_RATES)) $colspan++;
@@ -105,7 +106,8 @@ jQuery(document).ready(function() {
 	$doleditor->Create();
 	?>
 	</td>
-	<td align="right"><input type="text" size="2" name="qty" value="1"></td>
+	<td align="right"><input type="text" size="3" name="line_ref" value="<?php echo (isset($_POST["line_ref"])?$_POST["line_ref"]:''); ?>"></td>
+        <td align="right"><input type="text" size="2" name="qty" value="1"></td>
 	<td align="right" nowrap><input type="text" size="1" name="remise_percent" value="<?php echo $buyer->remise_client; ?>">%</td>
 	<?php
 	$colspan = 7;

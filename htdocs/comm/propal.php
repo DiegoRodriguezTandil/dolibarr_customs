@@ -319,6 +319,7 @@ else if ($action == 'add' && $user->rights->propal->creer)
     			$object->author    				= $user->id;			// deprecated
     			$object->note      				= GETPOST('note');
     			$object->statut    				= 0;
+                        $object->line_ref                               = GETPOST('line_ref');
 
     			$id = $object->create_from($user);
     		}

@@ -697,17 +697,16 @@ class Propal extends CommonObject
         $sql.= ", fk_availability";
         $sql.= ", fk_input_reason";
         $sql.= ", fk_projet";
-		
-		//Begin - gA - 26-07-2013
-		$sql.= ", purpose";
-		$sql.= ", tender_number";
-		$sql.= ", fk_currency";
-		//End - gA - 26-07-2013
-		
+        //Begin - gA - 26-07-2013
+        $sql.= ", purpose";
+        $sql.= ", tender_number";
+        $sql.= ", fk_currency";
+        //End - gA - 26-07-2013		
         $sql.= ", entity";
-		//FEDE
-		$sql.= ", office";
-		//FIN FEDE
+        //FEDE
+        $sql.= ", office";
+        //FIN FEDE
+        $sql.= ", line_ref";                
         $sql.= ") ";
         $sql.= " VALUES (";
         $sql.= $this->socid;
@@ -732,19 +731,18 @@ class Propal extends CommonObject
         $sql.= ", ".$this->availability_id;
         $sql.= ", ".$this->demand_reason_id;
         $sql.= ", ".($this->fk_project?$this->fk_project:"null");
-		
-		//Begin - gA - 26-07-2013
-		$sql.= ", ".($this->purpose?"'".$this->purpose."'":"null");
-		$sql.= ", ".($this->tender_number?"'".$this->tender_number."'":"null");
-		$sql.= ", ".($this->fk_currency?"'".$this->fk_currency."'":"null");
-		//End - gA - 26-07-2013
-		
+        //Begin - gA - 26-07-2013
+        $sql.= ", ".($this->purpose?"'".$this->purpose."'":"null");
+        $sql.= ", ".($this->tender_number?"'".$this->tender_number."'":"null");
+        $sql.= ", ".($this->fk_currency?"'".$this->fk_currency."'":"null");
+        //End - gA - 26-07-2013		
         $sql.= ", ".$conf->entity;
-		//FEDE
-		$sql.= ", ".$this->office;
-		//FIN FEDE
-		$sql.= ")";
-        
+        //FEDE
+        $sql.= ", ".$this->office;
+        //FIN FEDE
+        $sql.= " '{$this->line_ref}'";
+	$sql.= ")";
+       
 
         dol_syslog(get_class($this)."::create sql=".$sql, LOG_DEBUG);
         $resql=$this->db->query($sql);

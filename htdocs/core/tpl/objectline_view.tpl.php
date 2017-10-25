@@ -24,7 +24,7 @@
 	<?php if (!empty($line->line_ref)) { ?>
 		<td align="center" style="width:5px;"><?php echo $line->line_ref; ?></td>
 	<?php }else{ ?>
-		<td align="center" style="width:5px;" ><?php echo "mostrar secuencial" ?></td>
+		<td align="center" style="width:5px;" ><?php echo "No disponible" ?></td>
 	<?php } ?>	
 
 	<td><div id="<?php echo $line->rowid; ?>"></div>

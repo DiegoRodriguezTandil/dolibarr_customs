@@ -479,7 +479,7 @@ class Propal extends CommonObject
      *  @param		int			$type				0/1=Product/service
      *  @return     int     		        		0 if OK, <0 if KO
      */
-	function updateline($rowid, $pu, $qty, $remise_percent, $txtva, $txlocaltax1=0, $txlocaltax2=0, $desc='', $price_base_type='HT', $info_bits=0, $special_code=0, $fk_parent_line=0, $skip_update_total=0, $fk_fournprice=0, $pa_ht=0, $label='', $type=0)
+	function updateline($rowid, $pu, $qty, $remise_percent, $txtva, $txlocaltax1=0, $txlocaltax2=0, $desc='', $price_base_type='HT', $info_bits=0, $special_code=0, $fk_parent_line=0, $skip_update_total=0, $fk_fournprice=0, $pa_ht=0, $label='', $type=0,$line_ref=null)
     {
         global $conf,$user,$langs;
 
@@ -553,6 +553,7 @@ class Propal extends CommonObject
             $this->line->special_code		= $special_code;
             $this->line->fk_parent_line		= $fk_parent_line;
             $this->line->skip_update_total	= $skip_update_total;
+            $this->line->line_ref	        = $line_ref;
 
             // infos marge
             $this->line->fk_fournprice = $fk_fournprice;
@@ -563,6 +564,7 @@ class Propal extends CommonObject
             $this->line->remise=$remise;
 
             $result=$this->line->update();
+       
             if ($result > 0)
             {
                 // Reorder if child line
@@ -2900,6 +2902,7 @@ class PropaleLigne
         $sql.= " , price=".price2num($this->price)."";					// TODO A virer
         $sql.= " , remise=".price2num($this->remise)."";				// TODO A virer
         $sql.= " , info_bits='".$this->info_bits."'";
+        $sql.= isset($this->line_ref)?", line_ref= '".$this->line_ref."'":'';
         if (empty($this->skip_update_total))
         {
             $sql.= " , total_ht=".price2num($this->total_ht)."";

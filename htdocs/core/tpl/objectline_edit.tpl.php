@@ -37,6 +37,7 @@
 <input type="hidden" id="product_id" name="productid" value="<?php echo (! empty($line->fk_product)?$line->fk_product:0); ?>" />
 
 <tr <?php echo $bc[$var]; ?>>
+	<td><input type="text" align="right" size="7" id="" name="line_ref" class="" value="<?php echo $line->line_ref; ?>"></td>
 	<td<?php echo (! empty($conf->global->MAIN_VIEW_LINE_NUMBER) ? ' colspan="2"' : ''); ?>>
 	<div id="<?php echo $line->id; ?>"></div>
 
@@ -78,7 +79,6 @@
 		<br>
 
 	<?php }	?>
-
 	<?php
 	if (is_object($hookmanager))
 	{
@@ -96,7 +96,8 @@
 	$doleditor->Create();
 	?>
 	</td>
-
+	<td></td>
+	<td></td>
 	<td align="right"><?php echo $form->load_tva('tva_tx',$line->tva_tx,$seller,$buyer,0,$line->info_bits,$line->product_type); ?></td>
 
 	<td align="right"><input type="text" class="flat" size="8" id="price_ht" name="price_ht" value="<?php echo price($line->subprice,0,'',0); ?>"></td>

@@ -889,6 +889,7 @@ else if ($action == "addline" && $user->rights->propal->creer)
 // Mise a jour d'une ligne dans la propale
 else if ($action == 'updateligne' && $user->rights->propal->creer && GETPOST('save') == $langs->trans("Save"))
 {
+
 	// Define info_bits
 	$info_bits=0;
 	if (preg_match('/\*/', GETPOST('tva_tx'))) $info_bits |= 0x01;
@@ -906,6 +907,7 @@ else if ($action == 'updateligne' && $user->rights->propal->creer && GETPOST('sa
 	// Add buying price
 	$fournprice=(GETPOST('fournprice')?GETPOST('fournprice'):'');
 	$buyingprice=(GETPOST('buying_price')?GETPOST('buying_price'):'');
+	$line_ref=(GETPOST('line_ref')?GETPOST('line_ref'):null);
 
 	// Define special_code for special lines
 	$special_code=0;
@@ -963,7 +965,8 @@ else if ($action == 'updateligne' && $user->rights->propal->creer && GETPOST('sa
 			$fournprice,
 			$buyingprice,
 			$label,
-			$type
+			$type,
+			$line_ref
 		);
 
 		if ($result >= 0)

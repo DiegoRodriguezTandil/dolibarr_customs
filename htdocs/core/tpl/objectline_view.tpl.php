@@ -21,9 +21,12 @@
 
 <!-- BEGIN PHP TEMPLATE objectline_view.tpl.php -->
 <tr <?php echo 'id="row-'.$line->id.'" '.$bcdd[$var]; ?>>
-	<?php if (! empty($conf->global->MAIN_VIEW_LINE_NUMBER)) { ?>
-	<td align="center"><?php echo ($i+1); ?></td>
-	<?php } ?>
+	<?php if (!empty($line->line_ref)) { ?>
+		<td align="center" style="width:5px;"><?php echo $line->line_ref; ?></td>
+	<?php }else{ ?>
+		<td align="center" style="width:5px;" ><?php echo "mostrar secuencial" ?></td>
+	<?php } ?>	
+
 	<td><div id="<?php echo $line->rowid; ?>"></div>
 	<?php if (($line->info_bits & 2) == 2) { ?>
 		<a href="<?php echo DOL_URL_ROOT.'/comm/remx.php?id='.$this->socid; ?>">
@@ -35,6 +38,9 @@
 		print $txt;
 		?>
 		</a>
+
+
+
 		<?php
 		if ($line->description)
 		{

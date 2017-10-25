@@ -2809,6 +2809,7 @@ abstract class CommonObject
 		{
 			print '<td align="center" width="5">&nbsp;</td>';
 		}
+        print '<td>'.$langs->trans('Referencia').'</td>';
 		print '<td>'.$langs->trans('Description').'</td>';
 		//FEDE
 		print '<td align="center" width="50">'.$langs->trans('Divisa Orig.').'</td>';
@@ -2840,7 +2841,7 @@ abstract class CommonObject
 		$num = count($this->lines);
 		$var = true;
 		$i	 = 0;
-
+        
 		foreach ($this->lines as $line)
 		{
 			$var=!$var;

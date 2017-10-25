@@ -2473,6 +2473,7 @@ class Propal extends CommonObject
     function getLinesArray()
     {
         $sql = 'SELECT pt.rowid, pt.label as custom_label, pt.description, pt.fk_product, pt.fk_remise_except,';
+        $sql.= ' pt.line_ref,';
         $sql.= ' pt.qty, pt.tva_tx, pt.remise_percent, pt.fk_currency, pt.origin_price, pt.subprice, pt.info_bits,';
         $sql.= ' pt.total_ht, pt.total_tva, pt.total_ttc, pt.fk_product_fournisseur_price as fk_fournprice, pt.buy_price_ht as pa_ht, pt.special_code, pt.localtax1_tx, pt.localtax2_tx,';
         $sql.= ' pt.date_start, pt.date_end, pt.product_type, pt.rang, pt.fk_parent_line,';
@@ -2528,6 +2529,8 @@ class Propal extends CommonObject
                 $this->lines[$i]->rang				= $obj->rang;
                 $this->lines[$i]->date_start		= $this->db->jdate($obj->date_start);
                 $this->lines[$i]->date_end			= $this->db->jdate($obj->date_end);
+                $this->lines[$i]->line_ref          = $obj->line_ref;
+
 
                 $i++;
             }
@@ -2728,6 +2731,9 @@ class PropaleLigne
         	if ($this->subprice > 0 && (isset($conf->global->ForceBuyingPriceIfNull) && $conf->global->ForceBuyingPriceIfNull == 1))
         		$this->pa_ht = $this->subprice * (1 - $this->remise_percent / 100);
         }
+
+
+        //var_dump($this->fk_propal);die('hola22');
 
         // Check parameters
         if ($this->product_type < 0) return -1;

@@ -319,7 +319,7 @@ else if ($action == 'add' && $user->rights->propal->creer)
     			$object->author    				= $user->id;			// deprecated
     			$object->note      				= GETPOST('note');
     			$object->statut    				= 0;
-                        $object->line_ref                               = GETPOST('line_ref');
+                $object->line_ref               = GETPOST('line_ref');
 
     			$id = $object->create_from($user);
     		}
@@ -660,7 +660,7 @@ else if ($action == "addline" && $user->rights->propal->creer)
 	$product_desc = (GETPOST('product_desc')?GETPOST('product_desc'):(GETPOST('np_desc')?GETPOST('np_desc'):(GETPOST('dp_desc')?GETPOST('dp_desc'):'')));
 	$price_ht = GETPOST('price_ht');
 	$tva_tx = (GETPOST('tva_tx')?GETPOST('tva_tx'):0);
-        $line_ref = GETPOST('line_ref')?GETPOST('line_ref'):NULL;
+    $line_ref = GETPOST('line_ref')?GETPOST('line_ref'):NULL;
 
 	if (empty($idprod) && GETPOST('type') < 0)
 	{
@@ -819,7 +819,7 @@ else if ($action == "addline" && $user->rights->propal->creer)
 			$mesg = $langs->trans("CantBeLessThanMinPrice",price2num($price_min,'MU').getCurrencySymbol($conf->currency));
 			setEventMessage($mesg, 'errors');
 		}
-		else
+		else 
 		{
 			// Insert line
 			$result=$object->addline(
@@ -842,7 +842,7 @@ else if ($action == "addline" && $user->rights->propal->creer)
 				$fournprice,
 				$buyingprice,
 				$label,
-                                $line_ref
+               $line_ref
 			);
 
 			if ($result > 0)
@@ -1767,6 +1767,7 @@ if ($object->statut == 0 && $user->rights->propal->creer)
 		{
 			// Add free or predefined products/services
 			$object->formAddObjectLine(0,$mysoc,$soc,$hookmanager);
+		
 		}
 		else
 		{

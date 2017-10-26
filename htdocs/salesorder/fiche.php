@@ -567,6 +567,7 @@ else if ($action == 'addline' && $user->rights->salesorder->creer)
 	$product_desc = (GETPOST('product_desc')?GETPOST('product_desc'):(GETPOST('np_desc')?GETPOST('np_desc'):(GETPOST('dp_desc')?GETPOST('dp_desc'):'')));
 	$price_ht = GETPOST('price_ht');
 	$tva_tx = (GETPOST('tva_tx')?GETPOST('tva_tx'):0);
+	$line_ref = (GETPOST('line_ref')?GETPOST('line_ref'):0);
 
 	if ((empty($idprod) || GETPOST('usenewaddlineform')) && ($price_ht < 0) && (GETPOST('qty') < 0))
     {
@@ -737,6 +738,7 @@ else if ($action == 'addline' && $user->rights->salesorder->creer)
 		}
 		else
 		{
+				
 			// Insert line
 			$result = $object->addline(
 					$object->id,
@@ -760,9 +762,9 @@ else if ($action == 'addline' && $user->rights->salesorder->creer)
 					GETPOST('fk_parent_line'),
 					$fournprice,
 					$buyingprice,
-					$label
+					$label,
+					$line_ref
 			);
-
 			if ($result > 0)
 			{
 				$ret=$object->fetch($object->id);    // Reload to get new records
@@ -812,6 +814,8 @@ else if ($action == 'addline' && $user->rights->salesorder->creer)
 */
 else if ($action == 'updateligne' && $user->rights->salesorder->creer && GETPOST('save') == $langs->trans('Save'))
 {
+
+
 	// Clean parameters
 	$date_start='';
 	$date_end='';
@@ -820,6 +824,7 @@ else if ($action == 'updateligne' && $user->rights->salesorder->creer && GETPOST
 	$description=dol_htmlcleanlastbr(GETPOST('product_desc'));
 	$pu_ht=GETPOST('price_ht');
 	$vat_rate=(GETPOST('tva_tx')?GETPOST('tva_tx'):0);
+	$line_ref=(GETPOST('line_ref')?GETPOST('line_ref'):0);
 
 	// Define info_bits
 	$info_bits=0;
@@ -887,7 +892,9 @@ else if ($action == 'updateligne' && $user->rights->salesorder->creer && GETPOST
 				0,
 				$fournprice,
 				$buyingprice,
-				$label
+				$label,
+				null,
+				$line_ref
 		);
 
 		if ($result >= 0)
@@ -2046,7 +2053,7 @@ if ($action == 'send' && ! GETPOST('addfile') && ! GETPOST('removedfile') && ! G
 				print '<form name="setshipment_location" action="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'" method="post">';
 				print '<input type="hidden" name="token" value="'.$_SESSION['newtoken'].'">';
 				print '<input type="hidden" name="action" value="setshipment_location">';
-				//print var_dump($shipment_location);
+	
 				print ''.$form->editfieldval('LugarEntrega',$shipment_location,$object->shipment_location, $object,true,'text:2:40', '', null, null,'');
 				//print '<input type="submit" class="button" value="'.$langs->trans('Modify').'">';
 				print '</form>';

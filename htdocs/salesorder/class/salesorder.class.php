@@ -60,7 +60,7 @@ class salesorder extends CommonOrder
 	var $shipment_location;
 	var $cost;
 	//FIN FEDE
-	
+	var $line_ref;
 	
     var $statut;		// -1=Canceled, 0=Draft, 1=Validated, (2=Accepted/On process not managed for customer orders), 3=Closed (Sent/Received, billed or not)
 
@@ -643,6 +643,7 @@ class salesorder extends CommonOrder
         $sql.= ", model_pdf, fk_cond_reglement, fk_mode_reglement, fk_availability, fk_input_reason, date_livraison, fk_adresse_livraison";
         $sql.= ", remise_absolue, remise_percent";
         $sql.= ", entity";
+        $sql.= ", line_ref"; 
         $sql.= ")";
 		//FEDE
         $sql.= " VALUES ('(PROV)',".$this->office.",".$this->socid.", ".$this->db->idate($now).", ".$user->id;
@@ -652,7 +653,6 @@ class salesorder extends CommonOrder
 		//FEDE 15-10-2013
 		$sql.= ", '".$this->fk_currency."'";
 		//FEDE
-		
         $sql.= ", ".$this->db->idate($date);
         $sql.= ", ".($this->source>=0 && $this->source != '' ?$this->source:'null');
         $sql.= ", '".$this->db->escape($this->note)."'";
@@ -669,6 +669,7 @@ class salesorder extends CommonOrder
         $sql.= ", ".($this->remise_absolue>0?$this->remise_absolue:'NULL');
         $sql.= ", '".$this->remise_percent."'";
         $sql.= ", ".$conf->entity;
+        $sql.= ", ".($this->line_ref?"'".$this->line_ref."'":"null");
         $sql.= ")";
 
         dol_syslog("salesorder::create sql=".$sql);
@@ -1031,7 +1032,7 @@ class salesorder extends CommonOrder
      *	par l'appelant par la methode get_default_tva(societe_vendeuse,societe_acheteuse,produit)
      *	et le desc doit deja avoir la bonne valeur (a l'appelant de gerer le multilangue)
      */
-	function addline($salesorderid, $desc, $pu_ht, $qty, $txtva, $txlocaltax1=0, $txlocaltax2=0, $fk_product=0, $remise_percent=0, $info_bits=0, $fk_remise_except=0, $price_base_type='HT', $pu_ttc=0, $date_start='', $date_end='', $type=0, $rang=-1, $special_code=0, $fk_parent_line=0, $fk_fournprice=null, $pa_ht=0, $label='')
+	function addline($salesorderid, $desc, $pu_ht, $qty, $txtva, $txlocaltax1=0, $txlocaltax2=0, $fk_product=0, $remise_percent=0, $info_bits=0, $fk_remise_except=0, $price_base_type='HT', $pu_ttc=0, $date_start='', $date_end='', $type=0, $rang=-1, $special_code=0, $fk_parent_line=0, $fk_fournprice=null, $pa_ht=0, $label='',$line_ref=null )
     {
         dol_syslog(get_class($this)."::addline salesorderid=$salesorderid, desc=$desc, pu_ht=$pu_ht, qty=$qty, txtva=$txtva, fk_product=$fk_product, remise_percent=$remise_percent, info_bits=$info_bits, fk_remise_except=$fk_remise_except, price_base_type=$price_base_type, pu_ttc=$pu_ttc, date_start=$date_start, date_end=$date_end, type=$type", LOG_DEBUG);
 
@@ -1130,7 +1131,7 @@ class salesorder extends CommonOrder
 
             $this->line->date_start=$date_start;
             $this->line->date_end=$date_end;
-
+            $this->line->line_ref=$line_ref;
 			// infos marge
 			$this->line->fk_fournprice = $fk_fournprice;
 			$this->line->pa_ht = $pa_ht;
@@ -1490,8 +1491,6 @@ class salesorder extends CommonOrder
         $sql.= ' WHERE l.fk_salesorder = '.$this->id;
         if ($only_product) $sql .= ' AND p.fk_product_type = 0';
         $sql .= ' ORDER BY l.rang';
-
-		//print var_dump($sql);
         dol_syslog("salesorder::fetch_lines sql=".$sql,LOG_DEBUG);
         $result = $this->db->query($sql);
 		$cost=0;
@@ -2261,11 +2260,11 @@ class salesorder extends CommonOrder
      *  @param		int				$special_code		Special code (also used by externals modules!)
      *  @return   	int              					< 0 if KO, > 0 if OK
      */
-	function updateline($rowid, $desc, $pu, $qty, $remise_percent, $txtva, $txlocaltax1=0,$txlocaltax2=0, $price_base_type='HT', $info_bits=0, $date_start='', $date_end='', $type=0, $fk_parent_line=0, $skip_update_total=0, $fk_fournprice=null, $pa_ht=0, $label='', $special_code=0)
+	function updateline($rowid, $desc, $pu, $qty, $remise_percent, $txtva, $txlocaltax1=0,$txlocaltax2=0, $price_base_type='HT', $info_bits=0, $date_start='', $date_end='', $type=0, $fk_parent_line=0, $skip_update_total=0, $fk_fournprice=null, $pa_ht=0, $label='', $special_code=0,$line_ref=null)
     {
         global $conf;
-
-        dol_syslog(get_class($this)."::updateline $rowid, $desc, $pu, $qty, $remise_percent, $txtva, $txlocaltax1, $txlocaltax2, $price_base_type, $info_bits, $date_start, $date_end, $type");
+       
+        dol_syslog(get_class($this)."::updateline $rowid, $desc, $pu, $qty, $remise_percent, $txtva, $txlocaltax1, $txlocaltax2, $price_base_type, $info_bits, $date_start, $date_end, $type, $line_ref");
         include_once DOL_DOCUMENT_ROOT.'/core/lib/price.lib.php';
 
         if (! empty($this->brouillon))
@@ -2346,6 +2345,7 @@ class salesorder extends CommonOrder
             $this->line->product_type=$type;
             $this->line->fk_parent_line=$fk_parent_line;
             $this->line->skip_update_total=$skip_update_total;
+            $this->line->line_ref=trim($line_ref);
 
 			// infos marge
 			$this->line->fk_fournprice = $fk_fournprice;
@@ -2861,6 +2861,7 @@ class salesorder extends CommonOrder
         $sql.= ' l.date_start, l.date_end,';
         $sql.= ' p.label as product_label, p.ref, p.fk_product_type, p.rowid as prodid, ';
         $sql.= ' p.description as product_desc, p.stock as stock_reel';
+        $sql.= ', line_ref';
         $sql.= ' FROM '.MAIN_DB_PREFIX.'salesorderdet as l';
         $sql.= ' LEFT JOIN '.MAIN_DB_PREFIX.'product as p ON l.fk_product=p.rowid';
         $sql.= ' WHERE l.fk_salesorder = '.$this->id;
@@ -2898,6 +2899,7 @@ class salesorder extends CommonOrder
                 $this->lines[$i]->special_code		= $obj->special_code;
 				$this->lines[$i]->stock				= $obj->stock_reel;
                 $this->lines[$i]->rang				= $obj->rang;
+                $this->lines[$i]->line_ref				= $obj->line_ref;
                 $this->lines[$i]->date_start		= $this->db->jdate($obj->date_start);
                 $this->lines[$i]->date_end			= $this->db->jdate($obj->date_end);
 				$this->lines[$i]->fk_fournprice		= $obj->fk_fournprice;
@@ -2968,7 +2970,7 @@ class SalesOrderLine
     // Ne plus utiliser
     var $remise;
     var $price;
-
+    var $line_ref;
     // From llx_product
     var $ref;				// deprecated
     var $libelle;			// deprecated
@@ -3007,6 +3009,7 @@ class SalesOrderLine
         $sql.= ' cd.info_bits, cd.total_ht, cd.total_tva, cd.total_localtax1, cd.total_localtax2, cd.total_ttc, cd.fk_product_fournisseur_price as fk_fournprice, cd.buy_price_ht as pa_ht, cd.rang, cd.special_code,';
         $sql.= ' p.ref as product_ref, p.label as product_libelle, p.description as product_desc,';
         $sql.= ' cd.date_start, cd.date_end';
+        $sql.= ', line_ref';
         $sql.= ' FROM '.MAIN_DB_PREFIX.'salesorderdet as cd';
         $sql.= ' LEFT JOIN '.MAIN_DB_PREFIX.'product as p ON cd.fk_product = p.rowid';
         $sql.= ' WHERE cd.rowid = '.$rowid;
@@ -3015,7 +3018,7 @@ class SalesOrderLine
         {
             $objp = $this->db->fetch_object($result);
             $this->rowid            = $objp->rowid;
-            $this->fk_salesorder      = $objp->fk_salesorder;
+            $this->fk_salesorder    = $objp->fk_salesorder;
             $this->fk_parent_line   = $objp->fk_parent_line;
             $this->label            = $objp->custom_label;
             $this->desc             = $objp->description;
@@ -3053,6 +3056,8 @@ class SalesOrderLine
             $this->date_start       = $this->db->jdate($objp->date_start);
             $this->date_end         = $this->db->jdate($objp->date_end);
 
+            $this->line_ref         = $objp->line_ref;
+    
             $this->db->free($result);
         }
         else
@@ -3121,9 +3126,8 @@ class SalesOrderLine
         if (empty($this->info_bits)) $this->info_bits=0;
         if (empty($this->special_code)) $this->special_code=0;
         if (empty($this->fk_parent_line)) $this->fk_parent_line=0;
-
+       // if (empty($this->line_ref)) $this->line_ref=0;
 		if (empty($this->pa_ht)) $this->pa_ht=0;
-
 		// si prix d'achat non renseigne et utilise pour calcul des marges alors prix achat = prix vente
 		if ($this->pa_ht == 0) {
 			if ($this->subprice > 0 && (isset($conf->global->ForceBuyingPriceIfNull) && $conf->global->ForceBuyingPriceIfNull == 1))
@@ -3140,7 +3144,7 @@ class SalesOrderLine
         $sql.= ' (fk_salesorder, fk_parent_line, label, description, qty, tva_tx, localtax1_tx, localtax2_tx,';
         $sql.= ' fk_product, fk_currency, product_type, remise_percent, origin_price, subprice, price, remise, fk_remise_except,';
         $sql.= ' special_code, rang, fk_product_fournisseur_price, buy_price_ht,';
-        $sql.= ' info_bits, total_ht, total_tva, total_localtax1, total_localtax2, total_ttc, date_start, date_end)';
+        $sql.= ' info_bits, total_ht, total_tva, total_localtax1, total_localtax2, total_ttc, date_start, date_end, line_ref)';
         $sql.= " VALUES (".$this->fk_salesorder.",";
         $sql.= " ".($this->fk_parent_line>0?"'".$this->fk_parent_line."'":"null").",";
         $sql.= " ".(! empty($this->label)?"'".$this->db->escape($this->label)."'":"null").",";
@@ -3173,7 +3177,8 @@ class SalesOrderLine
         $sql.= " '".price2num($this->total_localtax2)."',";
         $sql.= " '".price2num($this->total_ttc)."',";
         $sql.= " ".(! empty($this->date_start)?"'".$this->db->idate($this->date_start)."'":"null").',';
-        $sql.= " ".(! empty($this->date_end)?"'".$this->db->idate($this->date_end)."'":"null");
+        $sql.= " ".(! empty($this->date_end)?"'".$this->db->idate($this->date_end)."'":"null").',';
+        $sql.= " ".(! empty($this->line_ref)?"'".$this->line_ref."'":"null");
         $sql.= ')';
 
         dol_syslog(get_class($this)."::insert sql=".$sql, LOG_DEBUG);
@@ -3253,6 +3258,7 @@ class SalesOrderLine
 		$sql.= " , remise_percent=".price2num($this->remise_percent)."";
 		$sql.= " , price=".price2num($this->price)."";					// TODO A virer
 		$sql.= " , remise=".price2num($this->remise)."";				// TODO A virer
+        $sql.= isset($this->line_ref)?", line_ref= '".$this->line_ref."'":'';
 		if (empty($this->skip_update_total))
 		{
 			$sql.= " , total_ht=".price2num($this->total_ht)."";
@@ -3269,6 +3275,7 @@ class SalesOrderLine
 		$sql.= " , date_end=".(! empty($this->date_end)?"'".$this->db->idate($this->date_end)."'":"null");
 		$sql.= " , product_type=".$this->product_type;
 		$sql.= " , fk_parent_line=".(! empty($this->fk_parent_line)?$this->fk_parent_line:"null");
+        
 		if (! empty($this->rang)) $sql.= ", rang=".$this->rang;
 		$sql.= " WHERE rowid = ".$this->rowid;
 

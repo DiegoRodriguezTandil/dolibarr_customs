@@ -1730,7 +1730,7 @@ class CommandeFournisseur extends CommonOrder
      *  @param		int		$notrigger			Disable triggers
      *	@return    	int             			< 0 if error, > 0 if ok
      */
-    function updateline($rowid, $desc, $pu, $qty, $remise_percent, $txtva, $txlocaltax1=0, $txlocaltax2=0, $price_base_type='HT', $info_bits=0, $type=0, $notrigger=false)
+    function updateline($rowid, $desc, $pu, $qty, $remise_percent, $txtva, $txlocaltax1=0, $txlocaltax2=0, $price_base_type='HT', $info_bits=0, $type=0, $notrigger=false, $line_ref = null)
     {
         dol_syslog(get_class($this)."::updateline $rowid, $desc, $pu, $qty, $remise_percent, $txtva, $price_base_type, $info_bits, $type");
         include_once DOL_DOCUMENT_ROOT.'/core/lib/price.lib.php';
@@ -1793,8 +1793,8 @@ class CommandeFournisseur extends CommonOrder
             $sql.= ",total_localtax2='".price2num($total_localtax2)."'";
             $sql.= ",total_ttc='".price2num($total_ttc)."'";
             $sql.= ",product_type='".$type."'";
+            $sql.=!empty($line_ref)?",line_ref='".$line_ref."'":'';
             $sql.= " WHERE rowid = ".$rowid;
-
             dol_syslog(get_class($this)."::updateline sql=".$sql);
             $result = $this->db->query($sql);
             if ($result > 0)

@@ -355,10 +355,10 @@ else if ($action == 'updateligne' && $user->rights->fournisseur->commande->creer
     {
         if ($product->fetch($_POST["elrowid"]) < 0) dol_print_error($db);
     }
-
+	$line_ref=isset($_POST['line_ref_edit'])?$_POST['line_ref_edit']:null;
     $localtax1_tx=get_localtax($_POST['tva_tx'],1,$mysoc,$object->thirdparty);
     $localtax2_tx=get_localtax($_POST['tva_tx'],2,$mysoc,$object->thirdparty);
-
+//	var_dump($object);die();
     $result	= $object->updateline(
         $_POST['elrowid'],
         $_POST['eldesc'],
@@ -370,7 +370,9 @@ else if ($action == 'updateligne' && $user->rights->fournisseur->commande->creer
         $localtax2_tx,
         'HT',
         0,
-        isset($_POST["type"])?$_POST["type"]:$product->type
+        isset($_POST["type"])?$_POST["type"]:$product->type,
+		null,
+		$line_ref,2323
     );
 
     if ($result	>= 0)
@@ -1352,6 +1354,7 @@ if (! empty($object->id))
 	if ($num)
 	{
 		print '<tr class="liste_titre">';
+		print '<td align="center"  style="width:8px" >'.$langs->trans('Referencia').'</td>';
 		print '<td>'.$langs->trans('Label').'</td>';
 		print '<td align="right" width="50">'.$langs->trans('VAT').'</td>';
 		print '<td align="right" width="80">'.$langs->trans('PriceUHT').'</td>';
@@ -1388,7 +1391,7 @@ if (! empty($object->id))
 		if ($action != 'editline' || $_GET['rowid'] != $line->id)
 		{
 			print '<tr '.$bc[$var].'>';
-
+			print '<td></td>';
 			// Show product and description
 			print '<td>';
 			if ($line->fk_product > 0)
@@ -1461,11 +1464,15 @@ if (! empty($object->id))
 		{
 			print "\n";
 			print '<form action="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'&amp;etat=1&amp;ligne_id='.$line->id.'" method="post">';
+				
 			print '<input type="hidden" name="token" value="'.$_SESSION['newtoken'].'">';
 			print '<input type="hidden" name="action" value="updateligne">';
 			print '<input type="hidden" name="id" value="'.$object->id.'">';
 			print '<input type="hidden" name="elrowid" value="'.$_GET['rowid'].'">';
 			print '<tr '.$bc[$var].'>';
+			echo "<td><input type='text' name='line_ref_edit' value='";
+				   isset($line->line_ref)?$line->line_ref:'';
+			echo 	"'>  </td>";
 			print '<td>';
 			print '<a name="'.$line->id.'"></a>'; // ancre pour retourner sur la ligne
 			if ((! empty($conf->product->enabled) || ! empty($conf->service->enabled)) && $line->fk_product > 0)

@@ -2290,7 +2290,7 @@ class Commande extends CommonOrder
      *  @param		int				$special_code		Special code (also used by externals modules!)
      *  @return   	int              					< 0 if KO, > 0 if OK
      */
-	function updateline($rowid, $desc, $pu, $qty, $remise_percent, $txtva, $txlocaltax1=0,$txlocaltax2=0, $price_base_type='HT', $info_bits=0, $date_start='', $date_end='', $type=0, $fk_parent_line=0, $skip_update_total=0, $fk_fournprice=null, $pa_ht=0, $label='', $special_code=0)
+	function updateline($rowid, $desc, $pu, $qty, $remise_percent, $txtva, $txlocaltax1=0,$txlocaltax2=0, $price_base_type='HT', $info_bits=0, $date_start='', $date_end='', $type=0, $fk_parent_line=0, $skip_update_total=0, $fk_fournprice=null, $pa_ht=0, $label='', $special_code=0, $line_ref = null)
     {
         global $conf;
 
@@ -2383,7 +2383,7 @@ class Commande extends CommonOrder
             // TODO deprecated
             $this->line->price=$price;
             $this->line->remise=$remise;
-
+            $this->line->line_ref=$line_ref;
             $result=$this->line->update();
             if ($result > 0)
             {
@@ -2884,6 +2884,7 @@ class Commande extends CommonOrder
         $sql.= ' l.date_start, l.date_end,';
         $sql.= ' p.label as product_label, p.ref, p.fk_product_type, p.rowid as prodid, ';
         $sql.= ' p.description as product_desc, p.stock as stock_reel';
+        $sql.= ', line_ref';
         $sql.= ' FROM '.MAIN_DB_PREFIX.'commandedet as l';
         $sql.= ' LEFT JOIN '.MAIN_DB_PREFIX.'product as p ON l.fk_product=p.rowid';
         $sql.= ' WHERE l.fk_commande = '.$this->id;
@@ -2928,7 +2929,7 @@ class Commande extends CommonOrder
 				$this->lines[$i]->pa_ht				= $marginInfos[0];
 				$this->lines[$i]->marge_tx			= $marginInfos[1];
 				$this->lines[$i]->marque_tx			= $marginInfos[2];
-
+                $this->lines[$i]->line_ref	        = $obj->line_ref;
                 $i++;
             }
 
@@ -3030,9 +3031,11 @@ class OrderLine
         $sql.= ' cd.info_bits, cd.total_ht, cd.total_tva, cd.total_localtax1, cd.total_localtax2, cd.total_ttc, cd.fk_product_fournisseur_price as fk_fournprice, cd.buy_price_ht as pa_ht, cd.rang, cd.special_code,';
         $sql.= ' p.ref as product_ref, p.label as product_libelle, p.description as product_desc,';
         $sql.= ' cd.date_start, cd.date_end';
+        $sql.= ' ,line_ref';
         $sql.= ' FROM '.MAIN_DB_PREFIX.'commandedet as cd';
         $sql.= ' LEFT JOIN '.MAIN_DB_PREFIX.'product as p ON cd.fk_product = p.rowid';
         $sql.= ' WHERE cd.rowid = '.$rowid;
+
         $result = $this->db->query($sql);
         if ($result)
         {
@@ -3072,11 +3075,13 @@ class OrderLine
             $this->libelle			= $objp->product_libelle;  // deprecated
             $this->product_label	= $objp->product_libelle;
             $this->product_desc     = $objp->product_desc;
-
+            
             $this->date_start       = $this->db->jdate($objp->date_start);
             $this->date_end         = $this->db->jdate($objp->date_end);
-
+            $this->line_ref         = $objp->line_ref;
             $this->db->free($result);
+        
+
         }
         else
         {
@@ -3292,6 +3297,8 @@ class OrderLine
 		$sql.= " , date_end=".(! empty($this->date_end)?"'".$this->db->idate($this->date_end)."'":"null");
 		$sql.= " , product_type=".$this->product_type;
 		$sql.= " , fk_parent_line=".(! empty($this->fk_parent_line)?$this->fk_parent_line:"null");
+        $sql.= " , line_ref =".(!empty($this->line_ref)?"'".$this->line_ref."'":"null");
+
 		if (! empty($this->rang)) $sql.= ", rang=".$this->rang;
 		$sql.= " WHERE rowid = ".$this->rowid;
 

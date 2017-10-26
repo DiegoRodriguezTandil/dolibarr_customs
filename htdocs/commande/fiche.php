@@ -819,7 +819,7 @@ else if ($action == 'updateligne' && $user->rights->commande->creer && GETPOST('
 	$description=dol_htmlcleanlastbr(GETPOST('product_desc'));
 	$pu_ht=GETPOST('price_ht');
 	$vat_rate=(GETPOST('tva_tx')?GETPOST('tva_tx'):0);
-
+ 	$line_ref= (GETPOST('line_ref')?trim(GETPOST('line_ref')):null);
 	// Define info_bits
 	$info_bits=0;
 	if (preg_match('/\*/', $vat_rate)) $info_bits |= 0x01;
@@ -886,7 +886,9 @@ else if ($action == 'updateligne' && $user->rights->commande->creer && GETPOST('
 				0,
 				$fournprice,
 				$buyingprice,
-				$label
+				$label,
+				null,
+				$line_ref
 		);
 
 		if ($result >= 0)

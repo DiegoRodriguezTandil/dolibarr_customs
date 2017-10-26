@@ -61,7 +61,7 @@ class Commande extends CommonOrder
 	var $office;
 	var $shipment_location;
 	//FIN FEDE
-	
+	var $line_ref;
 	
     var $statut;		// -1=Canceled, 0=Draft, 1=Validated, (2=Accepted/On process not managed for customer orders), 3=Closed (Sent/Received, billed or not)
 
@@ -644,6 +644,7 @@ class Commande extends CommonOrder
         $sql.= ", model_pdf, fk_cond_reglement, fk_mode_reglement, fk_availability, fk_input_reason, date_livraison, fk_adresse_livraison";
         $sql.= ", remise_absolue, remise_percent";
         $sql.= ", entity";
+        $sql.= ", line_ref";
         $sql.= ")";
 		//FEDE
         //$sql.= " VALUES ('(PROV)',".$this->socid.", ".$this->db->idate($now).", ".$user->id;
@@ -671,6 +672,7 @@ class Commande extends CommonOrder
         $sql.= ", ".($this->remise_absolue>0?$this->remise_absolue:'NULL');
         $sql.= ", '".$this->remise_percent."'";
         $sql.= ", ".$conf->entity;
+        $sql.=", ".($this->line_ref?trim($this->line_ref):'NULL');
         $sql.= ")";
 
         dol_syslog("Commande::create sql=".$sql);
@@ -693,7 +695,7 @@ class Commande extends CommonOrder
                     if (($this->lines[$i]->product_type != 9 && empty($this->lines[$i]->fk_parent_line)) || $this->lines[$i]->product_type == 9) {
                         $fk_parent_line = 0;
                     }
-
+ 
                     $result = $this->addline(
                         $this->id,
                         $this->lines[$i]->desc,						
@@ -716,7 +718,8 @@ class Commande extends CommonOrder
                         $fk_parent_line,
                         $this->lines[$i]->fk_fournprice,
                         $this->lines[$i]->pa_ht,
-                    	$this->lines[$i]->label
+                    	$this->lines[$i]->label,
+                        $this->lines[$i]->line_ref
                     );
                     if ($result < 0)
                     {
@@ -1033,7 +1036,7 @@ class Commande extends CommonOrder
      *	par l'appelant par la methode get_default_tva(societe_vendeuse,societe_acheteuse,produit)
      *	et le desc doit deja avoir la bonne valeur (a l'appelant de gerer le multilangue)
      */
-	function addline($commandeid, $desc, $pu_ht, $qty, $txtva, $txlocaltax1=0, $txlocaltax2=0, $fk_product=0, $remise_percent=0, $info_bits=0, $fk_remise_except=0, $price_base_type='HT', $pu_ttc=0, $date_start='', $date_end='', $type=0, $rang=-1, $special_code=0, $fk_parent_line=0, $fk_fournprice=null, $pa_ht=0, $label='')
+	function addline($commandeid, $desc, $pu_ht, $qty, $txtva, $txlocaltax1=0, $txlocaltax2=0, $fk_product=0, $remise_percent=0, $info_bits=0, $fk_remise_except=0, $price_base_type='HT', $pu_ttc=0, $date_start='', $date_end='', $type=0, $rang=-1, $special_code=0, $fk_parent_line=0, $fk_fournprice=null, $pa_ht=0, $label='',$line_ref=null)
     {
         dol_syslog(get_class($this)."::addline commandeid=$commandeid, desc=$desc, pu_ht=$pu_ht, qty=$qty, txtva=$txtva, fk_product=$fk_product, remise_percent=$remise_percent, info_bits=$info_bits, fk_remise_except=$fk_remise_except, price_base_type=$price_base_type, pu_ttc=$pu_ttc, date_start=$date_start, date_end=$date_end, type=$type", LOG_DEBUG);
 
@@ -1141,6 +1144,8 @@ class Commande extends CommonOrder
             $this->line->price=$price;
             $this->line->remise=$remise;
 
+            $this->line->line_ref=$line_ref;
+        
             $result=$this->line->insert();
             if ($result > 0)
             {
@@ -3000,7 +3005,7 @@ class OrderLine
     var $date_end;
 
     var $skip_update_total; // Skip update price total for special lines
-
+    var $line_ref;
 
     /**
      *      Constructor
@@ -3158,7 +3163,7 @@ class OrderLine
         $sql.= ' (fk_commande, fk_parent_line, label, description, qty, tva_tx, localtax1_tx, localtax2_tx,';
         $sql.= ' fk_product, fk_currency, product_type, remise_percent, origin_price, subprice, price, remise, fk_remise_except,';
         $sql.= ' special_code, rang, fk_product_fournisseur_price, buy_price_ht,';
-        $sql.= ' info_bits, total_ht, total_tva, total_localtax1, total_localtax2, total_ttc, date_start, date_end)';
+        $sql.= ' info_bits, total_ht, total_tva, total_localtax1, total_localtax2, total_ttc, date_start, date_end, line_ref)';
         $sql.= " VALUES (".$this->fk_commande.",";
         $sql.= " ".($this->fk_parent_line>0?"'".$this->fk_parent_line."'":"null").",";
         $sql.= " ".(! empty($this->label)?"'".$this->db->escape($this->label)."'":"null").",";
@@ -3191,9 +3196,9 @@ class OrderLine
         $sql.= " '".price2num($this->total_localtax2)."',";
         $sql.= " '".price2num($this->total_ttc)."',";
         $sql.= " ".(! empty($this->date_start)?"'".$this->db->idate($this->date_start)."'":"null").',';
-        $sql.= " ".(! empty($this->date_end)?"'".$this->db->idate($this->date_end)."'":"null");
+        $sql.= " ".(! empty($this->date_end)?"'".$this->db->idate($this->date_end)."'":"null").',';
+        $sql.= " ".(! empty($this->line_ref)?"'".$this->line_ref."'":"null");
         $sql.= ')';
-
         dol_syslog(get_class($this)."::insert sql=".$sql, LOG_DEBUG);
         $resql=$this->db->query($sql);
         if ($resql)

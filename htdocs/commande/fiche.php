@@ -564,8 +564,8 @@ else if ($action == 'addline' && $user->rights->commande->creer)
 	$idprod=GETPOST('idprod', 'int');
 	$product_desc = (GETPOST('product_desc')?GETPOST('product_desc'):(GETPOST('np_desc')?GETPOST('np_desc'):(GETPOST('dp_desc')?GETPOST('dp_desc'):'')));
 	$price_ht = GETPOST('price_ht');
-	$tva_tx = (GETPOST('tva_tx')?GETPOST('tva_tx'):0);
-
+	$tva_tx   =(GETPOST('tva_tx')?GETPOST('tva_tx'):0);
+	$line_ref =(GETPOST('line_ref')?GETPOST('line_ref'):null);
 	if ((empty($idprod) || GETPOST('usenewaddlineform')) && ($price_ht < 0) && (GETPOST('qty') < 0))
     {
         setEventMessage($langs->trans('ErrorBothFieldCantBeNegative', $langs->transnoentitiesnoconv('UnitPriceHT'), $langs->transnoentitiesnoconv('Qty')), 'errors');
@@ -758,7 +758,8 @@ else if ($action == 'addline' && $user->rights->commande->creer)
 					GETPOST('fk_parent_line'),
 					$fournprice,
 					$buyingprice,
-					$label
+					$label,
+					$line_ref
 			);
 
 			if ($result > 0)

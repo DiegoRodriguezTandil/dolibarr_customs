@@ -660,8 +660,8 @@ else if ($action == "addline" && $user->rights->propal->creer)
 	$product_desc = (GETPOST('product_desc')?GETPOST('product_desc'):(GETPOST('np_desc')?GETPOST('np_desc'):(GETPOST('dp_desc')?GETPOST('dp_desc'):'')));
 	$price_ht = GETPOST('price_ht');
 	$tva_tx = (GETPOST('tva_tx')?GETPOST('tva_tx'):0);
-    $line_ref = GETPOST('line_ref')?GETPOST('line_ref'):NULL;
-
+    $line_ref = GETPOST('line_ref')?trim(GETPOST('line_ref')):NULL;
+	
 	if (empty($idprod) && GETPOST('type') < 0)
 	{
 		setEventMessage($langs->trans("ErrorFieldRequired",$langs->transnoentitiesnoconv("Type")), 'errors');
@@ -966,7 +966,7 @@ else if ($action == 'updateligne' && $user->rights->propal->creer && GETPOST('sa
 			$buyingprice,
 			$label,
 			$type,
-			$line_ref
+			trim($line_ref)
 		);
 
 		if ($result >= 0)

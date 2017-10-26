@@ -22,7 +22,7 @@
 <!-- BEGIN PHP TEMPLATE objectline_view.tpl.php -->
 <tr <?php echo 'id="row-'.$line->id.'" '.$bcdd[$var]; ?>>
 	<?php if (!empty($line->line_ref)) { ?>
-		<td align="center" style="width:5px;"><?php echo $line->line_ref; ?></td>
+		<td align="center" style="width:5px;"><?php echo $line->line_ref;?></td>
 	<?php }else{ ?>
 		<td align="center" style="width:5px;" ><?php echo "No disponible" ?></td>
 	<?php } ?>	

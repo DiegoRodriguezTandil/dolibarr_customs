@@ -38,8 +38,7 @@
 
 <tr <?php echo $bc[$var]; ?>>
 	<td>
-		<input type="text" align="right" size="7" id="" name="line_ref" value=" 
-			<?php echo $line->line_ref; ?>
+		<input type="text" align="right" size="7" id="" name="line_ref" value="<?php echo $line->line_ref;?>
 			">
 	</td>
 	

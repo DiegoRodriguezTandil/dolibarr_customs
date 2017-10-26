@@ -851,8 +851,10 @@ function pdf_writelinedesc(&$pdf,$object,$i,$outputlangs,$w,$h,$posx,$posy,$hide
 	}
 	else
 	{
-		// Qwavee Agregado de ID de Linea
-                $line_number = str_pad($i+1, 3, "0", STR_PAD_LEFT);
+		// Qwavee Agregado de ID de Linea  $object->lines[$i]->fk_product
+            
+                //$line_number = str_pad($object->lines[$i]->line_ref, 3, "0", STR_PAD_LEFT);
+                $line_number = $object->lines[$i]->line_ref;
                 $pdf->writeHTMLCell($w, $h, $posx, $posy, $outputlangs->convToOutputCharset($line_number), 0, 1,$fill);
                 
                 $labelproductservice=trim(pdf_getlinedesc($object,$i,$outputlangs,$hideref,$hidedesc,$issupplierline));

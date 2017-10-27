@@ -192,6 +192,7 @@ else if ($action == 'addline' && $user->rights->fournisseur->commande->creer)
 {
     $langs->load('errors');
     $error = 0;
+ 	$line_ref=GETPOST('line_ref')?GETPOST('line_ref'):null;
 
     if (GETPOST('pu') < 0 && GETPOST('qty') < 0)
     {
@@ -253,8 +254,7 @@ else if ($action == 'addline' && $user->rights->fournisseur->commande->creer)
                 $localtax1_tx= get_localtax($tva_tx, 1,$mysoc,$object->thirdparty);
                 $localtax2_tx= get_localtax($tva_tx, 2,$mysoc,$object->thirdparty);
 
-				
-				
+
                 $result=$object->addline(
                     $desc,
                     $pu, // FIXME $pu is not defined
@@ -267,7 +267,11 @@ else if ($action == 'addline' && $user->rights->fournisseur->commande->creer)
                     $productsupplier->fourn_ref,
                     $remise_percent,
                     'HT',
-                    $type
+                    $type,
+					null,
+					null,
+					null,
+					$line_ref
                 );
             }
             if ($idprod == -1)
@@ -355,10 +359,10 @@ else if ($action == 'updateligne' && $user->rights->fournisseur->commande->creer
     {
         if ($product->fetch($_POST["elrowid"]) < 0) dol_print_error($db);
     }
-	$line_ref=isset($_POST['line_ref_edit'])?$_POST['line_ref_edit']:null;
+	$line_ref=GETPOST('line_ref_edit')?GETPOST('line_ref_edit'):null;
+	
     $localtax1_tx=get_localtax($_POST['tva_tx'],1,$mysoc,$object->thirdparty);
     $localtax2_tx=get_localtax($_POST['tva_tx'],2,$mysoc,$object->thirdparty);
-//	var_dump($object);die();
     $result	= $object->updateline(
         $_POST['elrowid'],
         $_POST['eldesc'],
@@ -372,8 +376,9 @@ else if ($action == 'updateligne' && $user->rights->fournisseur->commande->creer
         0,
         isset($_POST["type"])?$_POST["type"]:$product->type,
 		null,
-		$line_ref,2323
+		$line_ref
     );
+
 
     if ($result	>= 0)
     {
@@ -1391,7 +1396,9 @@ if (! empty($object->id))
 		if ($action != 'editline' || $_GET['rowid'] != $line->id)
 		{
 			print '<tr '.$bc[$var].'>';
-			print '<td></td>';
+			print "<td  style='text-align:center;'>";
+			echo (!empty($line->line_ref))?$line->line_ref:'';
+			print "</td>";
 			// Show product and description
 			print '<td>';
 			if ($line->fk_product > 0)
@@ -1470,9 +1477,11 @@ if (! empty($object->id))
 			print '<input type="hidden" name="id" value="'.$object->id.'">';
 			print '<input type="hidden" name="elrowid" value="'.$_GET['rowid'].'">';
 			print '<tr '.$bc[$var].'>';
-			echo "<td><input type='text' name='line_ref_edit' value='";
-				   isset($line->line_ref)?$line->line_ref:'';
-			echo 	"'>  </td>";
+			print "<td style='text-align:center;'>
+					<input style='text-align:center;' type='text' name='line_ref_edit'";
+					echo   (!empty($line->line_ref))?" value='".$line->line_ref:'';
+					print "'>"; 
+			print "</td>";
 			print '<td>';
 			print '<a name="'.$line->id.'"></a>'; // ancre pour retourner sur la ligne
 			if ((! empty($conf->product->enabled) || ! empty($conf->service->enabled)) && $line->fk_product > 0)
@@ -1610,6 +1619,7 @@ if (! empty($object->id))
 				print $langs->trans('RecordedProducts');
 			}
 			print '</td>';
+			print '<td align="right">'.$langs->trans('Ref. Línea').'</td>';
 			print '<td align="right">'.$langs->trans('Qty').'</td>';
 			print '<td align="right">'.$langs->trans('ReductionShort').'</td>';
 			print '<td colspan="4">&nbsp;</td>';
@@ -1645,7 +1655,7 @@ if (! empty($object->id))
 			$doleditor = new DolEditor('np_desc', GETPOST('np_desc'), '', 100, 'dolibarr_details', '', false, true, $conf->global->FCKEDITOR_ENABLE_DETAILS, $nbrows, 70);
 			$doleditor->Create();
 
-			print '</td>';
+			print '</td>';	print "<td><input type='text' style='width:35px; ' name='line_ref' ></td>";
 			print '<td align="right"><input type="text" size="2" id="pqty" name="pqty" value="'.(GETPOST('pqty')?GETPOST('pqty'):'1').'"></td>';
 			print '<td align="right" nowrap="nowrap"><input type="text" size="1" id="p_remise_percent" name="p_remise_percent" value="'.(GETPOST('p_remise_percent')?GETPOST('p_remise_percent'):$object->thirdparty->remise_client).'">%</td>';
 			print '<td align="center" colspan="4"><input type="submit" id="addPredefinedProductButton" class="button" value="'.$langs->trans('Add').'"></td>';

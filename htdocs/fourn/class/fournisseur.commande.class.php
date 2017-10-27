@@ -20,7 +20,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-
+ 
 /**
  *	\file       htdocs/fourn/class/fournisseur.commande.class.php
  *	\ingroup    fournisseur,commande
@@ -83,7 +83,7 @@ class CommandeFournisseur extends CommonOrder
     var $user_approve_id;
 
     var $extraparams=array();
-
+    var $line_ref;
 
     /**
      * 	Constructor
@@ -214,7 +214,7 @@ class CommandeFournisseur extends CommonOrder
             $sql.= " l.tva_tx, l.remise_percent, l.subprice,";
             $sql.= " l.localtax1_tx, l. localtax2_tx, l.total_localtax1, l.total_localtax2,";
             $sql.= " l.total_ht, l.total_tva, l.total_ttc,";
-            $sql.= " p.rowid as product_id, p.ref as product_ref, p.label as product_label, p.description as product_desc, p.measure_unit ";
+            $sql.= " p.rowid as product_id, p.ref as product_ref, p.label as product_label, p.description as product_desc, p.measure_unit, l.line_ref ";
             $sql.= " FROM ".MAIN_DB_PREFIX."commande_fournisseurdet	as l";
             $sql.= ' LEFT JOIN '.MAIN_DB_PREFIX.'product as p ON l.fk_product = p.rowid';
             $sql.= " WHERE l.fk_commande = ".$this->id;
@@ -263,9 +263,9 @@ class CommandeFournisseur extends CommonOrder
 					//FEDE
 					$line->measure_unit        = $objp->measure_unit;    // TODO deprecated
 					//FIN FEDE
-
+	                $line->line_ref            = $objp->line_ref;    // TODO deprecated
                     $this->lines[$i]      = $line;
-
+                 
                     $i++;
                 }
                 $this->db->free($result);
@@ -1142,10 +1142,9 @@ class CommandeFournisseur extends CommonOrder
      *  @param		int		$notrigger				Disable triggers
      *	@return     int             				<=0 if KO, >0 if OK
      */
-    function addline($desc, $pu_ht, $qty, $txtva, $txlocaltax1=0, $txlocaltax2=0, $fk_product=0, $fk_prod_fourn_price=0, $fourn_ref='', $remise_percent=0, $price_base_type='HT', $pu_ttc=0, $type=0, $info_bits=0, $notrigger=false)
+    function addline($desc, $pu_ht, $qty, $txtva, $txlocaltax1=0, $txlocaltax2=0, $fk_product=0, $fk_prod_fourn_price=0, $fourn_ref='', $remise_percent=0, $price_base_type='HT', $pu_ttc=0, $type=0, $info_bits=0, $notrigger=false, $line_ref =null)
     {
         global $langs,$mysoc;
-
         dol_syslog(get_class($this)."::addline $desc, $pu_ht, $qty, $txtva, $txlocaltax1, $txlocaltax2. $fk_product, $fk_prod_fourn_price, $fourn_ref, $remise_percent, $price_base_type, $pu_ttc, $type");
         include_once DOL_DOCUMENT_ROOT.'/core/lib/price.lib.php';
 
@@ -1253,6 +1252,7 @@ class CommandeFournisseur extends CommonOrder
             $sql.= " fk_product, product_type,";
             $sql.= " qty, tva_tx, localtax1_tx, localtax2_tx, remise_percent, subprice, ref,";
             $sql.= " total_ht, total_tva, total_localtax1, total_localtax2, total_ttc";
+            $sql.=" , line_ref";
             $sql.= ")";
             $sql.= " VALUES (".$this->id.", '" . $this->db->escape($label) . "','" . $this->db->escape($desc) . "',";
             if ($fk_product) { $sql.= $fk_product.","; }
@@ -1264,8 +1264,8 @@ class CommandeFournisseur extends CommonOrder
             $sql.= "'".price2num($total_localtax1)."',";
             $sql.= "'".price2num($total_localtax2)."',";
             $sql.= "'".price2num($total_ttc)."'";
+            $sql.=!empty($line_ref)?",'".$line_ref."'":'';
             $sql.= ")";
-
             dol_syslog(get_class($this)."::addline sql=".$sql);
             $resql=$this->db->query($sql);
             //print $sql;
@@ -1793,7 +1793,7 @@ class CommandeFournisseur extends CommonOrder
             $sql.= ",total_localtax2='".price2num($total_localtax2)."'";
             $sql.= ",total_ttc='".price2num($total_ttc)."'";
             $sql.= ",product_type='".$type."'";
-            $sql.=!empty($line_ref)?",line_ref='".$line_ref."'":'';
+            $sql.=(!empty($line_ref))?",line_ref='".$line_ref."'":'';
             $sql.= " WHERE rowid = ".$rowid;
             dol_syslog(get_class($this)."::updateline sql=".$sql);
             $result = $this->db->query($sql);
@@ -2022,6 +2022,7 @@ class CommandeFournisseurLigne
     var $total_ttc;
     var $info_bits;
     var $special_code;
+    
 
     // From llx_product
     var $libelle;       // Label produit
@@ -2054,7 +2055,7 @@ class CommandeFournisseurLigne
         $sql.= ' cd.remise, cd.remise_percent, cd.subprice,';
         $sql.= ' cd.info_bits, cd.total_ht, cd.total_tva, cd.total_ttc,';
         $sql.= ' cd.total_localtax1, cd.local_localtax2,';
-        $sql.= ' p.ref as product_ref, p.label as product_libelle, p.description as product_desc';
+        $sql.= ' p.ref as product_ref, p.label as product_libelle, p.description as product_desc, cd.line_ref';
         $sql.= ' FROM '.MAIN_DB_PREFIX.'commande_fournisseurdet as cd';
         $sql.= ' LEFT JOIN '.MAIN_DB_PREFIX.'product as p ON cd.fk_product = p.rowid';
         $sql.= ' WHERE cd.rowid = '.$rowid;
@@ -2084,6 +2085,7 @@ class CommandeFournisseurLigne
             $this->ref	            = $objp->product_ref;
             $this->product_libelle  = $objp->product_libelle;
             $this->product_desc     = $objp->product_desc;
+            $this->line_ref         = $objp->line_ref;
 
             $this->db->free($result);
         }

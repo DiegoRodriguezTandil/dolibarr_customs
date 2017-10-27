@@ -104,7 +104,7 @@ class salesorder extends CommonOrder
     var $user_author_id;
 
     var $lines = array();
-
+    var $line_ref;
     // Pour board
     var $nbtodo;
     var $nbtodolate;
@@ -1485,6 +1485,7 @@ class salesorder extends CommonOrder
         $sql.= ' l.localtax1_tx, l.localtax2_tx, l.fk_remise_except, l.remise_percent, l.subprice, l.fk_product_fournisseur_price as fk_fournprice, l.buy_price_ht as pa_ht, l.rang, l.info_bits, l.special_code,';
         $sql.= ' l.total_ht, l.total_ttc, l.total_tva, l.total_localtax1, l.total_localtax2, l.date_start, l.date_end,';
         $sql.= ' p.ref as product_ref, p.description as product_desc, p.fk_product_type, p.label as product_label,';
+        $sql.='  l.line_ref';
 		$sql.= '(SELECT price*rate from llx_product_fournisseur_price as fp, llx_currency_conversion as cc where fp.fk_product=l.fk_product and cc.source=p.fk_currency and cc.target=so.fk_currency order by fp.datec desc limit 1) as cost';
         $sql.= ' FROM '.MAIN_DB_PREFIX.'salesorderdet as l join '.MAIN_DB_PREFIX.'salesorder as so ON l.fk_salesorder=so.rowid';
         $sql.= ' LEFT JOIN '.MAIN_DB_PREFIX.'product as p ON (p.rowid = l.fk_product)';
@@ -1551,7 +1552,7 @@ class salesorder extends CommonOrder
 
                 $line->date_start       = $this->db->jdate($objp->date_start);
                 $line->date_end         = $this->db->jdate($objp->date_end);
-
+                $line->line_ref         = $objp->line_ref;
                 $this->lines[$i] = $line;
 
                 $i++;

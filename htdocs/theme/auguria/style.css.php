@@ -260,8 +260,14 @@ div.tmenu {
     margin: 0px 0px 2px 0px;	/* t r b l */
     font-weight: normal;
     height: <?php print $heightmenu; ?>px;
-    background: #7FAEC6;
-    background-image: url(<?php echo dol_buildpath($path.'/theme/auguria/img/menus/table_bg.gif',1); ?>);
+    background: <?php if ($conf->global->ENV == 'TEST') echo "#FF0000"; else echo "#7FAEC6"; ?>;  
+    <?php 
+        if ($conf->global->ENV != 'TEST') {
+    ?>
+        background-image: url(<?php echo dol_buildpath($path.'/theme/auguria/img/menus/table_bg.gif',1); ?>);
+    <?php
+        }
+    ?>
 /*    background-position: center bottom; */
     color: #000000;
     text-decoration: none;

@@ -104,7 +104,6 @@ class salesorder extends CommonOrder
     var $user_author_id;
 
     var $lines = array();
-    var $line_ref;
     // Pour board
     var $nbtodo;
     var $nbtodolate;

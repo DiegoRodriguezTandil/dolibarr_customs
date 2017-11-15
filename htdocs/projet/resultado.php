@@ -287,7 +287,7 @@ print '
 		<form action="resultado.php?id='.$project->id.'" class="convention_form"  method="post">
 		<input type="hidden" name="consolidation" value="1">
 			<label> Divisa de Consolidación :</label>
-			<select class="seleccion_de_divisa" onclick="moneda_seleccionada()"  name="seleccion_de_divisa" >';
+			<select class="seleccion_de_divisa" onchange="moneda_seleccionada()"  name="seleccion_de_divisa" >';
 			/***********************************************************************************
 			values of select currencies
 			*/
@@ -748,27 +748,30 @@ foreach ($importeTotales as $title => $currencies) {
 	$result_sum=0;
 	$resul_c=0;
 	
-	foreach($currencies['currencies'] as $currency=>$arrayValues){
+        if( isset($currencies) && array_key_exists('currencies', $currencies)) {
+            foreach($currencies['currencies'] as $currency=>$arrayValues){
 
-	/***********************************************************************************
-		the  currencies values of project
-	*/
-		$sql="	SELECT VALUE,CURRENCY_CONVERTION_VALUE 
-				FROM  llx_consolidation_detail
-				WHERE FK_PROJET ={$project->id} ";
-		$sql.=" AND FK_CURRENCY ='".$currency."'";
-	 	$value_currency_projet=$db->query($sql);	
-		$value_currency_projet=$db->fetch_object($value_currency_projet);
-		if(empty($value_currency_projet->VALUE)){
-			$valor_divsa_original=1;
-		}else{
-			$valor_divsa_original=$value_currency_projet->VALUE;
-		}
-	
-			$sum_c+=$arrayValues['c']*$value_currency_projet->CURRENCY_CONVERTION_VALUE / $valor_divsa_original;
-			$sum+=$arrayValues['ht']*$value_currency_projet->CURRENCY_CONVERTION_VALUE /  $valor_divsa_original;
+            /***********************************************************************************
+                    the  currencies values of project
+            */
+                    $sql="	SELECT VALUE,CURRENCY_CONVERTION_VALUE 
+                                    FROM  llx_consolidation_detail
+                                    WHERE FK_PROJET ={$project->id} ";
+                    $sql.=" AND FK_CURRENCY ='".$currency."'";
+                    $value_currency_projet=$db->query($sql);	
+                    $value_currency_projet=$db->fetch_object($value_currency_projet);
+                    if(empty($value_currency_projet->VALUE)){
+                            $valor_divsa_original=1;
+                    }else{
+                            $valor_divsa_original=$value_currency_projet->VALUE;
+                    }
 
-	}
+                            $sum_c+=$arrayValues['c']*$value_currency_projet->CURRENCY_CONVERTION_VALUE / $valor_divsa_original;
+                            $sum+=$arrayValues['ht']*$value_currency_projet->CURRENCY_CONVERTION_VALUE /  $valor_divsa_original;
+
+            }            
+        }
+
 
 	print '<td  align=right>';
 	print price($sum,0,'',0,2,2);

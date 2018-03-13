@@ -1480,7 +1480,7 @@ class Commande extends CommonOrder
         $sql.= ' l.localtax1_tx, l.localtax2_tx, l.fk_remise_except, l.remise_percent, l.subprice, l.fk_product_fournisseur_price as fk_fournprice, l.buy_price_ht as pa_ht, l.rang, l.info_bits, l.special_code,';
         $sql.= ' l.total_ht, l.total_ttc, l.total_tva, l.total_localtax1, l.total_localtax2, l.date_start, l.date_end,';
         $sql.= ' p.ref as product_ref, p.description as product_desc, p.fk_product_type, p.label as product_label';
-        $sql.= ' ,l.line_ref';
+//         $sql.= ' ,l.line_ref';
         $sql.= ' FROM '.MAIN_DB_PREFIX.'commandedet as l';
         $sql.= ' LEFT JOIN '.MAIN_DB_PREFIX.'product as p ON (p.rowid = l.fk_product)';
         $sql.= ' WHERE l.fk_commande = '.$this->id;
@@ -1541,7 +1541,7 @@ class Commande extends CommonOrder
                 $line->product_label	= $objp->product_label;
                 $line->product_desc     = $objp->product_desc; 		// Description produit
                 $line->fk_product_type  = $objp->fk_product_type;	// Produit ou service
-                $line->line_ref         = $objp->line_ref;
+//                 $line->line_ref         = $objp->line_ref;
                 $line->date_start       = $this->db->jdate($objp->date_start);
                 $line->date_end         = $this->db->jdate($objp->date_end);
 

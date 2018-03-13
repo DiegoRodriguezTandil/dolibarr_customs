@@ -248,10 +248,10 @@ class FormOther
 		$return='';
         $return.= '<select class="flat" name="'.$htmlname.'">';
 		
-		
+		//Modificacion Qwavee,solo se cambio el orden
 		$options = array(
+		    '1'=>$langs->trans("Abierto"),
 			'-1'=>$langs->trans("Borrador"),
-			'1'=>$langs->trans("Abierto"),
 			'2'=>$langs->trans("Cerrado")
         );
 		

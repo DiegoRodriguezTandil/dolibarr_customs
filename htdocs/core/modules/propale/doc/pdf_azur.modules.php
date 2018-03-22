@@ -298,8 +298,12 @@ class pdf_azur extends ModelePDFPropales
 					$showpricebeforepagebreak=1;
 
 					$pdf->startTransaction();
+					//Qwavee agregado de columnas Item
+					$outputlangs->tab_translate["Designation"] = "Item       Descripción";
+					/******************************************************/
+
 					pdf_writelinedesc($pdf,$object,$i,$outputlangs,$this->posxtva-$curX,3,$curX,$curY,$hideref,$hidedesc,0,$hookmanager);
-					$pageposafter=$pdf->getPage();
+                    $pageposafter=$pdf->getPage();
 					if ($pageposafter > $pageposbefore)	// There is a pagebreak
 					{
 						$pdf->rollbackTransaction(true);

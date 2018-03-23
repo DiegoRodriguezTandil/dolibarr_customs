@@ -89,15 +89,14 @@ if(!empty($_POST['divisas_hidden'])){
     $divisas_euro 			= $_POST['divisas_euro'];
     $divisas_euro_a_dolar	= $_POST['divisas_euro_a_dolar'];
 	if(!empty($divisas_peso) and !empty($divisas_peso_a_dolar) ){
-		$sql ="INSERT INTO ".MAIN_DB_PREFIX."consolidation_day (fecha_ingreso,divisa_origen,divisa_conversion )";
-		$sql.= " VALUES ('".$fecha_inicio_dolar."','".$divisas_peso."','".$divisas_peso_a_dolar."');";
+		$sql ="INSERT INTO ".MAIN_DB_PREFIX."consolidation_day (fecha_ingreso,divisa_origen,valor_divisa_origen,valor_divisa_destino)";
+		$sql.= " VALUES ('".$fecha_inicio_dolar."','ARS','".$divisas_peso."','".$divisas_peso_a_dolar."');";
 		$resql = $db->query($sql);
 
 	}
     if(!empty($divisas_euro) and !empty($divisas_euro_a_dolar) ){
-        echo "entreeeeeeeeeeeeeeeeeeee   europoo";
-        $sql ="INSERT INTO ".MAIN_DB_PREFIX."consolidation_day (fecha_ingreso,divisa_origen,divisa_conversion )";
-        $sql.= " VALUES ('".$fecha_inicio_euro."','".$divisas_euro."','".$divisas_euro_a_dolar."')";
+        $sql ="INSERT INTO ".MAIN_DB_PREFIX."consolidation_day (fecha_ingreso,divisa_origen,valor_divisa_origen,valor_divisa_destino)";
+        $sql.= " VALUES ('".$fecha_inicio_euro."','EUR','".$divisas_euro."','".$divisas_euro_a_dolar."')";
         $resql = $db->query($sql);
     }
 }
@@ -170,7 +169,7 @@ echo '
 
 
 	<div  class=" tabBar div_convention"  id="conf_consolidation">
-		<h3>Ingreso de divisas</h3>
+		<h3>Ingreso de Divisas</h3>
 		<span style=" font-style: italic;">Ingreso diario de divisas y su equivalente en U$S</span>
 		<form action="index.php?mainmenu=project&leftmenu" class="convention_form" id="form_moneda"  method="post">
 		<input type="hidden" name="consolidation" value="1">

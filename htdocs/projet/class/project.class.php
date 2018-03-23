@@ -165,6 +165,16 @@ class Project extends CommonObject
         }
     }
 
+    public function getStatusShort($status){
+        global $langs;
+        if(array_key_exists($status,$this->statuts_short)){
+            return  $langs->trans($this->statuts_short[$status]);
+        }
+
+    }
+
+
+
     /**
      * Update a project
      *

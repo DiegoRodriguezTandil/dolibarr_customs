@@ -75,6 +75,8 @@ $socstatic = new Societe($db);
 //FEDE
 $formother = new FormOther($db);
 
+
+
 llxHeader("",$langs->trans("Projects"),"EN:Module_Projects|FR:Module_Projets|ES:M&oacute;dulo_Proyectos");
 
 
@@ -102,13 +104,17 @@ if ($_GET["search_societe"])
 {
 	$sql.= " AND s.nom LIKE '%".$db->escape($search_societe)."%'";
 }
+
 //FEDE
 if ($_GET["search_status"])
 {
-	if($search_status=='-1')
-		$sql.= " AND p.fk_statut=0";
-	else
-		$sql.= " AND p.fk_statut=".$search_status;
+	IF($search_status!=-2){
+        if($search_status=='-1')
+            $sql.= " AND p.fk_statut=0";
+        else
+            $sql.= " AND p.fk_statut=".$search_status;
+	}
+
 }
 
 
@@ -135,17 +141,20 @@ if ($resql)
 	}
 
 	print '<form method="get" action="'.$_SERVER["PHP_SELF"].'">';
-
+//var_dump($search_status);die();
 	print '<table class="noborder" width="100%">';
 	print '<tr class="liste_titre">';
 	print_liste_field_titre($langs->trans("Ref"),$_SERVER["PHP_SELF"],"p.ref","","","",$sortfield,$sortorder);
 	print_liste_field_titre($langs->trans("Label"),$_SERVER["PHP_SELF"],"p.title","","","",$sortfield,$sortorder);
 	print_liste_field_titre($langs->trans("Company"),$_SERVER["PHP_SELF"],"s.nom","","","",$sortfield,$sortorder);
 	print_liste_field_titre($langs->trans("Visibility"),$_SERVER["PHP_SELF"],"p.public","","","",$sortfield,$sortorder);
-	print '<td class="liste_titre"></td>';
-	print '<td class="liste_titre"></td>';
+
 	print_liste_field_titre($langs->trans("Status"),$_SERVER["PHP_SELF"],'p.fk_statut',"","",'align="right"',$sortfield,$sortorder);
-	print "</tr>\n";
+    print '<td class="liste_titre"></td>';
+	print '<td class="liste_titre">&nbsp;</td>';
+	print_liste_field_titre($langs->trans("Busqueda"),"","","","",'align="right"',"","");
+
+    print "</tr>\n";
 
 	print '<tr class="liste_titre">';
 	print '<td class="liste_titre">';
@@ -159,12 +168,15 @@ if ($resql)
 	print '</td>';
 	//fede
 	print '<td class="liste_titre"></td>';
+    print '<td class="liste_titre">&nbsp;</td>';
 	print '<td class="liste_titre">';
+
 	print $formother->select_project_status($search_status,'search_status');
 	print '</td>';
-	
-	
-	print '<td class="liste_titre">&nbsp;</td>';
+
+
+
+	print '<td></td>';
 	print '<td class="liste_titre" align="right"><input class="liste_titre" type="image" name="button_search" src="'.DOL_URL_ROOT.'/theme/'.$conf->theme.'/img/search.png" value="'.dol_escape_htmltag($langs->trans("Search")).'" title="'.dol_escape_htmltag($langs->trans("Search")).'"></td>';
 	print "</tr>\n";
 
@@ -213,10 +225,15 @@ if ($resql)
 			if ($objp->public) print $langs->trans('SharedProject');
 			else print $langs->trans('PrivateProject');
 			print '</td>';
-
+            print '<td>';
+            print '</td>';
 			// Status
 			$projectstatic->statut = $objp->fk_statut;
-			print '<td align="right">'.$projectstatic->getLibStatut(3).'</td>';
+            $st_short=$projectstatic->getStatusShort($projectstatic->statut);
+            if($st_short=="Validado" or $st_short=="Validated"){
+                $st_short="Abierto";
+			}
+			print '<td align="right">'.$st_short.'</td>';
 
 			print "</tr>\n";
 

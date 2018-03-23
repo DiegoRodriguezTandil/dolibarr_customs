@@ -250,6 +250,7 @@ class FormOther
 		
 		//Modificacion Qwavee,solo se cambio el orden
 		$options = array(
+            '-2'=>$langs->trans("Todos"),
 		    '1'=>$langs->trans("Abierto"),
 			'-1'=>$langs->trans("Borrador"),
 			'2'=>$langs->trans("Cerrado")

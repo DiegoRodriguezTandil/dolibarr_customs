@@ -720,8 +720,25 @@ if(!empty($_POST['divisas_hidden'])){
 }
 
 //OBTIENE LOS DATOS PARA LA TABLA DE CONVERSION DE MONEDAS
-$sqlQueryFinal ="SELECT  id,fecha_ingreso,divisa_origen,divisa_destino,valor_divisa_origen,valor_divisa_destino FROM ".MAIN_DB_PREFIX."consolidation_day";
+$sqlQueryFinal ="SELECT  id,fecha_ingreso,divisa_origen,divisa_destino,valor_divisa_origen,valor_divisa_destino 
+                 FROM ".MAIN_DB_PREFIX."consolidation_day 
+                 ORDER BY fecha_ingreso DESC
+                 LIMIT 20";
 $resqlFinal = $db->query($sqlQueryFinal);
+/***************************************************************************************************************/
+//echo "
+   // <script>
+   // $( document ).ready(function() {
+   //
+   //        $('#seleccionar_fecha').on('change', function() {
+   //          console.log('gggggggggggggggg');
+   //         })
+   // });
+  //
+   // </script>
+
+//";
+
 
 
 /**************************************************************************************************************/
@@ -793,19 +810,21 @@ echo '
 
         if ($result and  $db->num_rows($result)>0){
             echo '
-                    <form action="index.php?mainmenu=project&leftmenu" id="form_table_conversion"  method="post">
-                        <table class=\'border tabla_conversion_view\'>
-                            <thead>
-                                <tr>
-                                    <th >Fecha</th>
-                                    <th>Divisa Origen</th>
-                                    <th>Valor Divisa Origen</th>					
-                                    <th>Divisa de Coversión</th>
-                                    <th>Valor Divisa de Coversión</th>
-                                    <th>Eliminar</th>
-                                </tr>
-                            </thead>
-                            <tbody>	
+            <form action="index.php?mainmenu=project&leftmenu" id="form_table_conversion"  method="post">
+                <table class=\'border tabla_conversion_view\'>
+                    <tr>
+                        <td >
+                            Fecha';
+                           // print $form->select_date(($date_start?$date_start:''),'seleccionar_fecha');
+                        echo'
+                        </td>
+                        <td>Divisa Origen</td>
+                        <td>Valor Divisa </td>					
+                        <td>Divisa de Coversión</td>
+                        <td>Valor Divisa</td>
+                        <td>Eliminar</td>
+                    </tr>
+            <tbody>	
                        ';
             $num = $db->num_rows($result);
             $i = 0;

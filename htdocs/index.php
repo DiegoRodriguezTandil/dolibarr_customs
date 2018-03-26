@@ -562,6 +562,293 @@ print '</table>';   // End table array
 
 print '</div></div></div><div class="fichecenter"><br>';
 
+/*************************************************************************************************************
+
+ * Qwavee
+ * 26/03/18
+ * FRANCO
+ *
+ *
+ *
+ */
+
+echo'
+<style>
+
+	.div_convention{
+				width:450px;
+				heigth:65px;
+				padding-top: 55px;
+				margin-left:10px;
+				margin-top:25px;
+				color: "-internal-quirk-inherit";
+				font-family: arial,tahoma,verdana,helvetica;
+				background: rgb(222, 231, 236);	
+		}
+		.div_convention_border{
+                border: 1px;
+				background: rgb(222, 231, 236);	
+		}
+		
+		.convention_form{
+				width:445px;
+				margin-left:5px;
+				margin-bottom:4%;
+			}
+
+		.tabla_conversion{
+			margin-top:3px;
+			padding-bottom: 55px;
+			width:425px;
+
+		}	
+	 
+		.tabla_conversion_view{
+			margin-top:5px;
+			margin-left: 3px;
+			padding-bottom: 55px;
+			width:440px;
+		}
+
+		.seleccion_de_divisa{
+			width:250px
+		}
+		.btn_submit{
+			float: right;
+			margin-right: 4%;
+			margin-top: 1%;
+		}
+		.id_monedas{
+				margin-left:5px;
+				float: left;
+			}
+		.euro{
+			padding-right:17px;
+			
+		}
+		.euro2{
+			padding-right:13px;
+			
+		}	
+		.peso{
+			padding-right:17px;
+			
+		}			
+
+		.labels{
+			margin-right: 5px;			
+		}	
+		.td_number{
+		    text-align: right;
+		}
+         .buttonSubmit {
+              background: none;
+              border: 0;
+              color: inherit;
+              /* cursor: default; */
+              font: inherit;
+              line-height: normal;
+              overflow: visible;
+              padding: 0;
+              -webkit-user-select: none; /* for button */
+               -webkit-appearance: button; /* for input */
+                 -moz-user-select: none;
+                  -ms-user-select: none;
+        }
+			
+</style>
+
+';
+
+
+
+
+//ELIMNAR TUPLAS DE LA TABLA DE CONVERSION DE MONEDAS
+if(!empty($_POST['elimniar_tupla_conversion'])){
+    $sqlDeleteTupla ="DELETE FROM ".MAIN_DB_PREFIX."consolidation_day where id={$_POST['elimniar_tupla_conversion']}";
+    $deleteTupla=$db->query($sqlDeleteTupla);
+
+}
+
+//INGRESO DE NUEVA CONVERSION
+if(!empty($_POST['divisas_hidden'])){
+    $fecha_ingreso	= DateTime::createFromFormat('d/m/Y', $_POST['fecha_inicio_dolar'])->format('Y-m-d');
+    $divisas_peso 			= $_POST['divisas_peso'];
+    $divisas_euro 			= $_POST['divisas_euro'];
+
+    $divisas_peso_a_dolar	= $_POST['divisas_peso_a_dolar'];
+    $fecha_inicio_euro 		=DateTime::createFromFormat('d/m/Y', $_POST['fecha_inicio_euro'])->format('Y-m-d');
+    $divisas_euro_a_dolar	= $_POST['divisas_euro_a_dolar'];
+    if(!empty($divisas_peso) and !empty($divisas_peso_a_dolar) ){
+        $sqlQuery ="SELECT id,fecha_ingreso FROM ".MAIN_DB_PREFIX."consolidation_day where fecha_ingreso='{$fecha_ingreso}'  and divisa_origen='ARS'";
+        $resqlQuery = $db->query($sqlQuery);
+        if ( $resqlQuery  and $db->num_rows($resqlQuery)){
+            $Obj = $db->fetch_object($resqlQuery);
+            $sqlDelete ="DELETE FROM ".MAIN_DB_PREFIX."consolidation_day where id={$Obj->id}";
+            $delete=$db->query($sqlDelete);
+
+        }
+        $sql ="INSERT INTO ".MAIN_DB_PREFIX."consolidation_day (fecha_ingreso,divisa_origen,valor_divisa_origen,valor_divisa_destino)";
+        $sql.= " VALUES ('".$fecha_ingreso."','ARS','".$divisas_peso."','".$divisas_peso_a_dolar."');";
+        $resql = $db->query($sql);
+    }
+    if(!empty($divisas_euro) and !empty($divisas_euro_a_dolar) ){
+        $sqlQuery ="SELECT id,fecha_ingreso FROM ".MAIN_DB_PREFIX."consolidation_day where fecha_ingreso='{$fecha_ingreso}'  and divisa_origen='EUR'";
+        $resqlQuery = $db->query($sqlQuery);
+        if ( $resqlQuery  and $db->num_rows($resqlQuery)){
+            $Obj = $db->fetch_object($resqlQuery);
+            $sqlDelete ="DELETE FROM ".MAIN_DB_PREFIX."consolidation_day where id={$Obj->id}";
+            $delete=$db->query($sqlDelete);
+
+        }
+        $resqlQuery = $db->query($sqlQuery);
+        if (!empty($resqlQuery) ){
+            $obj= $db->fetch_object($resql);
+            $obj= $obj->id;
+            $sqlDelete ="DELETE FROM".MAIN_DB_PREFIX."consolidation_day where id={$obj}";
+            $delete=$db->query($sqlDelete);
+            $sqlQuery ="SELECT id,fecha_ingreso FROM".MAIN_DB_PREFIX."consolidation_day where fecha_ingreso={$fecha_ingreso} and divisa_origen=$divisas_euro";
+            $resqlQuery = $db->query($sqlQuery);
+            if (!empty($resqlQuery) ){
+                $sqlDelete ="DELETE FROM".MAIN_DB_PREFIX."consolidation_day where id={$resqlQuery['id'] }";
+            }
+            $sql ="INSERT INTO ".MAIN_DB_PREFIX."consolidation_day (fecha_ingreso,divisa_origen,valor_divisa_origen,valor_divisa_destino)";
+            $sql.= " VALUES ('".$fecha_ingreso."','EUR','".$divisas_euro."','".$divisas_euro_a_dolar."')";
+            $resql = $db->query($sql);
+        }}
+
+}
+
+//OBTIENE LOS DATOS PARA LA TABLA DE CONVERSION DE MONEDAS
+$sqlQueryFinal ="SELECT  id,fecha_ingreso,divisa_origen,divisa_destino,valor_divisa_origen,valor_divisa_destino FROM ".MAIN_DB_PREFIX."consolidation_day";
+$resqlFinal = $db->query($sqlQueryFinal);
+
+
+/**************************************************************************************************************/
+
+$form = new Form($db);// Date start
+//FORMULARIO DE CONVERSION DE MONEDA
+echo '
+	<div  class=" tabBar div_convention"  id="conf_consolidation">
+	    <div  class=" tabBar div_convention_border"  id="conf_consolidation">
+            <h3 style="  margin-left: 4px;">Ingreso de Divisas</h3>
+            <span style=" font-style: italic; margin-left: 4px;">Ingreso diario de divisas y su equivalente en U$S</span>
+            <form action="index.php?mainmenu=project&leftmenu" class="convention_form" id="form_moneda"  method="post">
+                <input type="hidden" name="consolidation" value="1">
+                <table class=\'border tabla_conversion\'>
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Valor Divisa Origen</th>
+                            <th>Valor Divisa de Coversión</th>
+                        </tr>
+                    </thead>
+                     <tbody>	
+                         <tr>
+                            <td>
+                                <div class=\'modeda_seleccionada_origen id_monedas labels\'  >Fecha
+                                </div>
+                                <div class="fecha">';
+                                    print $form->select_date(($date_start?$date_start:''),'fecha_inicio_dolar');
+                            echo '           	
+                                </div>
+                            </td>
+                            <td> <div class=\'modeda_seleccionada_origen id_monedas labels peso\'  >$</div>
+                                <input type=\'NUMBER\' class=\'input_divisa_original\' step=\'any\' id="divisas_peso"  name=\'divisas_peso\' value= required>
+                            </td>
+                            <td> <div class=\'modeda_seleccionada_origen id_monedas labels\'  >U$S</div>
+                                <input type=\'NUMBER\' class=\'input_divisa_original\' step=\'any\' id="divisas_peso_a_dolar" name=\'divisas_peso_a_dolar\' value= required>
+                            </td>
+                         </tr>
+                         <tr>
+                            <td>
+                                <div class="modeda_seleccionada_origen id_monedas labels" >
+                                        Fecha
+                                </div>';
+                                    print $form->select_date(($date_start?$date_start:''),'fecha_inicio_euro');
+                        echo '	
+                            </td>
+                            <td> <div  class=\'modeda_seleccionada_origen id_monedas euro labels\'  > € </div>
+                                <input type=\'NUMBER\' class=\'input_divisa_original\' step=\'any\' id="divisas_euro" name=\'divisas_euro\' value= required>
+                            </td>
+                            <td>
+                                <div >
+                                    <div class=\'moneda_seleccionada_para_conversion id_monedas \'>U$S
+                                    </div>
+                                    <input class=\'id_monedas\' type=\'NUMBER\' step=\'any\'data-moneda=\'\' id="divisas_euro_a_dolar" name=\'divisas_euro_a_dolar\' value= required>	
+                                </div>
+                            </td>
+                         </tr>
+                     </tbody>
+                </table>
+                <input type="hidden" id="divisas_hidden" name="divisas_hidden" value=1>
+            
+                    <div id="error_form">					
+                    <button type="submit"  class=" btn_submit" value="Submit">Confirmar</button>
+                
+                    </div>
+                    </br>
+            </form>
+        </div>';
+
+        if ($result and  $db->num_rows($result)>0){
+            echo '
+                    <form action="index.php?mainmenu=project&leftmenu" id="form_table_conversion"  method="post">
+                        <table class=\'border tabla_conversion_view\'>
+                            <thead>
+                                <tr>
+                                    <th >Fecha</th>
+                                    <th>Divisa Origen</th>
+                                    <th>Valor Divisa Origen</th>					
+                                    <th>Divisa de Coversión</th>
+                                    <th>Valor Divisa de Coversión</th>
+                                    <th>Eliminar</th>
+                                </tr>
+                            </thead>
+                            <tbody>	
+                       ';
+            $num = $db->num_rows($result);
+            $i = 0;
+            while ($i < $num)
+            {
+                $obj = $db->fetch_object($result);
+                $date=DateTime::createFromFormat('Y-m-d', $obj->fecha_ingreso)->format('d/m/Y');
+                echo "
+                     <tr>
+                        <td>
+                            {$date}
+                        </td>
+                        <td>
+                            {$obj->divisa_origen}
+                        </td>						
+                        <td align='right'>
+                            {$obj->valor_divisa_origen}
+                        </td>												
+                        <td>
+                            {$obj->divisa_destino}
+                        </td>
+                        <td align='right' >
+                            {$obj->valor_divisa_destino}
+                        </td>
+                        <td>							
+                            <input type='hidden' name='elimniar_tupla_conversion'  value={$obj->id} >
+                            <button   class='buttonSubmit' value=\"Submit\"><img src=\"/theme/auguria/img/delete.png\" alt=\"Eliminar\" title=\"Eliminar\" border=\"0\"></button>
+                        </td>						
+                     </tr>";
+                $i++;
+            }
+            echo '
+					</tbody>	
+				</table>
+			</form> ';
+        }
+    echo '		
+    </div>';
+
+/*************************************************************************************************************
+ * FIN DE CONVERSION MONEDA
+ *
+ ****************************************************************************************************************/
 
 
 /*

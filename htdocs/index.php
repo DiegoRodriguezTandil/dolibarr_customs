@@ -617,6 +617,9 @@ echo'
 			float: right;
 			margin-right: 4%;
 			margin-top: 1%;
+			width: 100px;
+			height: 25px;
+			
 		}
 		.id_monedas{
 				margin-left:5px;
@@ -656,6 +659,9 @@ echo'
                   -ms-user-select: none;
         }
 			
+		.fila_tabla_divisas{
+		    height:20px;
+		}
 </style>
 
 ';
@@ -720,24 +726,33 @@ if(!empty($_POST['divisas_hidden'])){
 }
 
 //OBTIENE LOS DATOS PARA LA TABLA DE CONVERSION DE MONEDAS
-$sqlQueryFinal ="SELECT  id,fecha_ingreso,divisa_origen,divisa_destino,valor_divisa_origen,valor_divisa_destino 
-                 FROM ".MAIN_DB_PREFIX."consolidation_day 
+
+if(!empty($_POST['seleccionar_fecha_filtro'])) {
+    $fecha_ingreso	= DateTime::createFromFormat('d/m/Y', $_POST['seleccionar_fecha_filtro'])->format('Y-m-d');
+    $sqlQueryFinal = "SELECT  id,fecha_ingreso,divisa_origen,divisa_destino,valor_divisa_origen,valor_divisa_destino 
+                 FROM " . MAIN_DB_PREFIX . "consolidation_day
+                 WHERE fecha_ingreso='{$fecha_ingreso}'
                  ORDER BY fecha_ingreso DESC
                  LIMIT 20";
-$resqlFinal = $db->query($sqlQueryFinal);
-/***************************************************************************************************************/
-//echo "
-   // <script>
-   // $( document ).ready(function() {
-   //
-   //        $('#seleccionar_fecha').on('change', function() {
-   //          console.log('gggggggggggggggg');
-   //         })
-   // });
-  //
-   // </script>
 
-//";
+    $resqlFinal = $db->query($sqlQueryFinal);
+}else{
+    $sqlQueryFinal = "SELECT  id,fecha_ingreso,divisa_origen,divisa_destino,valor_divisa_origen,valor_divisa_destino 
+                 FROM " . MAIN_DB_PREFIX . "consolidation_day 
+                 ORDER BY fecha_ingreso DESC
+                 LIMIT 20";
+    $resqlFinal = $db->query($sqlQueryFinal);
+}
+/***************************************************************************************************************/
+echo "
+    <script>
+    $( document ).ready(function() {
+           $('#seleccionar_fecha_filtro').val('');
+    });
+  
+    </script>
+
+";
 
 
 
@@ -774,7 +789,7 @@ echo '
                                 <input type=\'NUMBER\' class=\'input_divisa_original\' step=\'any\' id="divisas_peso"  name=\'divisas_peso\' value= required>
                             </td>
                             <td> <div class=\'modeda_seleccionada_origen id_monedas labels\'  >U$S</div>
-                                <input type=\'NUMBER\' class=\'input_divisa_original\' step=\'any\' id="divisas_peso_a_dolar" name=\'divisas_peso_a_dolar\' value= required>
+                                <input type=\'NUMBER\' class=\'input_divisa_original\' step=\'any\' id="divisas_peso_a_dolar" name=\'divisas_peso_a_dolar\'                                         value= required>
                             </td>
                          </tr>
                          <tr>
@@ -792,7 +807,7 @@ echo '
                                 <div >
                                     <div class=\'moneda_seleccionada_para_conversion id_monedas \'>U$S
                                     </div>
-                                    <input class=\'id_monedas\' type=\'NUMBER\' step=\'any\'data-moneda=\'\' id="divisas_euro_a_dolar" name=\'divisas_euro_a_dolar\' value= required>	
+                                    <input class=\'id_monedas\' type=\'NUMBER\' step=\'any\'data-moneda=\'\' id="divisas_euro_a_dolar"                                                                  name=\'divisas_euro_a_dolar\' value= required>	
                                 </div>
                             </td>
                          </tr>
@@ -808,15 +823,18 @@ echo '
             </form>
         </div>';
 
-        if ($result and  $db->num_rows($result)>0){
+        if ($result ){
             echo '
-            <form action="index.php?mainmenu=project&leftmenu" id="form_table_conversion"  method="post">
+          
                 <table class=\'border tabla_conversion_view\'>
                     <tr>
                         <td >
-                            Fecha';
-                           // print $form->select_date(($date_start?$date_start:''),'seleccionar_fecha');
-                        echo'
+                            <form action="index.php?mainmenu=project&leftmenu" id="form_table_conversion"  method="post">                          
+                                Fecha de Ingreso';
+                                print $form->select_date(($date_start?$date_start:''),'seleccionar_fecha_filtro');
+                            echo'
+                                <input class="liste_titre" name="button_search" src="/theme/auguria/img/search.png" value="Buscar" title="Buscar" type="image">
+                            </form>                       
                         </td>
                         <td>Divisa Origen</td>
                         <td>Valor Divisa </td>					
@@ -824,42 +842,51 @@ echo '
                         <td>Valor Divisa</td>
                         <td>Eliminar</td>
                     </tr>
-            <tbody>	
-                       ';
-            $num = $db->num_rows($result);
-            $i = 0;
-            while ($i < $num)
-            {
-                $obj = $db->fetch_object($result);
-                $date=DateTime::createFromFormat('Y-m-d', $obj->fecha_ingreso)->format('d/m/Y');
-                echo "
-                     <tr>
-                        <td>
-                            {$date}
-                        </td>
-                        <td>
-                            {$obj->divisa_origen}
-                        </td>						
-                        <td align='right'>
-                            {$obj->valor_divisa_origen}
-                        </td>												
-                        <td>
-                            {$obj->divisa_destino}
-                        </td>
-                        <td align='right' >
-                            {$obj->valor_divisa_destino}
-                        </td>
-                        <td>							
-                            <input type='hidden' name='elimniar_tupla_conversion'  value={$obj->id} >
-                            <button   class='buttonSubmit' value=\"Submit\"><img src=\"/theme/auguria/img/delete.png\" alt=\"Eliminar\" title=\"Eliminar\" border=\"0\"></button>
-                        </td>						
-                     </tr>";
-                $i++;
-            }
-            echo '
-					</tbody>	
-				</table>
-			</form> ';
+            <tbody>
+                <form action="index.php?mainmenu=project&leftmenu" id="form_table_conversion"  method="post">	                     ';
+                    $num = $db->num_rows($result);
+                    $i = 0;
+                    if($num===0){
+                        echo"
+                        <tr class='fila_tabla_divisas'>
+                            <td class='fila_tabla_divisas'>
+                            </td>                              
+                        </tr>";
+                    }
+                    while ($i < $num)
+                    {
+                        $obj = $db->fetch_object($result);
+                        $date=DateTime::createFromFormat('Y-m-d', $obj->fecha_ingreso)->format('d/m/Y');
+                        echo "
+                             <tr  class='fila_tabla_divisas'>
+                                <td  class='fila_tabla_divisas'>
+                                    {$date}
+                                </td>
+                                <td>
+                                    {$obj->divisa_origen}
+                                </td>						
+                                <td align='right'>
+                                    {$obj->valor_divisa_origen}
+                                </td>												
+                                <td>
+                                    {$obj->divisa_destino}
+                                </td>
+                                <td align='right' >
+                                    {$obj->valor_divisa_destino}
+                                </td>
+                                <td>							
+                                    <input type='hidden' name='elimniar_tupla_conversion'  value={$obj->id} >
+                                    <button   class='buttonSubmit' value=\"Submit\"><img src=\"/theme/auguria/img/delete.png\" alt=\"Eliminar\"                                                     title=\"Eliminar\"  border=\"0\">
+                                    </button>
+                                </td>						
+                             </tr>";
+                        $i++;
+                    }
+                echo '
+                </form> 
+            </tbody>	
+        </table>
+		';
         }
     echo '		
     </div>';

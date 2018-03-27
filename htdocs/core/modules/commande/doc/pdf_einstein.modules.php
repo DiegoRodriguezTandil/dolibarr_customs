@@ -150,7 +150,10 @@ class pdf_einstein extends ModelePDFCommandes
 		$outputlangs->load("bills");
 		$outputlangs->load("products");
 		$outputlangs->load("orders");
-
+        /******************************************************/
+        //Qwavee agregado de columnas Item
+        $outputlangs->tab_translate["Designation"] = "Item       Descripción";
+        /******************************************************/
 		if ($conf->commande->dir_output)
 		{
             $object->fetch_thirdparty();

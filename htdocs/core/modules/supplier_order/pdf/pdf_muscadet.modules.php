@@ -162,6 +162,11 @@ class pdf_muscadet extends ModelePDFSuppliersOrders
 		$outputlangs->load("products");
 		$outputlangs->load("orders");
 
+        /******************************************************/
+        //Qwavee agregado de columnas Item
+        $outputlangs->tab_translate["Designation"] = "Item       Descripción";
+        /******************************************************/
+
 		if ($conf->fournisseur->dir_output.'/commande')
 		{
 			$object->fetch_thirdparty();

@@ -662,6 +662,18 @@ echo'
 		.fila_tabla_divisas{
 		    height:20px;
 		}
+		.inputFormTable{
+		    width:50px;
+		}
+		.buttonRows{
+		    height: 10px;
+		    float: right;
+		    margin-right:10px; ;
+		}
+		.informationRows{
+		    height: 10px;
+		    margin-left:5px; ;
+		}		
 </style>
 
 ';
@@ -727,33 +739,96 @@ if(!empty($_POST['divisas_hidden'])){
 
 //OBTIENE LOS DATOS PARA LA TABLA DE CONVERSION DE MONEDAS
 
-if(!empty($_POST['seleccionar_fecha_filtro'])) {
+if (!empty($_POST['rows'])){
+    $limit=$_POST['rows'];
+}else{
+    $limit=20;
+}
+if (!empty($_POST['more_rows_set'])){
+    $limit=$_POST['rows'];
+    $limit=$limit+50;
+}
+//var_dump($_POST['more_rows_set']);die();
+
+if(!empty($_POST['seleccionar_fecha_filtro']) and empty($_POST['divisa_filter'])) {
     $fecha_ingreso	= DateTime::createFromFormat('d/m/Y', $_POST['seleccionar_fecha_filtro'])->format('Y-m-d');
-    $sqlQueryFinal = "SELECT  id,fecha_ingreso,divisa_origen,divisa_destino,valor_divisa_origen,valor_divisa_destino 
-                 FROM " . MAIN_DB_PREFIX . "consolidation_day
-                 WHERE fecha_ingreso='{$fecha_ingreso}'
-                 ORDER BY fecha_ingreso DESC
-                 LIMIT 20";
+    $sqlQueryFinal = "  SELECT  id,fecha_ingreso,divisa_origen,divisa_destino,valor_divisa_origen,valor_divisa_destino 
+                        FROM " . MAIN_DB_PREFIX . "consolidation_day
+                        WHERE fecha_ingreso='{$fecha_ingreso}'
+                        ORDER BY fecha_ingreso DESC
+                        LIMIT {$limit}";
+
+    $resqlFinal = $db->query($sqlQueryFinal);
+} else if(!empty($_POST['divisa_filter']) and empty($_POST['seleccionar_fecha_filtro']) ) {
+    $divisa_origen	= $_POST['divisa_filter'];
+    $sqlQueryFinal = "  SELECT  id,fecha_ingreso,divisa_origen,divisa_destino,valor_divisa_origen,valor_divisa_destino 
+                        FROM " . MAIN_DB_PREFIX . "consolidation_day
+                        WHERE divisa_origen ='{$divisa_origen}'
+                        ORDER BY fecha_ingreso DESC
+                        LIMIT {$limit}";
+
+    $resqlFinal = $db->query($sqlQueryFinal);
+}else if(!empty($_POST['divisa_filter']) and $_POST['seleccionar_fecha_filtro'] ) {
+    $divisa_origen	= $_POST['divisa_filter'];
+    $fecha_ingreso	= DateTime::createFromFormat('d/m/Y', $_POST['seleccionar_fecha_filtro'])->format('Y-m-d');
+    $sqlQueryFinal = "  SELECT  id,fecha_ingreso,divisa_origen,divisa_destino,valor_divisa_origen,valor_divisa_destino 
+                        FROM " . MAIN_DB_PREFIX . "consolidation_day
+                        WHERE divisa_origen ='{$divisa_origen}' and fecha_ingreso='{$fecha_ingreso}'
+                        ORDER BY fecha_ingreso DESC
+                        LIMIT {$limit}";
 
     $resqlFinal = $db->query($sqlQueryFinal);
 }else{
-    $sqlQueryFinal = "SELECT  id,fecha_ingreso,divisa_origen,divisa_destino,valor_divisa_origen,valor_divisa_destino 
-                 FROM " . MAIN_DB_PREFIX . "consolidation_day 
-                 ORDER BY fecha_ingreso DESC
-                 LIMIT 20";
+    $sqlQueryFinal = "  SELECT  id,fecha_ingreso,divisa_origen,divisa_destino,valor_divisa_origen,valor_divisa_destino 
+                        FROM " . MAIN_DB_PREFIX . "consolidation_day 
+                        ORDER BY fecha_ingreso DESC
+                        LIMIT {$limit}";
     $resqlFinal = $db->query($sqlQueryFinal);
 }
 /***************************************************************************************************************/
-echo "
+if(!empty($_POST['seleccionar_fecha_filtro'])){
+    echo "
+    <script>
+    $( document ).ready(function() {
+           $('#seleccionar_fecha_filtro').val('{$_POST['seleccionar_fecha_filtro']}');
+    });
+  
+    </script>
+";
+}else{
+    echo "
     <script>
     $( document ).ready(function() {
            $('#seleccionar_fecha_filtro').val('');
     });
   
     </script>
+";
+}
+
+if(!empty($_POST['divisa_filter'])){
+    echo "
+    <script>
+    $( document ).ready(function() {
+           $('#divisa_filter').val('{$_POST['divisa_filter']}');
+            $('#divisa_id').val($('#divisa_filter').val());
+    });
+  
+    </script>
 
 ";
+}
+echo "
+    <script>
+    $( document ).ready(function() {
+        $('#divisa_filter').change(function(){
+             $('#divisa_id').val($('#divisa_filter').val());
+        }); 
+    });
+    
+    </script>
 
+";
 
 
 /**************************************************************************************************************/
@@ -824,27 +899,38 @@ echo '
         </div>';
 
         if ($result ){
+            $num = $db->num_rows($result);
             echo '
           
                 <table class=\'border tabla_conversion_view\'>
                     <tr>
-                        <td >
-                            <form action="index.php?mainmenu=project&leftmenu" id="form_table_conversion"  method="post">                          
+                        <form action="index.php?mainmenu=project&leftmenu" id="form_table_conversion"  method="post">  
+                        <td>                                         
                                 Fecha de Ingreso';
                                 print $form->select_date(($date_start?$date_start:''),'seleccionar_fecha_filtro');
                             echo'
-                                <input class="liste_titre" name="button_search" src="/theme/auguria/img/search.png" value="Buscar" title="Buscar" type="image">
-                            </form>                       
+                                <input class="liste_titre" name="button_search" 
+                                    src="/theme/auguria/img/search.png" value="Buscar" title="Buscar" type="image">
+                                                 
                         </td>
-                        <td>Divisa Origen</td>
+                        <td>';
+                            echo "
+                            Divisa Origen
+                            <input type='hidden' name='rows'  value='{$num}'>";
+                            echo '
+                            <input type="text"  class="inputFormTable" name="divisa_filter" id="divisa_filter">    
+                            <input   class="liste_titre" name="button_search" 
+                                    src="/theme/auguria/img/search.png" value="Buscar" title="Buscar" type="image">
+                        </td>
+                        </form>  
                         <td>Valor Divisa </td>					
                         <td>Divisa de Coversión</td>
                         <td>Valor Divisa</td>
                         <td>Eliminar</td>
-                    </tr>
+                    </tr> 
             <tbody>
                 <form action="index.php?mainmenu=project&leftmenu" id="form_table_conversion"  method="post">	                     ';
-                    $num = $db->num_rows($result);
+
                     $i = 0;
                     if($num===0){
                         echo"
@@ -857,6 +943,8 @@ echo '
                     {
                         $obj = $db->fetch_object($result);
                         $date=DateTime::createFromFormat('Y-m-d', $obj->fecha_ingreso)->format('d/m/Y');
+                        $d_origen= number_format($obj->valor_divisa_origen, 2, ',', ' ');
+                        $d_destino=number_format($obj->valor_divisa_destino, 2, ',', ' ');
                         echo "
                              <tr  class='fila_tabla_divisas'>
                                 <td  class='fila_tabla_divisas'>
@@ -866,13 +954,13 @@ echo '
                                     {$obj->divisa_origen}
                                 </td>						
                                 <td align='right'>
-                                    {$obj->valor_divisa_origen}
+                                    {$d_origen}
                                 </td>												
                                 <td>
                                     {$obj->divisa_destino}
                                 </td>
                                 <td align='right' >
-                                    {$obj->valor_divisa_destino}
+                                    {$d_destino}
                                 </td>
                                 <td>							
                                     <input type='hidden' name='elimniar_tupla_conversion'  value={$obj->id} >
@@ -882,11 +970,26 @@ echo '
                              </tr>";
                         $i++;
                     }
-                echo '
+                echo "
                 </form> 
+                
             </tbody>	
+          
         </table>
-		';
+        <div>
+            <form action=\"index.php?mainmenu=project&leftmenu\"  method=\"post\"> 
+                <input type='hidden' name='rows'  value='{$num}' >   
+                <input type='hidden' name='more_rows_set'  value='{$num}' >  
+                <input type='hidden' id='divisa_id' name='divisa_filter'>                                   
+                <button   class='buttonSubmit buttonRows' value=\"Submit\">
+                    <img style='heigth:5px;' src=\"/theme/auguria/img/edit_add.png\"
+                        alt=\"Nuevo evento\" title=\"Nuevo evento\" border=\"0\">   
+                </button>
+                <p class='informationRows'>Total Filas {$num}</p> 
+            </form>     
+        </div>
+         
+		";
         }
     echo '		
     </div>';

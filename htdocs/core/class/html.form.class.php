@@ -2593,8 +2593,8 @@ class Form
             print '<form method="post" action="'.$page.'">';
             print '<input type="hidden" name="action" value="classin">';
             print '<input type="hidden" name="token" value="'.$_SESSION['newtoken'].'">';
-            print '<table class="nobordernopadding" cellpadding="0" cellspacing="0">';
-            print '<tr><td>';
+            print '<table class="nobordernopadding" cellpadding="0" cellspacing="0" style="width: 100%;" >';
+            print '<tr><td style="width: 100%;">';
             //print "$socid,$selected,$htmlname";
             select_projects($socid,$selected,$htmlname);
             print '</td>';

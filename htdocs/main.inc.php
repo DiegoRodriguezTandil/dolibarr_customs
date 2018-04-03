@@ -921,6 +921,7 @@ function top_htmlhead($head, $title='', $disablejs=0, $disablehead=0, $arrayofjs
         if (isset($conf->modules_parts['css']))
         {
         	$arraycss=(array) $conf->modules_parts['css'];
+
         	foreach($arraycss as $modcss => $filescss)
         	{
         		$filescss=(array) $filescss;	// To be sure filecss is an array
@@ -934,6 +935,8 @@ function top_htmlhead($head, $title='', $disablejs=0, $disablehead=0, $arrayofjs
         		}
         	}
         }
+        
+        print '<link rel="stylesheet" type="text/css" title="default" href="'.DOL_URL_ROOT.'/bower_components/select2/dist/css/select2.min.css" >';
         // CSS forced by page in top_htmlhead call (relative url starting with /)
         if (is_array($arrayofcss))
         {
@@ -1066,9 +1069,13 @@ function top_htmlhead($head, $title='', $disablejs=0, $disablehead=0, $arrayofjs
             	print '<script type="text/javascript" src="'.DOL_URL_ROOT.'/includes/jquery/plugins/timepicker/jquery-ui-timepicker-addon.js"></script>'."\n";
             }
 
+            
             // Global js function
             print '<!-- Includes JS of Dolibarr -->'."\n";
             print '<script type="text/javascript" src="'.DOL_URL_ROOT.'/core/js/lib_head.js"></script>'."\n";
+            
+            // Select2
+            print '<script type="text/javascript" src="'.DOL_URL_ROOT.'/bower_components/select2/dist/js/select2.full.min.js"></script>'."\n";
 
             // Add datepicker default options
             print '<script type="text/javascript" src="'.DOL_URL_ROOT.'/core/js/datepicker.js.php?lang='.$langs->defaultlang.'"></script>'."\n";

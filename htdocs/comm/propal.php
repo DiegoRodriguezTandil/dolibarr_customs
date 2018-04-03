@@ -1620,7 +1620,7 @@ if (! empty($conf->projet->enabled))
 	{
 		if ($action != 'classify') print '<td align="right"><a href="'.$_SERVER['PHP_SELF'].'?action=classify&amp;id='.$object->id.'">'.img_edit($langs->transnoentitiesnoconv('SetProject')).'</a></td>';
 		print '</tr></table>';
-		print '</td><td colspan="3">';
+		print '</td><td colspan="5">';
 		if ($action == 'classify')
 		{
 			$form->form_project($_SERVER['PHP_SELF'].'?id='.$object->id, $object->socid, $object->fk_project, 'projectid');

@@ -171,11 +171,11 @@ function task_prepare_head($object)
  *	@param	int		$maxlength	Maximum length of label
  *	@return int         		Nbre of project if OK, <0 if KO
  */
-function select_projects($socid=-1, $selected='', $htmlname='projectid', $maxlength=16)
+function select_projects($socid=-1, $selected='', $htmlname='projectid', $maxlength=50)
 {
 	global $db,$user,$conf,$langs;
-
-	$hideunselectables = false;
+     
+    $hideunselectables = false;
 	if (! empty($conf->global->PROJECT_HIDE_UNSELECTABLES)) $hideunselectables = true;
 
 	$projectsListId = false;
@@ -197,7 +197,7 @@ function select_projects($socid=-1, $selected='', $htmlname='projectid', $maxlen
 	$resql=$db->query($sql);
 	if ($resql)
 	{
-		print '<select class="flat" name="'.$htmlname.'">';
+		print '<select class="flat" style="width:100%;" name="'.$htmlname.'" id="'.$htmlname.'">';
 		print '<option value="0">&nbsp;</option>';
 		$num = $db->num_rows($resql);
 		$i = 0;
@@ -255,6 +255,16 @@ function select_projects($socid=-1, $selected='', $htmlname='projectid', $maxlen
 			}
 		}
 		print '</select>';
+        
+        // Select 2
+        print " 
+            <script>
+                $(document).ready(function() {
+                    $('#{$htmlname}').select2();
+                });
+            </script>
+        ";
+        
 		$db->free($resql);
 		return $num;
 	}

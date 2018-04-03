@@ -1,0 +1,20 @@
+{
+  "name": "Dolibarr Redimec",
+  "authors": [
+    "Diego Rodriguez <diego@qwavee.com>"
+  ],
+  "description": "",
+  "main": "",
+  "license": "MIT",
+  "homepage": "",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "select2": "~4.0"
+  }
+}

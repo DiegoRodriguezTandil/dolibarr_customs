@@ -141,6 +141,25 @@ if(!empty($_POST['consolidation'])){
 }
 
 /**************************************************************************************************************/
+/*************************************************************************************************************
+INSERT INTO llx_consolidation_salesorder
+
+ */
+
+if(!empty($_POST['salesorder_id'])){
+    $fecha_ingreso	= DateTime::createFromFormat('d/m/Y', $_POST['fecha_inicio_dolar'])->format('Y-m-d');
+    $divisa_origen 			= $_POST['divisas_peso'];
+    $valor_divisa_origen	= $_POST['divisas_peso_a_dolar'];
+    $valor_divisa_destino	= $_POST['divisas_peso_a_dolar'];
+    $salesorder_id			= $_POST['divisas_peso_a_dolar'];
+
+	$sql ="INSERT INTO ".MAIN_DB_PREFIX."consolidation_salesorder (salesorder_id,fecha_ingreso,divisa_origen,valor_divisa_origen,valor_divisa_destino)";
+	$sql.= " VALUES (".$salesorder_id.",'".$fecha_ingreso."','".$divisa_origen."',".$valor_divisa_origen.",'".$divisas_peso_a_dolar.");";
+	$resql = $db->query($sql);
+
+}
+
+/**************************************************************************************************************/
 
 $mine = $_REQUEST['mode']=='mine' ? 1 : 0;
 //if (! $user->rights->projet->all->lire) $mine=1;	// Special for projects
@@ -431,6 +450,29 @@ print '
 		</form>
 	</div>';
 
+echo
+	"<script>
+		function conversionManual(  linea){
+
+		    var id_conversion_general='#conversion_general-'+linea;
+			var id_conversion_manual ='#conversion_manual-'+linea;
+		    $(id_conversion_general).hide();
+		    $(id_conversion_manual).show();
+		    
+		}
+		function cancelarConversionManual(  linea){
+			var id_conversion_general='#conversion_general-'+linea;
+			var id_conversion_manual ='#conversion_manual-'+linea;
+			var id_input_nueva_conversion='.input_nueva_conversion-'+linea;
+			console.log(id_input_nueva_conversion);
+		    $(id_conversion_general).show();
+		    $(id_conversion_manual).hide();
+		    $(id_input_nueva_conversion).val('');
+		    
+		}	
+		
+	</script>";
+
 
 /*
  * Referers types
@@ -467,7 +509,7 @@ foreach ($listofreferent as $key => $value)
 	$classname=$value['class'];
 	$qualified=$value['test'];
 	$importeTotales[$title]['operation']=$operation;
-	
+	$linea=0;
 	$view_tcc=false;
 	if ($qualified)
 	{
@@ -479,7 +521,7 @@ foreach ($listofreferent as $key => $value)
 		print '<tr class="liste_titre">';
 		print '<td width="100">'.$langs->trans("Ref").'</td>';
 		print '<td width="100" align="center">'.$langs->trans("Date").'</td>';
-		print '<td>'.$langs->trans("ThirdParty").'</td>';
+		print '<td width="200">'.$langs->trans("ThirdParty").'</td>';
 		//FEDE
 		print '<td align="right" width="120">'.$langs->trans("Divisa").'</td>';
 		
@@ -517,7 +559,9 @@ foreach ($listofreferent as $key => $value)
 			for ($i = 0; $i < $num; $i++)
 			{
 				$element = new $classname($db);
+
 				$element->fetch($elementarray[$i]);
+
 				$element->fetch_thirdparty();
 				//print $classname;
 
@@ -548,7 +592,7 @@ foreach ($listofreferent as $key => $value)
                 // Amount
 				if (empty($value['disableamount'])) print '<td align="right">'.(isset($element->total_ht)?price($element->total_ht):'&nbsp;').'</td>';
 
-	
+
 				
 				//FEDE
 				$rate=$element->getRate($elementarray[$i],$conf->currency);
@@ -585,27 +629,103 @@ foreach ($listofreferent as $key => $value)
 
 					print '<td align="right">'.(isset($element->cost)?price($element->cost*$rate,0,'',0,2,2):'&nbsp;').'</td>';
 
-                if($element->fk_currency!='USD') {
-					$fecha_ingreso	= DateTime::createFromFormat('d/m/Y',dol_print_date($date,'day'))->format							('Y-m-d');
+               // if($element->fk_currency!='USD') {
+					$fecha_ingreso	= DateTime::createFromFormat('d/m/Y',dol_print_date($date,'day'))
+									->format('Y-m-d');
                     $sqlQuery = " 
 					 	SELECT  id,fecha_ingreso,divisa_origen,divisa_destino,valor_divisa_origen,valor_divisa_destino 
                         FROM " . MAIN_DB_PREFIX . "consolidation_day
                         WHERE fecha_ingreso='{$fecha_ingreso}' 
                         AND divisa_origen='{$element->fk_currency}'
                         ORDER BY fecha_ingreso DESC LIMIT 1";
-
                     $resqlFinal = $db->query($sqlQuery);
 					if( $resqlFinal  && $db->num_rows($resqlFinal)>0){
                         $obj = $db->fetch_object($resqlFinal);
-                        echo "<td  align='left' >Cotización al dia " . dol_print_date($date, 'day') . " fue de 						{$obj->divisa_origen} {$obj->valor_divisa_origen}/{$obj->divisa_destino} {$obj->valor_divisa_destino}</td>";
+                        echo"<td  style='font-size:80%; padding-left:10px;' align='left' width='200px' >
+							 <span>Cotización al dia <b>".dol_print_date($date, 'day')."</b><span><br>
+							 <div id='conversion_general-{$linea}'>
+								<span>Tipo: General</span><br>
+								<span>
+									<b>
+										{$obj->divisa_origen}
+									</b>
+									{$obj->valor_divisa_origen} / 
+									<b>
+										{$obj->divisa_destino}
+									</b> {$obj->valor_divisa_destino}<br>
+								</span>
+								<a id='boton_conversion-{$linea}' onclick='conversionManual({$linea})'><i>Modificar Cotización<i></a>
+							 </div>";
+                        echo "<div hidden id='conversion_manual-{$linea}'>
+								<span>Tipo: Manual</span><br>
+								<form method='POST' action='/projet/resultado.php?id={$projectid}'  >
+									<b>
+										{$obj->divisa_origen}
+									</b> 
+									<input name='valor_divisa_origen' class='input_nueva_conversion-{$linea}' type='text' style='width:40px;'> /
+									<b>
+										{$obj->divisa_destino}
+									</b> 
+											<input name='valor_divisa_destino' class='input_nueva_conversion-{$linea}'   type='text'  style='width:40px;'>
+											<input name='divisa_origen' class='input_nueva_conversion-{$linea}'  type='hidden' value='{$element->fk_currency}' >
+											<input name='salesorder_id'  class='input_nueva_conversion-{$linea}'  type='hidden' value='{$element->id}' >
+									
+									<br>
+									<div style='margin-top: 5px; margin-left:1px;'>
+										<input   onclick='cancelarConversionManual({$linea})' class=\"button\" value=\"Cancelar\" name=\"addline\" type=\"button\">
+										<input class=\"button\" value=\"Aceptar\" name=\"addline\" type=\"submit\">
+									</div> 
+								</form>
+							 </div> 							
+							</td>";
 					}else{
-						echo "Realziar Cotizacion manual?";
+						echo "
+							<td  style='font-size:80%; padding-left:10px;' align='left' width='200px' >
+								<div id='conversion_general-{$linea}' >
+									<a id='boton_conversion-{$linea}' onclick='conversionManual({$linea})'>
+										<i>
+											Cotización Manual
+										<i>
+									</a>
+								</div>
+								<div hidden id='conversion_manual-{$linea}' >
+									<span>
+										Cotización al dia
+										<b>".dol_print_date($date, 'day')."</b>
+									<span><br>
+									<form method='POST' action='/projet/resultado.php?id={$projectid}'>
+										<div >
+												<b>
+													{$element->fk_currency}
+												</b>
+													<input name='valor_divisa_origen' class='input_nueva_conversion-{$linea}'  type='text' style='width:40px;'>
+												<b>
+													USD1
+												</b>
+												<input name='valor_divisa_destino' class='input_nueva_conversion-{$linea}'   type='text'  style='width:40px;'>
+												<input name='divisa_origen' class='input_nueva_conversion-{$linea}'  type='hidden' value='{$element->fk_currency}' >
+												<input name='salesorder_id'  class='input_nueva_conversion-{$linea}'  type='hidden' value='{$element->id}' >
+												<br>
+											
+										</div>
+										<div style='margin-top: 5px; margin-left:1px;'>
+										<input   onclick='cancelarConversionManual({$linea})' class='button' value='Cancelar' name='addline' type='button'>
+											<input class='button' value='Aceptar' name='addline' type='submit'>
+										</div> 
+									</form>
+								</div>  
+							</td>";
 					}
 
-                }else{
-                    echo "<td  align='left' > - </td>";
-				}
-                print '<td  align="left" class="">4000</td>';
+              //  }else{
+              //      echo "<td  align='left' > - </td>";
+				//}
+               // $total_conversion=$element->total_ttc * $obj->valor_divisa_destino;
+              //  $total_conversion=$total_conversion/$obj->valor_divisa_origen;
+               // $total_conversion=price($total_conversion,0,'',0,2,2);
+                echo "<td  align='left' width='120px'>
+							{}
+					  </td>";
 				// Status
 				print '<td align="right">'.$element->getLibStatut(5).'</td>';
 
@@ -626,7 +746,9 @@ foreach ($listofreferent as $key => $value)
 				$total_ht = $total_ht + $element->total_ht;
 				$total_ttc = $total_ttc + $element->total_ttc*$rate;
 				$total_cost= $total_cost + $element->cost*$rate;
+                $linea++;
 			}
+            $linea;
 		//	print_r($arrayCurrencys);
 			$total[$value['class']]=$total_ttc;
 			$costo[$value['class']]=$total_cost;
@@ -723,9 +845,7 @@ foreach ($listofreferent as $key => $value)
 		}
 
 		print '</div>';
-		
 
-		
 	}
 }
 /*

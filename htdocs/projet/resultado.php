@@ -496,9 +496,12 @@ foreach ($listofreferent as $key => $value)
 		if($classname=='Deplacement')
 			print '<td align="right" width="120">'.$langs->trans("Gasto").'</td>';
 		else
-			print '<td align="right" width="120">'.$langs->trans("Costo").'</td>';
-		
-		
+			print '<td align="center" width="120">'.$langs->trans("Costo").'</td>';
+
+        print '<td class="" width="200">Cotización</td>';
+
+        print '<td class="">Valor</td>';
+
 		print '<td align="right" width="200">'.$langs->trans("Status").'</td>';
 		print '<td class=""></td>';
 		print '</tr>';
@@ -560,7 +563,7 @@ foreach ($listofreferent as $key => $value)
 				
 				// Amount
 				//if (empty($value['disableamount'])) print '<td align="right">'.(isset($element->total_ttc)?price($element->total_ttc*$rate,0,'',0,2,2):'&nbsp;').'</td>';
-				
+
 					// Amount
 				if (empty($value['disableamount'])){
 					 print '<td align="right">';
@@ -581,7 +584,28 @@ foreach ($listofreferent as $key => $value)
 					};
 
 					print '<td align="right">'.(isset($element->cost)?price($element->cost*$rate,0,'',0,2,2):'&nbsp;').'</td>';
-				
+
+                if($element->fk_currency!='USD') {
+					$fecha_ingreso	= DateTime::createFromFormat('d/m/Y',dol_print_date($date,'day'))->format							('Y-m-d');
+                    $sqlQuery = " 
+					 	SELECT  id,fecha_ingreso,divisa_origen,divisa_destino,valor_divisa_origen,valor_divisa_destino 
+                        FROM " . MAIN_DB_PREFIX . "consolidation_day
+                        WHERE fecha_ingreso='{$fecha_ingreso}' 
+                        AND divisa_origen='{$element->fk_currency}'
+                        ORDER BY fecha_ingreso DESC LIMIT 1";
+
+                    $resqlFinal = $db->query($sqlQuery);
+					if( $resqlFinal  && $db->num_rows($resqlFinal)>0){
+                        $obj = $db->fetch_object($resqlFinal);
+                        echo "<td  align='left' >Cotización al dia " . dol_print_date($date, 'day') . " fue de 						{$obj->divisa_origen} {$obj->valor_divisa_origen}/{$obj->divisa_destino} {$obj->valor_divisa_destino}</td>";
+					}else{
+						echo "Realziar Cotizacion manual?";
+					}
+
+                }else{
+                    echo "<td  align='left' > - </td>";
+				}
+                print '<td  align="left" class="">4000</td>';
 				// Status
 				print '<td align="right">'.$element->getLibStatut(5).'</td>';
 
@@ -635,8 +659,8 @@ foreach ($listofreferent as $key => $value)
 				print '<td>&nbsp;</td>';
 			
 				print '<td></td>';
-				
-			
+                print '<td></td>';
+                print '<td></td>';
 	
 				print '</tr>';
 			}	$view_tcc=false;

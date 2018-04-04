@@ -433,7 +433,7 @@ foreach ($listofreferent as $key => $value)
 				//	print '<td align="right">'.(isset($element->cost)?price($element->cost*$rate,0,'',0,2,2):'&nbsp;').'</td>';
 
 
-               // if($element->fk_currency!='USD') {
+                if($element->fk_currency!='USD') {
                		 $sqlQuerySalesorder = " 
 						SELECT 	cs.id
 								,cs.fecha_ingreso
@@ -597,9 +597,9 @@ foreach ($listofreferent as $key => $value)
 							</td>";
 					}
 
-              //  }else{
-              //      echo "<td  align='left' > - </td>";
-				//}
+                }else{
+                    echo "<td  align='left' >  </td>";
+				}
                 $total_conversion=$element->total_ttc * $obj->valor_divisa_destino;
                 $total_conversion=$total_conversion/$obj->valor_divisa_origen;
                 $total_conversion=price($total_conversion,0,'',0,2,2);

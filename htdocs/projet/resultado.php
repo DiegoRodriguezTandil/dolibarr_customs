@@ -146,17 +146,28 @@ INSERT INTO llx_consolidation_salesorder
 
  */
 
-if(!empty($_POST['salesorder_id'])){
-    $fecha_ingreso	= DateTime::createFromFormat('d/m/Y', $_POST['fecha_inicio_dolar'])->format('Y-m-d');
-    $divisa_origen 			= $_POST['divisas_peso'];
-    $valor_divisa_origen	= $_POST['divisas_peso_a_dolar'];
-    $valor_divisa_destino	= $_POST['divisas_peso_a_dolar'];
-    $salesorder_id			= $_POST['divisas_peso_a_dolar'];
+if(!empty($_POST['salesorder_id']) &&  empty($_POST['resetTipo']) ){
+    $divisa_origen 				= $_POST['divisa_origen'];
+    $valor_divisa_origen		= $_POST['valor_divisa_origen'];
+    $valor_divisa_destino		= $_POST['valor_divisa_destino'];
+    $salesorder_id				= $_POST['salesorder_id'];
+    $fecha_i					= $_POST['fecha_ingreso'];
+    $consolidation_selesorder_id= $_POST['id_consolidation_selesorder'];
 
-	$sql ="INSERT INTO ".MAIN_DB_PREFIX."consolidation_salesorder (salesorder_id,fecha_ingreso,divisa_origen,valor_divisa_origen,valor_divisa_destino)";
-	$sql.= " VALUES (".$salesorder_id.",'".$fecha_ingreso."','".$divisa_origen."',".$valor_divisa_origen.",'".$divisas_peso_a_dolar.");";
+	$sql ="INSERT INTO ".MAIN_DB_PREFIX."consolidation_salesorder (id, salesorder_id,fecha_ingreso,divisa_origen,valor_divisa_origen,valor_divisa_destino)";
+	$sql.= " VALUES (".$consolidation_selesorder_id.",".$salesorder_id.",'".$fecha_i."','".$divisa_origen."',".$valor_divisa_origen.",'".$valor_divisa_destino."')";
+	if(isset($consolidation_selesorder_id)){
+        $sql.= " ON DUPLICATE KEY UPDATE valor_divisa_origen=".$valor_divisa_origen.",valor_divisa_destino='".$valor_divisa_destino."'";
+	}else{
+        $sql.=";";
+	}
 	$resql = $db->query($sql);
 
+}else if(!empty($_POST['resetTipo'])){
+
+    $consolidation_selesorder_id= $_POST['id_consolidation_selesorder'];
+    $sql ="DELETE FROM ".MAIN_DB_PREFIX. "consolidation_salesorder WHERE id={$consolidation_selesorder_id}";
+    $resql = $db->query($sql);
 }
 
 /**************************************************************************************************************/
@@ -237,239 +248,38 @@ print '</div>';
 
 
 
-/*
-	Franco
-	Add button consolidation 
-	add form for select currency consolodation 
-	and set currencies from proyect for currency consolodation 
-*/
-
-/*
-	**************************************************************************************************++
-	style of the table form	
-*/
-
-	print '<style>
-			.div_convention{
-					width:500px;
-					heigth:25px;
-					margin-left:15px;
-					margin-top:15px;
-					color: -internal-quirk-inherit;
-					font-family: arial,tahoma,verdana,helvetica;
-					background: rgb(222, 231, 236);	
-					display:none;
-			}
-			.convention_form{
-					width:435px;
-					margin-left:35px;
-				}
-
-			.tabla_conversion{
-				margin-top:5px;
-				width:435px;
-
-			}	
-
-			.seleccion_de_divisa{
-				width:250px
-			}
-			.btn_submit{
-				float: right;
-			}
-			.id_monedas{
-					margin-left:5px;
-					float: left;
-				}
-
-
-
-		</style>';
-/*	***************************************************************************************************/
-
-/*
-	**************************************************************************************************
-	button convention
-*/
-
-	print '<a class="butAction" onclick="abrirForm()"  id="cotization">Seleccionar moneda de consolidación</a><br>';
-
-/*	**************************************************************************************************/
-
-/*
-	**************************************************************************************************++
-	form convention
-*/
-
-print '
-	<div  class="tabBar div_convention"  id="conf_consolidation">
-		<form action="resultado.php?id='.$project->id.'" class="convention_form"  method="post">
-		<input type="hidden" name="consolidation" value="1">
-			<label> Divisa de Consolidación :</label>
-			<select class="seleccion_de_divisa" onchange="moneda_seleccionada()"  name="seleccion_de_divisa" >';
-			/***********************************************************************************
-			values of select currencies
-			*/
-			$exist_convention=$db->query("
-				SELECT c.fk_currency,cc.label
-				FROM  ".MAIN_DB_PREFIX."consolidation c
-				JOIN ".MAIN_DB_PREFIX."c_currencies cc ON(c.fk_currency=cc.code_iso)
-				WHERE  c.fk_projet ={$projectid} 
-			");	
-			
-			//if existe tuplas enotnces existe una consolidacion para el poyecto
-			if($exist_convention && $db->num_rows($exist_convention)>0){	
-				$objp = $db->fetch_object($exist_convention);
-				$objp->fk_currency;
-				$moneda_consolidada=$objp->fk_currency;
-				$all_currencies=$db->query("
-									SELECT code_iso,label 
-									FROM 	".MAIN_DB_PREFIX."c_currencies
-								");
-				echo "<option value={$objp->fk_currency}>".$objp->fk_currency ."(".$objp->label.")"." </option>";
-				$num = $db->num_rows($all_currencies);
-				$i = 0;
-				while ($i < $num)
-				{
-					$objp = $db->fetch_object($all_currencies);
-					$objp->code_iso;
-					echo "<option value={$objp->code_iso}>".$objp->code_iso ."(".$objp->label.")"." </option>";
-					//$currencies[$objp->code_iso]=$objp->label;
-					$i++;
-				}
-				$db->free($all_currencies);
-			}else{	
-				
-				//get all currencies
-				$result=$db->query("
-					SELECT code_iso,label 
-					FROM 	".MAIN_DB_PREFIX."c_currencies
-				");		
-				//is true then create te select values
-				if ($result)
-				{
-					$num = $db->num_rows($result);
-					$i = 0;
-					while ($i < $num)
-					{
-						$objp = $db->fetch_object($result);
-						$moneda_consolidacion=$objp->code_iso;
-						echo "<option value={$moneda_consolidacion}>".$moneda_consolidacion ."(".$objp->label.")"." </option>";
-						//$currencies[$objp->code_iso]=$objp->label;
-						$i++;
-					}
-					$db->free($result);
-				}else
-				{
-					dol_print_error($db);
-				}
-			}
-			print '</select><br>';
-			/*
-			 	end of valores del select currencies
-			 ****************************************************************
-			*/
-			/******************************************************************
-			  currencies of projet
-			*/
-			//if existe una consolidacion quiere decir que existen divisas con su valor de conversion 
-	
-			if($exist_convention && $db->num_rows($exist_convention)>0){
-				$result=$db->query("
-					SELECT cd.FK_CURRENCY,VALUE,CURRENCY_CONVERTION_VALUE 
-					FROM  llx_consolidation_detail cd join llx_consolidation c 
-					WHERE   cd.FK_PROJET=c.FK_PROJET and c.FK_PROJET ={$project->id}
-			");
-			}else{
-				//si no existe entonces se recupera la divisa y su valor esta en blanco 
-				$result=$db->query("
-					SELECT FK_CURRENCY 
-					FROM  PROJET_CURRENCY
-					WHERE FK_PROJET ={$project->id}
-				");	
-			}	
-			print"
-			<table class='border tabla_conversion'>
-				<thead>
-					<tr>
-						<th>Divisa Original</th>
-						<th>Divisa de Coversión</th>
-					</tr>
-				</thead>
-				 <tbody>";
-    
-					if ($result)
-					{
-						$num = $db->num_rows($result);
-						$i = 0;
-						while ($i < $num)
-						{
-							$objp = $db->fetch_object($result);
-							echo "	<tr>
-										<td> <div class='modeda_seleccionada_origen id_monedas'  >".$objp->FK_CURRENCY."</div>
-										<input type='NUMBER' class='input_divisa_original' step='any' name='divisas[{$objp->FK_CURRENCY}][val_original]' value="; 
-												 if(!empty($objp->VALUE)){ echo number_format($objp->VALUE, 2, '.', '');}
-											 echo" required>
-										</td>
-										<td>";
-									 		echo
-											  "<div >";
-												if(!empty($moneda_consolidada)){
-														echo  "<div class='moneda_seleccionada_para_conversion id_monedas'  >". $moneda_consolidada."</div>";
-														echo "<input class='id_monedas' data-moneda='{$moneda_consolidada}' type='NUMBER' step='any' name='divisas[{$objp->FK_CURRENCY}][val_conversion]' value="; 
-														if(!empty($objp->VALUE)){ echo number_format($objp->CURRENCY_CONVERTION_VALUE, 2, '.', '');}
-														echo" required>";
-													}
-													else {
-														echo 	"<div class='moneda_seleccionada_para_conversion id_monedas'>". $moneda_consolidada."</div>";
-														echo "<input class='id_monedas' type='NUMBER' step='any'data-moneda='' name='divisas[{$objp->FK_CURRENCY}][val_conversion]' value="; 
-														if(!empty($objp->VALUE)){ echo number_format($objp->CURRENCY_CONVERTION_VALUE, 2, '.', '');}
-														echo" required>";
-													}				
-												echo"	
-											   </div>
-										</td>
-								   </tr>";
-
-
-							$i++;
-						}
-						$db->free($result);
-					}else
-					{
-						dol_print_error($db);
-					}
-			/*
-				end currencies of projet
-				************************************************************************************
-			*/		
-        print
-			'</tbody>
-		</table>
-			<button type="submit"  class="btn_submit" value="Submit">Confirmar</button></br>
-		</form>
-	</div>';
 
 echo
 	"<script>
-		function conversionManual(  linea){
+		function conversionManual(linea){
 
 		    var id_conversion_general='#conversion_general-'+linea;
 			var id_conversion_manual ='#conversion_manual-'+linea;
 		    $(id_conversion_general).hide();
 		    $(id_conversion_manual).show();
-		    
+		 	
 		}
-		function cancelarConversionManual(  linea){
+		function cancelarConversionManual(linea){
 			var id_conversion_general='#conversion_general-'+linea;
 			var id_conversion_manual ='#conversion_manual-'+linea;
 			var id_input_nueva_conversion='.input_nueva_conversion-'+linea;
-			console.log(id_input_nueva_conversion);
 		    $(id_conversion_general).show();
 		    $(id_conversion_manual).hide();
+		    $(id_input_nueva_conversion).prop('required',false); 
 		    $(id_input_nueva_conversion).val('');
 		    
-		}	
+		}	  
+		function resetTipoGeneral(linea){
+			var id_conversion_general='#conversion_general-'+linea;
+			var id_conversion_manual ='#conversion_manual-'+linea;
+			var id_input_nueva_conversion='.input_nueva_conversion-'+linea;	
+			var id_resetTipoGeneral ='#resetTipoGeneral-'+linea;
+			var id_form='#form-'+linea;
+		    $(id_input_nueva_conversion).val('');
+		    $(id_resetTipoGeneral).val('1');		    
+		    $(id_input_nueva_conversion).attr('required',false);  
+		 	$(id_form).submit(); 
+		}			
 		
 	</script>";
 
@@ -484,12 +294,12 @@ $listofreferent=array(
 	'class'=>'Salesorder',
 	'test'=>$conf->salesorder->enabled,
 	'operation'=>'+'),
-'trip'=>array(
+/*'trip'=>array(
 	'title'=>"ListTripAssociatedProject",
 	'class'=>'Deplacement',
 	'test'=>$conf->deplacement->enabled,
 	'operation'=>'-'),
-	
+
 'policy'=>array(
 	'title'=>"Listado de pólizas asociadas al proyecto",
 	'class'=>'Policy',
@@ -525,24 +335,24 @@ foreach ($listofreferent as $key => $value)
 		//FEDE
 		print '<td align="right" width="120">'.$langs->trans("Divisa").'</td>';
 		
-		if (empty($value['disableamount'])) print '<td align="right" width="120">'.$langs->trans("Importe").'</td>';
+		if (empty($value['disableamount'])) print '<td align="center" width="120">'.$langs->trans("Importe").'</td>';
 
 		//FIN FEDE
 
 		if (empty($value['disableamount']))
 			if($classname=='Salesorder')
-				print '<td align="right" width="120">'.$langs->trans("Venta").'</td>';
+				print '<td align="center" width="120">'.$langs->trans("Importe Venta (+IVA)").'</td>';
 			else
 				print '<td align="right" width="120"></td>';
 		
-		if($classname=='Deplacement')
+		/*if($classname=='Deplacement')
 			print '<td align="right" width="120">'.$langs->trans("Gasto").'</td>';
 		else
 			print '<td align="center" width="120">'.$langs->trans("Costo").'</td>';
+		*/
+        print '<td class=""  align="center" width="250">Cotización</td>';
 
-        print '<td class="" width="200">Cotización</td>';
-
-        print '<td class="">Valor</td>';
+        print '<td class="">(USD) Valor Venta</td>';
 
 		print '<td align="right" width="200">'.$langs->trans("Status").'</td>';
 		print '<td class=""></td>';
@@ -590,7 +400,7 @@ foreach ($listofreferent as $key => $value)
                 print '<td align="right">'.$element->fk_currency.'</td>';
 
                 // Amount
-				if (empty($value['disableamount'])) print '<td align="right">'.(isset($element->total_ht)?price($element->total_ht):'&nbsp;').'</td>';
+				if (empty($value['disableamount'])) print '<td align="center">'.(isset($element->total_ht)?price($element->total_ht):'&nbsp;').'</td>';
 
 
 				
@@ -610,70 +420,139 @@ foreach ($listofreferent as $key => $value)
 
 					// Amount
 				if (empty($value['disableamount'])){
-					 print '<td align="right">';
+					 print '<td align="center">';
 						if(isset($element->total_ttc)){
-							$view_tcc=true;
-							echo price($element->total_ttc*$rate,0,'',0,2,2);
-							if(!array_key_exists($element->fk_currency,$arrayCurrencys)){
-								$arrayCurrencys[$element->fk_currency]['tcc']=$element->total_ttc*$rate;
-							}else{
-								$arrayCurrencys[$element->fk_currency]['tcc']= $arrayCurrencys[$element->fk_currency]['tcc']+($element->total_ttc*$rate);
-							}	
-
+                            echo price($element->total_ttc ,0,'',0,2,2);
 						}else{
 							print '&nbsp;';
 						}
 					print'</td>';
-					
+
 					};
 
-					print '<td align="right">'.(isset($element->cost)?price($element->cost*$rate,0,'',0,2,2):'&nbsp;').'</td>';
+				//	print '<td align="right">'.(isset($element->cost)?price($element->cost*$rate,0,'',0,2,2):'&nbsp;').'</td>';
+
 
                // if($element->fk_currency!='USD') {
-					$fecha_ingreso	= DateTime::createFromFormat('d/m/Y',dol_print_date($date,'day'))
-									->format('Y-m-d');
-                    $sqlQuery = " 
-					 	SELECT  id,fecha_ingreso,divisa_origen,divisa_destino,valor_divisa_origen,valor_divisa_destino 
-                        FROM " . MAIN_DB_PREFIX . "consolidation_day
-                        WHERE fecha_ingreso='{$fecha_ingreso}' 
-                        AND divisa_origen='{$element->fk_currency}'
-                        ORDER BY fecha_ingreso DESC LIMIT 1";
-                    $resqlFinal = $db->query($sqlQuery);
+               		 $sqlQuerySalesorder = " 
+						SELECT 	cs.id
+								,cs.fecha_ingreso
+								,cs.divisa_origen
+								,cs.divisa_destino
+								,cs.valor_divisa_origen
+								,cs.valor_divisa_destino 
+								,tipo
+						FROM  gestion.llx_consolidation_salesorder cs 
+						left join gestion.llx_salesorder   on (cs.salesorder_id=llx_salesorder.rowid)
+						where gestion.llx_salesorder.rowid={$element->id};
+					";
+					$resqlSalesorder = $db->query($sqlQuerySalesorder);
+
+					if( $resqlSalesorder  && $db->num_rows($resqlSalesorder)>0) {
+                        $resqlFinal = $resqlSalesorder;
+                    }else{
+							$fecha=dol_print_date($date,'day');
+							$fecha_ingreso	= DateTime::createFromFormat('d/m/Y',$fecha)
+							->format('Y-m-d');
+							$sqlQuery = " 
+								SELECT  id
+										,fecha_ingreso
+										,divisa_origen
+										,divisa_destino
+										,valor_divisa_origen
+										,valor_divisa_destino 
+										,'General' as tipo
+								FROM " . MAIN_DB_PREFIX . "consolidation_day
+								WHERE fecha_ingreso='{$fecha_ingreso}' 
+								AND divisa_origen='{$element->fk_currency}'
+								ORDER BY fecha_ingreso DESC LIMIT 1";
+							$resqlConsolidationDay = $db->query($sqlQuery);
+							if( $resqlConsolidationDay  && $db->num_rows($resqlConsolidationDay)>0) {
+								$resqlFinal = $resqlConsolidationDay;
+							}else{
+                                $sqlQueryFechaMinMax =
+                                    "
+										SELECT  id
+												,fecha_ingreso
+												,divisa_origen
+												,divisa_destino
+												,valor_divisa_origen
+												,valor_divisa_destino 
+												,'General' as tipo
+										FROM llx_consolidation_day
+										where exists 
+											(
+												SELECT idMin, idMax FROM
+												 	(												
+														SELECT  max(fecha_ingreso) as fMin,id as idMin	 
+														FROM llx_consolidation_day
+														where fecha_ingreso  < '{$fecha_ingreso}'
+													) AS fmin,
+													(
+														SELECT  min(fecha_ingreso) as fMax,id as idMax	 
+														FROM llx_consolidation_day
+														where fecha_ingreso  > '{$fecha_ingreso}'
+													) as fmax
+												where llx_consolidation_day.fecha_ingreso=fmin.fMin
+												or   llx_consolidation_day.fecha_ingreso=fmax.fMax
+										);
+									";
+                                $resqlFechaMinMax = $db->query($sqlQueryFechaMinMax);
+                                if($resqlFechaMinMax  && $db->num_rows($resqlFechaMinMax)){
+                                    $resqlFinal= $resqlFechaMinMax;
+
+								}
+							}
+
+					}
+
+
 					if( $resqlFinal  && $db->num_rows($resqlFinal)>0){
                         $obj = $db->fetch_object($resqlFinal);
+                        $fecha_ingreso_format_view	= DateTime::createFromFormat('Y-m-d',$obj->fecha_ingreso)
+                            ->format('d/m/Y');
+                        $date = new DateTime();
+
+                        $fecha_ingreso_format_db= date_format($date, 'Y-m-d');
                         echo"<td  style='font-size:80%; padding-left:10px;' align='left' width='200px' >
-							 <span>Cotización al dia <b>".dol_print_date($date, 'day')."</b><span><br>
+							 <span>Cotización al dia <b>{$fecha_ingreso_format_view}</b><span><br>
 							 <div id='conversion_general-{$linea}'>
-								<span>Tipo: General</span><br>
+								<span>Tipo: {$obj->tipo}</span><br>
 								<span>
 									<b>
 										{$obj->divisa_origen}
 									</b>
-									{$obj->valor_divisa_origen} / 
+									".price($obj->valor_divisa_origen ,0,'',0,2,2)." / 
 									<b>
 										{$obj->divisa_destino}
-									</b> {$obj->valor_divisa_destino}<br>
+									</b> 
+										".price($obj->valor_divisa_destino ,0,'',0,2,2)."
+									<br>
 								</span>
 								<a id='boton_conversion-{$linea}' onclick='conversionManual({$linea})'><i>Modificar Cotización<i></a>
 							 </div>";
                         echo "<div hidden id='conversion_manual-{$linea}'>
-								<span>Tipo: Manual</span><br>
-								<form method='POST' action='/projet/resultado.php?id={$projectid}'  >
+								<span>Tipo: {$obj->tipo}</span><br>
+								<form method='POST' id='form-{$linea}' action='/projet/resultado.php?id={$projectid}'  >
 									<b>
 										{$obj->divisa_origen}
 									</b> 
-									<input name='valor_divisa_origen' class='input_nueva_conversion-{$linea}' type='text' style='width:40px;'> /
+									<input name='valor_divisa_origen' class='input_nueva_conversion-{$linea}' style='width:45px;' type='NUMBER' step='any' required> /
 									<b>
 										{$obj->divisa_destino}
 									</b> 
-											<input name='valor_divisa_destino' class='input_nueva_conversion-{$linea}'   type='text'  style='width:40px;'>
+											<input name='valor_divisa_destino' class='input_nueva_conversion-{$linea}'  style='width:45px;'  type='NUMBER' step='any' required'>
 											<input name='divisa_origen' class='input_nueva_conversion-{$linea}'  type='hidden' value='{$element->fk_currency}' >
 											<input name='salesorder_id'  class='input_nueva_conversion-{$linea}'  type='hidden' value='{$element->id}' >
+											<input name='fecha_ingreso'  class='input_nueva_conversion-{$linea}'  type='hidden' value='{$fecha_ingreso_format_db}' >
+											<input name='id_consolidation_selesorder'  class=''  type='hidden' value='{$obj->id}' >
+											<input name='resetTipo' id='resetTipoGeneral-{$linea}' value='0'  type='hidden' >
 									
 									<br>
 									<div style='margin-top: 5px; margin-left:1px;'>
-										<input   onclick='cancelarConversionManual({$linea})' class=\"button\" value=\"Cancelar\" name=\"addline\" type=\"button\">
-										<input class=\"button\" value=\"Aceptar\" name=\"addline\" type=\"submit\">
+											<input class=\"button\" value=\"Aceptar\" name=\"addline\" type=\"submit\">
+											<input   onclick='cancelarConversionManual({$linea})' class='button' value='Cancelar' name='addline' type='button'>
+											<input  onclick='resetTipoGeneral({$linea})' class='button' value='General' name='addline' type='button'>
 									</div> 
 								</form>
 							 </div> 							
@@ -691,7 +570,7 @@ foreach ($listofreferent as $key => $value)
 								<div hidden id='conversion_manual-{$linea}' >
 									<span>
 										Cotización al dia
-										<b>".dol_print_date($date, 'day')."</b>
+										<b>{$fecha_ingreso_format_view}</b>
 									<span><br>
 									<form method='POST' action='/projet/resultado.php?id={$projectid}'>
 										<div >
@@ -705,12 +584,13 @@ foreach ($listofreferent as $key => $value)
 												<input name='valor_divisa_destino' class='input_nueva_conversion-{$linea}'   type='text'  style='width:40px;'>
 												<input name='divisa_origen' class='input_nueva_conversion-{$linea}'  type='hidden' value='{$element->fk_currency}' >
 												<input name='salesorder_id'  class='input_nueva_conversion-{$linea}'  type='hidden' value='{$element->id}' >
+												<input name='fecha_ingreso'  class='input_nueva_conversion-{$linea}'  type='hidden' value='{$fecha_ingreso}' >												
 												<br>
 											
 										</div>
 										<div style='margin-top: 5px; margin-left:1px;'>
-										<input   onclick='cancelarConversionManual({$linea})' class='button' value='Cancelar' name='addline' type='button'>
-											<input class='button' value='Aceptar' name='addline' type='submit'>
+												<input class='button' value='Aceptar' name='addline' type='submit'>
+												<input   onclick='cancelarConversionManual({$linea})' class='button' value='Cancelar' name='addline' type='button'>
 										</div> 
 									</form>
 								</div>  
@@ -720,11 +600,11 @@ foreach ($listofreferent as $key => $value)
               //  }else{
               //      echo "<td  align='left' > - </td>";
 				//}
-               // $total_conversion=$element->total_ttc * $obj->valor_divisa_destino;
-              //  $total_conversion=$total_conversion/$obj->valor_divisa_origen;
-               // $total_conversion=price($total_conversion,0,'',0,2,2);
+                $total_conversion=$element->total_ttc * $obj->valor_divisa_destino;
+                $total_conversion=$total_conversion/$obj->valor_divisa_origen;
+                $total_conversion=price($total_conversion,0,'',0,2,2);
                 echo "<td  align='left' width='120px'>
-							{}
+							{$total_conversion}
 					  </td>";
 				// Status
 				print '<td align="right">'.$element->getLibStatut(5).'</td>';
@@ -736,15 +616,18 @@ foreach ($listofreferent as $key => $value)
 				*/
 				if(!array_key_exists($element->fk_currency,$arrayCurrencys)){
 					$arrayCurrencys[$element->fk_currency]['ht']=$element->total_ht;
+                    $arrayCurrencys[$element->fk_currency]['tcc']=$element->total_ttc;
 					$arrayCurrencys[$element->fk_currency]['c']=$element->cost*$rate;
 				}else{
 					$arrayCurrencys[$element->fk_currency]['ht']= $arrayCurrencys[$element->fk_currency]['ht']+$element->total_ht;
 					$arrayCurrencys[$element->fk_currency]['c']= $arrayCurrencys[$element->fk_currency]['c']+($element->cost*$rate);
+                    $arrayCurrencys[$element->fk_currency]['tcc']= $arrayCurrencys[$element->fk_currency]['tcc']+$element->total_ttc;
+
 				}	
 
 				/**********************************************************************************************************************/
 				$total_ht = $total_ht + $element->total_ht;
-				$total_ttc = $total_ttc + $element->total_ttc*$rate;
+				$total_ttc = $total_ttc + $element->total_ttc;
 				$total_cost= $total_cost + $element->cost*$rate;
                 $linea++;
 			}
@@ -756,7 +639,8 @@ foreach ($listofreferent as $key => $value)
 				/*
 			************************************************************************************
 			Subtotal Base imponible	y Importe total	por moneda
-			*/ 
+			*/
+
 			foreach ($arrayCurrencys as $divisa => $arrayTotales)	{
 				print '<tr class="liste_total">';
 				print '<td>Total</td>';
@@ -768,13 +652,13 @@ foreach ($listofreferent as $key => $value)
 				}else{
 					print '<td>&nbsp;</td>';
 				}				
-				if(isset($arrayTotales['tcc']) && 	$view_tcc ){
+				if(isset($arrayTotales['tcc']) ){ //&& 	$view_tcc ){
 					print '<td align="right" title="venta"><b><I> '.$divisa.' '.price($arrayTotales['tcc']).'</I></b></td>';
 				}else{
 					print '<td>&nbsp;</td>';
 				}
 				if(isset($arrayTotales['c'])){											
-					print '<td align="right" title="Gasto"><b><I> '.$divisa.' '.price($arrayTotales['c'],0,'',0,2,2).'</I></b></td>';
+					//print '<td align="right" title="Gasto"><b><I> '.$divisa.' '.price($arrayTotales['c'],0,'',0,2,2).'</I></b></td>';
 				}else{
 					print '<td>&nbsp;</td>';
 				}					
@@ -863,6 +747,7 @@ print '</tr>';
 print "</table>";
 
 */
+/*****
 echo "<h4>Totales consolidadios en la divisa {$moneda_consolidada}</h4>";
 print '<table class="noborder" width="100%">
 <thead  >
@@ -898,6 +783,7 @@ foreach ($importeTotales as $title => $currencies) {
             /***********************************************************************************
                     the  currencies values of project
             */
+/*****
                     $sql="	SELECT VALUE,CURRENCY_CONVERTION_VALUE 
                                     FROM  llx_consolidation_detail
                                     WHERE FK_PROJET ={$project->id} ";
@@ -939,6 +825,7 @@ foreach ($importeTotales as $title => $currencies) {
 	}
 */
 
+/*****
 	$tt_c=$arr_result['+']['c']-$arr_result['-']['c'] ;
 	$tt_ht=$arr_result['+']['ht']-$arr_result['-']['ht'] ;
 	print '<tr>';
@@ -970,6 +857,8 @@ foreach ($importeTotales as $title => $currencies) {
 
 print '<tbody>';
 print "</table>";
+
+ *****/
 
 llxFooter();
 

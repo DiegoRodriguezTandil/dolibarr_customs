@@ -442,9 +442,9 @@ foreach ($listofreferent as $key => $value)
 								,cs.valor_divisa_origen
 								,cs.valor_divisa_destino 
 								,tipo
-						FROM  gestion.llx_consolidation_salesorder cs 
-						left join gestion.llx_salesorder   on (cs.salesorder_id=llx_salesorder.rowid)
-						where gestion.llx_salesorder.rowid={$element->id};
+						FROM   llx_consolidation_salesorder cs 
+						left join llx_salesorder   on (cs.salesorder_id=llx_salesorder.rowid)
+						where llx_salesorder.rowid={$element->id};
 					";
 					$resqlSalesorder = $db->query($sqlQuerySalesorder);
 

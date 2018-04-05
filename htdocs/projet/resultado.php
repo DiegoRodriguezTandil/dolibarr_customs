@@ -611,7 +611,7 @@ foreach ($listofreferent as $key => $value)
                     $total_conversion=$element->total_ttc * $obj->valor_divisa_destino;
                     $total_conversion_sin_formato=$total_conversion/$obj->valor_divisa_origen;
                     $total_conversion=price($total_conversion_sin_formato,0,'',0,2,2);
-                    echo "<td  align='right	' width='120px'>
+                    echo "<td  align='right' width='120px'>
 						USD	{$total_conversion}
 					  </td>";
 				}else{

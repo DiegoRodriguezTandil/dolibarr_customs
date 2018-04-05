@@ -154,14 +154,13 @@ if(!empty($_POST['salesorder_id']) &&  empty($_POST['resetTipo']) ){
     $fecha_i					= $_POST['fecha_ingreso'];
     $consolidation_selesorder_id= $_POST['id_consolidation_selesorder'];
 
-
-if(isset($consolidation_selesorder_id)){
-    $sql ="INSERT INTO ".MAIN_DB_PREFIX."consolidation_salesorder (id, salesorder_id,fecha_ingreso,divisa_origen,valor_divisa_origen,valor_divisa_destino)";
-    $sql.= " VALUES (".$consolidation_selesorder_id.",".$salesorder_id.",'".$fecha_i."','".$divisa_origen."',".$valor_divisa_origen.",'".$valor_divisa_destino."')";
-}else{
-    $sql ="INSERT INTO ".MAIN_DB_PREFIX."consolidation_salesorder (salesorder_id,fecha_ingreso,divisa_origen,valor_divisa_origen,valor_divisa_destino)";
-    $sql.= " VALUES (".$salesorder_id.",'".$fecha_i."','".$divisa_origen."',".$valor_divisa_origen.",'".$valor_divisa_destino."')";
-}
+	if(isset($consolidation_selesorder_id)){
+		$sql ="INSERT INTO ".MAIN_DB_PREFIX."consolidation_salesorder (id, salesorder_id,fecha_ingreso,divisa_origen,valor_divisa_origen,valor_divisa_destino)";
+		$sql.= " VALUES (".$consolidation_selesorder_id.",".$salesorder_id.",'".$fecha_i."','".$divisa_origen."',".$valor_divisa_origen.",'".$valor_divisa_destino."')";
+	}else{
+		$sql ="INSERT INTO ".MAIN_DB_PREFIX."consolidation_salesorder (salesorder_id,fecha_ingreso,divisa_origen,valor_divisa_origen,valor_divisa_destino)";
+		$sql.= " VALUES (".$salesorder_id.",'".$fecha_i."','".$divisa_origen."',".$valor_divisa_origen.",'".$valor_divisa_destino."')";
+	}
 
 	if(isset($consolidation_selesorder_id)){
         $sql.= " ON DUPLICATE KEY UPDATE valor_divisa_origen=".$valor_divisa_origen.",valor_divisa_destino='".$valor_divisa_destino."'";
@@ -171,7 +170,6 @@ if(isset($consolidation_selesorder_id)){
 	$resql = $db->query($sql);
 
 }else if(!empty($_POST['resetTipo'])){
-
     $consolidation_selesorder_id= $_POST['id_consolidation_selesorder'];
     $sql ="DELETE FROM ".MAIN_DB_PREFIX. "consolidation_salesorder WHERE id={$consolidation_selesorder_id}";
     $resql = $db->query($sql);
@@ -312,10 +310,12 @@ $listofreferent=array(
 	'class'=>'Policy',
 	'test'=>$conf->deplacement->enabled,
 	'operation'=>'-'),
-/*'Resultado'=>array(
+
+'Resultado'=>array(
 	'title'=>"Totales",
 	'class'=>'Policy',
-	'test'=>$conf->deplacement->enabled)	*/
+	'test'=>$conf->deplacement->enabled)
+*/
 );
 $arrayCurrencys = array();
 $importeTotales = array();
@@ -340,17 +340,17 @@ foreach ($listofreferent as $key => $value)
 		print '<td width="100" align="center">'.$langs->trans("Date").'</td>';
 		print '<td width="200">'.$langs->trans("ThirdParty").'</td>';
 		//FEDE
-		print '<td align="right" width="120">'.$langs->trans("Divisa").'</td>';
+		print '<td align="right" width="100">'.$langs->trans("Divisa").'</td>';
 		
-		if (empty($value['disableamount'])) print '<td align="center" width="120">'.$langs->trans("Importe").'</td>';
+		if (empty($value['disableamount'])) print '<td align="center" width="150">'.$langs->trans("Importe").'</td>';
 
 		//FIN FEDE
 
 		if (empty($value['disableamount']))
 			if($classname=='Salesorder')
-				print '<td align="center" width="120">'.$langs->trans("Importe Venta (+IVA)").'</td>';
+				print '<td align="center" width="150">'.$langs->trans("Importe Venta (+IVA)").'</td>';
 			else
-				print '<td align="right" width="120"></td>';
+				print '<td align="right" width="150"></td>';
 		
 		/*if($classname=='Deplacement')
 			print '<td align="right" width="120">'.$langs->trans("Gasto").'</td>';
@@ -359,7 +359,7 @@ foreach ($listofreferent as $key => $value)
 		*/
         print '<td class=""  align="center" width="250">Cotización</td>';
 
-        print '<td class="">(USD) Valor Venta</td>';
+        print '<td  width="180" >(USD) Valor Venta</td>';
 
 		print '<td align="right" width="200">'.$langs->trans("Status").'</td>';
 		print '<td class=""></td>';
@@ -404,10 +404,10 @@ foreach ($listofreferent as $key => $value)
 				print '</td>';
 
 			
-                print '<td align="right">'.$element->fk_currency.'</td>';
+                print '<td  align="right" >'.$element->fk_currency.'</td>';
 
                 // Amount
-				if (empty($value['disableamount'])) print '<td align="center">'.(isset($element->total_ht)?price($element->total_ht):'&nbsp;').'</td>';
+				if (empty($value['disableamount'])) print "<td align='left' style='padding-left:5px;'>".(isset($element->total_ht)?price($element->total_ht):'&nbsp;')."</td>";
 
 
 				
@@ -427,7 +427,7 @@ foreach ($listofreferent as $key => $value)
 
 					// Amount
 				if (empty($value['disableamount'])){
-					 print '<td align="center">';
+					 print '<td align="left">';
 						if(isset($element->total_ttc)){
                             echo price($element->total_ttc ,0,'',0,2,2);
 						}else{
@@ -515,6 +515,7 @@ foreach ($listofreferent as $key => $value)
 
                     $date = new DateTime();
                     $fecha_ingreso_format_db= date_format($date, 'Y-m-d');
+                    $fecha_ingreso_format_view = date_format($date, 'd/m/Y');
 					if( $resqlFinal  && $db->num_rows($resqlFinal)>0){
                         $obj = $db->fetch_object($resqlFinal);
                         $fecha_ingreso_format_view	= DateTime::createFromFormat('Y-m-d',$obj->fecha_ingreso)
@@ -582,7 +583,7 @@ foreach ($listofreferent as $key => $value)
 												<b>
 													{$element->fk_currency}
 												</b>
-													<input name='valor_divisa_origen' class='input_nueva_conversion-{$linea}'  type='text' style='width:40px;'>
+													<input name='valor_divisa_origen' class='input_nueva_conversion-{$linea}'   style='width:40px;' type='NUMBER' step='any' required'>
 												<b>
 													USD1
 												</b>
@@ -604,36 +605,46 @@ foreach ($listofreferent as $key => $value)
 					}
 
                 }else{
-                    echo "<td  align='left' >  </td>";
+                    echo "<td  align='center' > - </td>";
 				}
-                $total_conversion=$element->total_ttc * $obj->valor_divisa_destino;
-                $total_conversion=$total_conversion/$obj->valor_divisa_origen;
-                $total_conversion=price($total_conversion,0,'',0,2,2);
-                echo "<td  align='left' width='120px'>
-							{$total_conversion}
-					  </td>";
-				// Status
-				print '<td align="right">'.$element->getLibStatut(5).'</td>';
 
+				if(!empty($element->total_ttc) and !empty($obj->valor_divisa_destino)){
+                    $total_conversion=$element->total_ttc * $obj->valor_divisa_destino;
+                    $total_conversion_sin_formato=$total_conversion/$obj->valor_divisa_origen;
+                    $total_conversion=price($total_conversion_sin_formato,0,'',0,2,2);
+                    echo "<td  align='left' width='120px'>
+						USD	{$total_conversion}
+					  </td>";
+				}else{
+                    $total_conversion_sin_formato=$element->total_ttc;
+                    $total_conversion=price($element->total_ttc,0,'',0,2,2);
+                    echo "<td  align='left' width='120px'>
+							USD {$total_conversion}
+					  </td>";
+				}
+
+                // Status
+                print '<td align="right">'.$element->getLibStatut(5).'</td>';
 				print '</tr>';
-	
 				/******************************************************************************************************************
 				  Array currencys 
 				*/
 				if(!array_key_exists($element->fk_currency,$arrayCurrencys)){
 					$arrayCurrencys[$element->fk_currency]['ht']=$element->total_ht;
                     $arrayCurrencys[$element->fk_currency]['tcc']=$element->total_ttc;
+                    $arrayCurrencys[$element->fk_currency]['tcccot']=$total_conversion_sin_formato;
 					$arrayCurrencys[$element->fk_currency]['c']=$element->cost*$rate;
 				}else{
 					$arrayCurrencys[$element->fk_currency]['ht']= $arrayCurrencys[$element->fk_currency]['ht']+$element->total_ht;
 					$arrayCurrencys[$element->fk_currency]['c']= $arrayCurrencys[$element->fk_currency]['c']+($element->cost*$rate);
                     $arrayCurrencys[$element->fk_currency]['tcc']= $arrayCurrencys[$element->fk_currency]['tcc']+$element->total_ttc;
-
+                    $arrayCurrencys[$element->fk_currency]['tcccot']= $arrayCurrencys[$element->fk_currency]['tcccot']+$total_conversion_sin_formato;
 				}	
 
 				/**********************************************************************************************************************/
 				$total_ht = $total_ht + $element->total_ht;
 				$total_ttc = $total_ttc + $element->total_ttc;
+                $total_tcccot = $total_tcccot + $total_conversion_sin_formato;
 				$total_cost= $total_cost + $element->cost*$rate;
                 $linea++;
 			}
@@ -646,7 +657,7 @@ foreach ($listofreferent as $key => $value)
 			************************************************************************************
 			Subtotal Base imponible	y Importe total	por moneda
 			*/
-
+//var_dump($arrayCurrencys);die();
 			foreach ($arrayCurrencys as $divisa => $arrayTotales)	{
 				print '<tr class="liste_total">';
 				print '<td>Total</td>';
@@ -654,12 +665,12 @@ foreach ($listofreferent as $key => $value)
 				print '<td>&nbsp;</td>';
 				print '<td>&nbsp;</td>';
 				if(isset($arrayTotales['ht'])){
-					print '<td align="right" title="Importe"><b><I>'.$divisa.' '.price($arrayTotales['ht']).'</I></b></td>';
+					print '<td align="left" title="Importe"><b><I>'.$divisa.' '.price($arrayTotales['ht']).'</I></b></td>';
 				}else{
 					print '<td>&nbsp;</td>';
 				}				
 				if(isset($arrayTotales['tcc']) ){ //&& 	$view_tcc ){
-					print '<td align="right" title="venta"><b><I> '.$divisa.' '.price($arrayTotales['tcc']).'</I></b></td>';
+					print '<td align="left" title="venta"><b><I> '.$divisa.' '.price($arrayTotales['tcc']).'</I></b></td>';
 				}else{
 					print '<td>&nbsp;</td>';
 				}
@@ -669,8 +680,12 @@ foreach ($listofreferent as $key => $value)
 					print '<td>&nbsp;</td>';
 				}					
 				print '<td>&nbsp;</td>';
-			
-				print '<td></td>';
+                if(isset($arrayTotales['tcccot'])){
+                    print '<td align="left" title="venta"><b><I> '.$divisa.' '.price($arrayTotales['tcc']).'</I></b></td>';
+                }else{
+                    print '<td>&nbsp;</td>';
+                }
+
                 print '<td></td>';
                 print '<td></td>';
 	
@@ -753,15 +768,15 @@ print '</tr>';
 print "</table>";
 
 */
-/*****
+
 echo "<h4>Totales consolidadios en la divisa {$moneda_consolidada}</h4>";
 print '<table class="noborder" width="100%">
 <thead  >
 	<tr class="liste_titre">
 		<th >Titulo</th>
 		<th align=center >Divisa Consolidada</th>
-		<th  align=right>Importe</th>
-		<th  align=right>Costo</th>
+		<th  align=right>Importe Venta (+IVA)</th>
+		<!--<th  align=right>Costo</th>-->
 	</tr>
 </thead>
 <tbody>';
@@ -774,10 +789,11 @@ foreach ($importeTotales as $title => $currencies) {
 	print_titre($langs->trans($title)); ;
 	print '</td>';
 	print '<td align=center>';
-	print  $moneda_consolidada ;
+	print  USD;
 	print '</td>';	
 	$sum=0;
 	$sum_c=0;
+    $sum_tcccot=0;
 	$sum_c_haber=0;
 	$sum_haber=0;
 	$result_sum=0;
@@ -786,40 +802,26 @@ foreach ($importeTotales as $title => $currencies) {
         if( isset($currencies) && array_key_exists('currencies', $currencies)) {
             foreach($currencies['currencies'] as $currency=>$arrayValues){
 
-            /***********************************************************************************
-                    the  currencies values of project
-            */
-/*****
-                    $sql="	SELECT VALUE,CURRENCY_CONVERTION_VALUE 
-                                    FROM  llx_consolidation_detail
-                                    WHERE FK_PROJET ={$project->id} ";
-                    $sql.=" AND FK_CURRENCY ='".$currency."'";
-                    $value_currency_projet=$db->query($sql);	
-                    $value_currency_projet=$db->fetch_object($value_currency_projet);
-                    if(empty($value_currency_projet->VALUE)){
-                            $valor_divsa_original=1;
-                    }else{
-                            $valor_divsa_original=$value_currency_projet->VALUE;
-                    }
-
-                            $sum_c+=$arrayValues['c']*$value_currency_projet->CURRENCY_CONVERTION_VALUE / $valor_divsa_original;
-                            $sum+=$arrayValues['ht']*$value_currency_projet->CURRENCY_CONVERTION_VALUE /  $valor_divsa_original;
+            /***********************************************************************************/
+				$sum_c+=$arrayValues['c'];
+				$sum+=$arrayValues['ht'];
+				$sum_tcccot= $arrayValues['tcccot'];
 
             }            
         }
 
 
 	print '<td  align=right>';
-	print price($sum,0,'',0,2,2);
+	print price($sum_tcccot,0,'',0,2,2);
 	print '</td>';
-	print '<td   align=right>';
-	print price($sum_c,0,'',0,2,2);
-	print '</td>';
+	//print '<td   align=right>';
+	//print price($sum_c,0,'',0,2,2);
+	//print '</td>';
 
 
 					
 	$arr_result[$currencies['operation']]['c']+=$sum_c;
-	$arr_result[$currencies['operation']]['ht']+=$sum;
+	$arr_result[$currencies['operation']]['ht']+=$sum_tcccot;
 	
 }
 	print '</tr>';
@@ -831,7 +833,7 @@ foreach ($importeTotales as $title => $currencies) {
 	}
 */
 
-/*****
+
 	$tt_c=$arr_result['+']['c']-$arr_result['-']['c'] ;
 	$tt_ht=$arr_result['+']['ht']-$arr_result['-']['ht'] ;
 	print '<tr>';
@@ -844,7 +846,7 @@ foreach ($importeTotales as $title => $currencies) {
 	print '</td>';
 	print '<td  align=center>';
 		print 	 '<I><b>';
-			echo $moneda_consolidacion;	
+			echo 'USD';
 		print 	 '<I><b>';			
 	print '</td>';	
 	print '<td  align=right>';
@@ -853,10 +855,11 @@ foreach ($importeTotales as $title => $currencies) {
 	print 	 '</I></b>';
 	print '</td>';
 	print '<td align=right>';
-	print 	 '<I><b>';
+	/*print 	 '<I><b>';
 			print price($tt_c,0,'',0,2,2);
 	print 	 '</I></b>';
 	print '</td>';
+	*/
 	print '</tr>';	
 
 //print '<td width="10%" align="right">'.price($total['Salesorder']-$costo['Salesorder']-$costo['Deplacement']-$costo['Policy'],0,'',0,2,2).'</td>';
@@ -864,7 +867,7 @@ foreach ($importeTotales as $title => $currencies) {
 print '<tbody>';
 print "</table>";
 
- *****/
+
 
 llxFooter();
 

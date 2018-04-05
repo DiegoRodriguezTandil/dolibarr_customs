@@ -154,8 +154,15 @@ if(!empty($_POST['salesorder_id']) &&  empty($_POST['resetTipo']) ){
     $fecha_i					= $_POST['fecha_ingreso'];
     $consolidation_selesorder_id= $_POST['id_consolidation_selesorder'];
 
-	$sql ="INSERT INTO ".MAIN_DB_PREFIX."consolidation_salesorder (id, salesorder_id,fecha_ingreso,divisa_origen,valor_divisa_origen,valor_divisa_destino)";
-	$sql.= " VALUES (".$consolidation_selesorder_id.",".$salesorder_id.",'".$fecha_i."','".$divisa_origen."',".$valor_divisa_origen.",'".$valor_divisa_destino."')";
+
+if(isset($consolidation_selesorder_id)){
+    $sql ="INSERT INTO ".MAIN_DB_PREFIX."consolidation_salesorder (id, salesorder_id,fecha_ingreso,divisa_origen,valor_divisa_origen,valor_divisa_destino)";
+    $sql.= " VALUES (".$consolidation_selesorder_id.",".$salesorder_id.",'".$fecha_i."','".$divisa_origen."',".$valor_divisa_origen.",'".$valor_divisa_destino."')";
+}else{
+    $sql ="INSERT INTO ".MAIN_DB_PREFIX."consolidation_salesorder (salesorder_id,fecha_ingreso,divisa_origen,valor_divisa_origen,valor_divisa_destino)";
+    $sql.= " VALUES (".$salesorder_id.",'".$fecha_i."','".$divisa_origen."',".$valor_divisa_origen.",'".$valor_divisa_destino."')";
+}
+
 	if(isset($consolidation_selesorder_id)){
         $sql.= " ON DUPLICATE KEY UPDATE valor_divisa_origen=".$valor_divisa_origen.",valor_divisa_destino='".$valor_divisa_destino."'";
 	}else{
@@ -506,14 +513,12 @@ foreach ($listofreferent as $key => $value)
 
 					}
 
-
+                    $date = new DateTime();
+                    $fecha_ingreso_format_db= date_format($date, 'Y-m-d');
 					if( $resqlFinal  && $db->num_rows($resqlFinal)>0){
                         $obj = $db->fetch_object($resqlFinal);
                         $fecha_ingreso_format_view	= DateTime::createFromFormat('Y-m-d',$obj->fecha_ingreso)
                             ->format('d/m/Y');
-                        $date = new DateTime();
-
-                        $fecha_ingreso_format_db= date_format($date, 'Y-m-d');
                         echo"<td  style='font-size:80%; padding-left:10px;' align='left' width='200px' >
 							 <span>Cotización al dia <b>{$fecha_ingreso_format_view}</b><span><br>
 							 <div id='conversion_general-{$linea}'>
@@ -581,10 +586,11 @@ foreach ($listofreferent as $key => $value)
 												<b>
 													USD1
 												</b>
-												<input name='valor_divisa_destino' class='input_nueva_conversion-{$linea}'   type='text'  style='width:40px;'>
-												<input name='divisa_origen' class='input_nueva_conversion-{$linea}'  type='hidden' value='{$element->fk_currency}' >
-												<input name='salesorder_id'  class='input_nueva_conversion-{$linea}'  type='hidden' value='{$element->id}' >
-												<input name='fecha_ingreso'  class='input_nueva_conversion-{$linea}'  type='hidden' value='{$fecha_ingreso}' >												
+											<input name='valor_divisa_destino' class='input_nueva_conversion-{$linea}'  style='width:45px;'  type='NUMBER' step='any' required'>
+											<input name='divisa_origen' class='input_nueva_conversion-{$linea}'  type='hidden' value='{$element->fk_currency}' >
+											<input name='salesorder_id'  class='input_nueva_conversion-{$linea}'  type='hidden' value='{$element->id}' >
+											<input name='fecha_ingreso'  class='input_nueva_conversion-{$linea}'  type='hidden' value='{$fecha_ingreso_format_db}' >																					
+																				
 												<br>
 											
 										</div>

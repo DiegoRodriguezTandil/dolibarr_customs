@@ -357,7 +357,7 @@ foreach ($listofreferent as $key => $value)
 		else
 			print '<td align="center" width="120">'.$langs->trans("Costo").'</td>';
 		*/
-        print '<td class=""  align="center" width="250">Cotización</td>';
+        print '<td class=""  align="center" width="300">Cotización</td>';
 
         print '<td  width="180" >(USD) Valor Venta</td>';
 

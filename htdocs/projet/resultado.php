@@ -338,9 +338,9 @@ foreach ($listofreferent as $key => $value)
 		print '<tr class="liste_titre">';
 		print '<td width="100">'.$langs->trans("Ref").'</td>';
 		print '<td width="100" align="center">'.$langs->trans("Date").'</td>';
-		print '<td width="200">'.$langs->trans("ThirdParty").'</td>';
+		print '<td width="400">'.$langs->trans("ThirdParty").'</td>';
 		//FEDE
-		print '<td align="right" width="100">'.$langs->trans("Divisa").'</td>';
+		print '<td align="center" width="50">'.$langs->trans("Divisa").'</td>';
 		
 		if (empty($value['disableamount'])) print '<td align="center" width="150">'.$langs->trans("Importe").'</td>';
 
@@ -348,7 +348,7 @@ foreach ($listofreferent as $key => $value)
 
 		if (empty($value['disableamount']))
 			if($classname=='Salesorder')
-				print '<td align="center" width="150">'.$langs->trans("Importe Venta (+IVA)").'</td>';
+				print '<td align="center" width="150">'.$langs->trans("Importe Venta (+IVA) ").'</td>';
 			else
 				print '<td align="right" width="150"></td>';
 		
@@ -403,7 +403,7 @@ foreach ($listofreferent as $key => $value)
 				print '</td>';
 
 			
-                print '<td  align="left" >'.$element->fk_currency.'</td>';
+                print '<td  align="center" >'.$element->fk_currency.'</td>';
 
                 // Amount
 				if (empty($value['disableamount'])) print "<td align='right' style='padding-left:5px;'>".(isset($element->total_ht)?price($element->total_ht):'&nbsp;')."</td>";
@@ -683,7 +683,7 @@ foreach ($listofreferent as $key => $value)
                     print '<td align="right" title="venta"><b><I> '.$divisa.' '.price($arrayTotales['tcccot'],0,'',0,2,2) .'</I></b></td>';
                 }else{
                     print '<td>&nbsp;</td>';
-                    print '<td align="right" title="venta"><b><I> '.$divisa.' '.price($arrayTotales['tcccot'],0,'',0,2,2) .'</I></b></td>';
+                    print '<td>&nbsp;</td>';
                 }
 
                 print '<td></td>';

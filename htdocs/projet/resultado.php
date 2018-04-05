@@ -361,8 +361,7 @@ foreach ($listofreferent as $key => $value)
 
         print '<td  width="180" >(USD) Valor Venta</td>';
 
-		print '<td align="right" width="200">'.$langs->trans("Status").'</td>';
-		print '<td class=""></td>';
+		print '<td align="center" width="200">'.$langs->trans("Status").'</td>';
 		print '</tr>';
 		
 		$elementarray = $project->get_element_list($key);
@@ -625,7 +624,7 @@ foreach ($listofreferent as $key => $value)
 
                 // Status
                 print '<td align="right">'.$element->getLibStatut(5).'</td>';
-                print '<td></td>';
+
 				print '</tr>';
 				/******************************************************************************************************************
 				  Array currencys 
@@ -791,7 +790,7 @@ foreach ($importeTotales as $title => $currencies) {
 	print '</td>';
 	print '<td align=center>';
 	print  USD;
-	print '</td>';	
+	print '</td>';
 	$sum=0;
 	$sum_c=0;
     $sum_tcccot=0;
@@ -855,7 +854,7 @@ foreach ($importeTotales as $title => $currencies) {
 			print price($tt_ht,0,'',0,2,2);
 	print 	 '</I></b>';
 	print '</td>';
-	print '<td align=right>';
+	 
 	/*print 	 '<I><b>';
 			print price($tt_c,0,'',0,2,2);
 	print 	 '</I></b>';

@@ -687,8 +687,7 @@ foreach ($listofreferent as $key => $value)
                 }
 
                 print '<td></td>';
-              
-	
+              	
 				print '</tr>';
 			}	$view_tcc=false;
 			print '</tr>';

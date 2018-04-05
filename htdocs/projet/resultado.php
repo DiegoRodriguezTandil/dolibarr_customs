@@ -687,7 +687,7 @@ foreach ($listofreferent as $key => $value)
                 }
 
                 print '<td></td>';
-                print '<td></td>';
+              
 	
 				print '</tr>';
 			}	$view_tcc=false;
@@ -854,7 +854,7 @@ foreach ($importeTotales as $title => $currencies) {
 			print price($tt_ht,0,'',0,2,2);
 	print 	 '</I></b>';
 	print '</td>';
-	 
+
 	/*print 	 '<I><b>';
 			print price($tt_c,0,'',0,2,2);
 	print 	 '</I></b>';

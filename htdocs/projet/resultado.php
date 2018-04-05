@@ -632,13 +632,13 @@ foreach ($listofreferent as $key => $value)
 				if(!array_key_exists($element->fk_currency,$arrayCurrencys)){
 					$arrayCurrencys[$element->fk_currency]['ht']=$element->total_ht;
                     $arrayCurrencys[$element->fk_currency]['tcc']=$element->total_ttc;
-                    $arrayCurrencys[$element->fk_currency]['tcccot']=$total_conversion_sin_formato;
+                    $arrayCurrencys['USD']['tcccot']=$total_conversion_sin_formato;
 					$arrayCurrencys[$element->fk_currency]['c']=$element->cost*$rate;
 				}else{
 					$arrayCurrencys[$element->fk_currency]['ht']= $arrayCurrencys[$element->fk_currency]['ht']+$element->total_ht;
 					$arrayCurrencys[$element->fk_currency]['c']= $arrayCurrencys[$element->fk_currency]['c']+($element->cost*$rate);
                     $arrayCurrencys[$element->fk_currency]['tcc']= $arrayCurrencys[$element->fk_currency]['tcc']+$element->total_ttc;
-                    $arrayCurrencys[$element->fk_currency]['tcccot']= $arrayCurrencys[$element->fk_currency]['tcccot']+$total_conversion_sin_formato;
+                    $arrayCurrencys['USD']['tcccot']= $arrayCurrencys['USD']['tcccot']+$total_conversion_sin_formato;
 				}	
 
 				/**********************************************************************************************************************/
@@ -657,7 +657,7 @@ foreach ($listofreferent as $key => $value)
 			************************************************************************************
 			Subtotal Base imponible	y Importe total	por moneda
 			*/
-//var_dump($arrayCurrencys);die();
+
 			foreach ($arrayCurrencys as $divisa => $arrayTotales)	{
 				print '<tr class="liste_total">';
 				print '<td>Total</td>';
@@ -671,19 +671,19 @@ foreach ($listofreferent as $key => $value)
 				}				
 				if(isset($arrayTotales['tcc']) ){ //&& 	$view_tcc ){
 					print '<td align="right" title="venta"><b><I> '.$divisa.' '.price($arrayTotales['tcc']).'</I></b></td>';
-				}else{
-					print '<td>&nbsp;</td>';
 				}
 				if(isset($arrayTotales['c'])){											
 					//print '<td align="right" title="Gasto"><b><I> '.$divisa.' '.price($arrayTotales['c'],0,'',0,2,2).'</I></b></td>';
 				}else{
 					print '<td>&nbsp;</td>';
 				}					
-				print '<td>&nbsp;</td>';
-                if(isset($arrayTotales['tcccot'])){
-                    print '<td align="right" title="venta"><b><I> '.$divisa.' '.price($arrayTotales['tcc']).'</I></b></td>';
+
+                if(isset($arrayTotales['tcccot']) AND $divisa=='USD'){
+                    print '<td>&nbsp;</td>';
+                    print '<td align="right" title="venta"><b><I> '.$divisa.' '.price($arrayTotales['tcccot'],0,'',0,2,2) .'</I></b></td>';
                 }else{
                     print '<td>&nbsp;</td>';
+                    print '<td align="right" title="venta"><b><I> '.$divisa.' '.price($arrayTotales['tcccot'],0,'',0,2,2) .'</I></b></td>';
                 }
 
                 print '<td></td>';

@@ -625,6 +625,7 @@ foreach ($listofreferent as $key => $value)
 
                 // Status
                 print '<td align="right">'.$element->getLibStatut(5).'</td>';
+                print '<td></td>';
 				print '</tr>';
 				/******************************************************************************************************************
 				  Array currencys 

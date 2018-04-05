@@ -782,7 +782,7 @@ if(!empty($_POST['seleccionar_fecha_filtro']) and empty($_POST['divisa_filter'])
     $sqlQueryFinal = "  SELECT  id,fecha_ingreso,divisa_origen,divisa_destino,valor_divisa_origen,valor_divisa_destino 
                         FROM " . MAIN_DB_PREFIX . "consolidation_day 
                         ORDER BY fecha_ingreso DESC
-                        LIMIT {$limit}";
+                        LIMIT 20";
     $resqlFinal = $db->query($sqlQueryFinal);
 }
 /***************************************************************************************************************/
@@ -840,7 +840,7 @@ echo '
 	    <div  class=" tabBar div_convention_border"  id="conf_consolidation">
             <h3 style="  margin-left: 4px;">Ingreso de Divisas</h3>
             <span style=" font-style: italic; margin-left: 4px;">Ingreso diario de divisas y su equivalente en U$S</span>
-            <form action="index.php?mainmenu=project&leftmenu" class="convention_form" id="form_moneda"  method="post">
+            <form action="index.php?mainmenu=home&leftmenu" class="convention_form" id="form_moneda"  method="post">
                 <input type="hidden" name="consolidation" value="1">
                 <table class=\'border tabla_conversion\'>
                     <thead>
@@ -904,7 +904,7 @@ echo '
           
                 <table class=\'border tabla_conversion_view\'>
                     <tr>
-                        <form action="index.php?mainmenu=project&leftmenu" id="form_table_conversion"  method="post">  
+                        <form action="index.php?mainmenu=home&leftmenu" id="form_table_conversion"  method="post">  
                         <td>                                         
                                 Fecha de Ingreso';
                                 print $form->select_date(($date_start?$date_start:''),'seleccionar_fecha_filtro');
@@ -929,7 +929,7 @@ echo '
                         <td>Eliminar</td>
                     </tr> 
             <tbody>
-                <form action="index.php?mainmenu=project&leftmenu" id="form_table_conversion"  method="post">	                     ';
+                <form action="index.php?mainmenu=home&leftmenu" id="form_table_conversion"  method="post">	                     ';
 
                     $i = 0;
                     if($num===0){
@@ -977,7 +977,7 @@ echo '
           
         </table>
         <div>
-            <form action=\"index.php?mainmenu=project&leftmenu\"  method=\"post\"> 
+            <form action=\"index.php?mainmenu=home&leftmenu\"  method=\"post\"> 
                 <input type='hidden' name='rows'  value='{$num}' >   
                 <input type='hidden' name='more_rows_set'  value='{$num}' >  
                 <input type='hidden' id='divisa_id' name='divisa_filter'>                                   

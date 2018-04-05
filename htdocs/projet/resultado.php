@@ -542,11 +542,11 @@ foreach ($listofreferent as $key => $value)
 									<b>
 										{$obj->divisa_origen}
 									</b> 
-									<input name='valor_divisa_origen' class='input_nueva_conversion-{$linea}' style='width:45px;' type='NUMBER' step='any' required> /
+									<input name='valor_divisa_origen' class='input_nueva_conversion-{$linea}' style='width:50px;' type='NUMBER' step='any' required> /
 									<b>
 										{$obj->divisa_destino}
 									</b> 
-											<input name='valor_divisa_destino' class='input_nueva_conversion-{$linea}'  style='width:45px;'  type='NUMBER' step='any' required'>
+											<input name='valor_divisa_destino' class='input_nueva_conversion-{$linea}'  style='width:50px;'  type='NUMBER' step='any' required'>
 											<input name='divisa_origen' class='input_nueva_conversion-{$linea}'  type='hidden' value='{$element->fk_currency}' >
 											<input name='salesorder_id'  class='input_nueva_conversion-{$linea}'  type='hidden' value='{$element->id}' >
 											<input name='fecha_ingreso'  class='input_nueva_conversion-{$linea}'  type='hidden' value='{$fecha_ingreso_format_db}' >
@@ -582,11 +582,11 @@ foreach ($listofreferent as $key => $value)
 												<b>
 													{$element->fk_currency}
 												</b>
-													<input name='valor_divisa_origen' class='input_nueva_conversion-{$linea}'   style='width:40px;' type='NUMBER' step='any' required'>
+													<input name='valor_divisa_origen' class='input_nueva_conversion-{$linea}'   style='width:50px;' type='NUMBER' step='any' required'>
 												<b>
-													USD1
+													USD
 												</b>
-											<input name='valor_divisa_destino' class='input_nueva_conversion-{$linea}'  style='width:45px;'  type='NUMBER' step='any' required'>
+											<input name='valor_divisa_destino' class='input_nueva_conversion-{$linea}'  style='width:50px;'  type='NUMBER' step='any' required'>
 											<input name='divisa_origen' class='input_nueva_conversion-{$linea}'  type='hidden' value='{$element->fk_currency}' >
 											<input name='salesorder_id'  class='input_nueva_conversion-{$linea}'  type='hidden' value='{$element->id}' >
 											<input name='fecha_ingreso'  class='input_nueva_conversion-{$linea}'  type='hidden' value='{$fecha_ingreso_format_db}' >																					
@@ -687,7 +687,7 @@ foreach ($listofreferent as $key => $value)
                 }
 
                 print '<td></td>';
-              	
+
 				print '</tr>';
 			}	$view_tcc=false;
 			print '</tr>';

@@ -778,7 +778,7 @@ print "</table>";
 
 */
 
-echo "<h4>Totales consolidadios en la divisa {$moneda_consolidada}</h4>";
+echo "<h4>Totales consolidados en la divisa {$moneda_consolidada}</h4>";
 print '<table class="noborder" width="100%">
 <thead  >
 	<tr class="liste_titre">

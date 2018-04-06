@@ -371,6 +371,7 @@ foreach ($listofreferent as $key => $value)
 			$total_ht = 0;
 			$total_ttc = 0;
 			$total_cost=0;
+            $total_tcccot=0;
 			$num=count($elementarray);
 			for ($i = 0; $i < $num; $i++)
 			{
@@ -607,18 +608,19 @@ foreach ($listofreferent as $key => $value)
                     echo "<td  align='center' > - </td>";
 				}
 
-				if(!empty($element->total_ttc) and !empty($obj->valor_divisa_destino)){
+				if(!empty($element->total_ttc) and !empty($obj->valor_divisa_destino) and $element->fk_currency<>$obj->divisa_destino){
+
                     $total_conversion=$element->total_ttc * $obj->valor_divisa_destino;
                     $total_conversion_sin_formato=$total_conversion/$obj->valor_divisa_origen;
                     $total_conversion=price($total_conversion_sin_formato,0,'',0,2,2);
                     echo "<td  align='right' width='120px'>
-						USD	{$total_conversion}
+						USD 	{$total_conversion}
 					  </td>";
 				}else{
-                    $total_conversion_sin_formato=$element->total_ttc;
+                    $total_conversion_sin_formato=floatval($element->total_ttc);
                     $total_conversion=price($element->total_ttc,0,'',0,2,2);
                     echo "<td  align='right' width='120px'>
-							USD {$total_conversion}
+							USD  {$total_conversion}
 					  </td>";
 				}
 
@@ -632,14 +634,19 @@ foreach ($listofreferent as $key => $value)
 				if(!array_key_exists($element->fk_currency,$arrayCurrencys)){
 					$arrayCurrencys[$element->fk_currency]['ht']=$element->total_ht;
                     $arrayCurrencys[$element->fk_currency]['tcc']=$element->total_ttc;
-                    $arrayCurrencys['USD']['tcccot']=$total_conversion_sin_formato;
+                    //caso especial tcccot el cual siempre es en USD sin importar la moneda. Segun la mondeda debe salvarse su valor con conversion o sin
+                    if($element->fk_currency==='USD'){
+                        $arrayCurrencys['USD']['tcccot']=$total_conversion_sin_formato;
+					}else{
+                        $arrayCurrencys['USD']['tcccot']= $arrayCurrencys['USD']['tcccot']+$total_conversion_sin_formato;
+					}
 					$arrayCurrencys[$element->fk_currency]['c']=$element->cost*$rate;
 				}else{
 					$arrayCurrencys[$element->fk_currency]['ht']= $arrayCurrencys[$element->fk_currency]['ht']+$element->total_ht;
 					$arrayCurrencys[$element->fk_currency]['c']= $arrayCurrencys[$element->fk_currency]['c']+($element->cost*$rate);
                     $arrayCurrencys[$element->fk_currency]['tcc']= $arrayCurrencys[$element->fk_currency]['tcc']+$element->total_ttc;
                     $arrayCurrencys['USD']['tcccot']= $arrayCurrencys['USD']['tcccot']+$total_conversion_sin_formato;
-				}	
+				}
 
 				/**********************************************************************************************************************/
 				$total_ht = $total_ht + $element->total_ht;
@@ -652,12 +659,13 @@ foreach ($listofreferent as $key => $value)
 		//	print_r($arrayCurrencys);
 			$total[$value['class']]=$total_ttc;
 			$costo[$value['class']]=$total_cost;
+            $costo[$value['class']]=$total_tcccot;
 			$importeTotales[$title]['currencies']=$arrayCurrencys;
 				/*
 			************************************************************************************
 			Subtotal Base imponible	y Importe total	por moneda
 			*/
-
+ 
 			foreach ($arrayCurrencys as $divisa => $arrayTotales)	{
 				print '<tr class="liste_total">';
 				print '<td>Total</td>';
@@ -804,7 +812,7 @@ foreach ($importeTotales as $title => $currencies) {
             /***********************************************************************************/
 				$sum_c+=$arrayValues['c'];
 				$sum+=$arrayValues['ht'];
-				$sum_tcccot= $arrayValues['tcccot'];
+				$sum_tcccot+= $arrayValues['tcccot'];
 
             }            
         }

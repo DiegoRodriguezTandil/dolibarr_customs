@@ -338,7 +338,7 @@ foreach ($listofreferent as $key => $value)
 		print '<tr class="liste_titre">';
 		print '<td width="100">'.$langs->trans("Ref").'</td>';
 		print '<td width="100" align="center">'.$langs->trans("Date").'</td>';
-		print '<td width="400">'.$langs->trans("ThirdParty").'</td>';
+		print '<td width="500">'.$langs->trans("ThirdParty").'</td>';
 		//FEDE
 		print '<td align="center" width="50">'.$langs->trans("Divisa").'</td>';
 		
@@ -346,12 +346,12 @@ foreach ($listofreferent as $key => $value)
 
 		//FIN FEDE
 
-		if (empty($value['disableamount']))
+		/*if (empty($value['disableamount']))
 			if($classname=='Salesorder')
 				print '<td align="center" width="150">'.$langs->trans("Importe Venta (+IVA) ").'</td>';
 			else
 				print '<td align="right" width="150"></td>';
-		
+		*/
 		/*if($classname=='Deplacement')
 			print '<td align="right" width="120">'.$langs->trans("Gasto").'</td>';
 		else
@@ -359,7 +359,7 @@ foreach ($listofreferent as $key => $value)
 		*/
         print '<td class=""  align="center" width="300">Cotización</td>';
 
-        print '<td  width="180" >(USD) Valor Venta</td>';
+        print '<td  width="180" >(USD) Importe</td>';
 
 		print '<td align="center" width="200">'.$langs->trans("Status").'</td>';
 		print '</tr>';
@@ -426,7 +426,7 @@ foreach ($listofreferent as $key => $value)
 				//if (empty($value['disableamount'])) print '<td align="right">'.(isset($element->total_ttc)?price($element->total_ttc*$rate,0,'',0,2,2):'&nbsp;').'</td>';
 
 					// Amount
-				if (empty($value['disableamount'])){
+				/*if (empty($value['disableamount'])){
 					 print '<td align="right">';
 						if(isset($element->total_ttc)){
                             echo price($element->total_ttc ,0,'',0,2,2);
@@ -436,7 +436,7 @@ foreach ($listofreferent as $key => $value)
 					print'</td>';
 
 					};
-
+				*/
 				//	print '<td align="right">'.(isset($element->cost)?price($element->cost*$rate,0,'',0,2,2):'&nbsp;').'</td>';
 
 
@@ -608,17 +608,17 @@ foreach ($listofreferent as $key => $value)
                     echo "<td  align='center' > - </td>";
 				}
 
-				if(!empty($element->total_ttc) and !empty($obj->valor_divisa_destino) and $element->fk_currency<>$obj->divisa_destino){
+				if(!empty($element->total_ht) and !empty($obj->valor_divisa_destino) and $element->fk_currency<>$obj->divisa_destino){
 
-                    $total_conversion=$element->total_ttc * $obj->valor_divisa_destino;
+                    $total_conversion=$element->total_ht * $obj->valor_divisa_destino;
                     $total_conversion_sin_formato=$total_conversion/$obj->valor_divisa_origen;
                     $total_conversion=price($total_conversion_sin_formato,0,'',0,2,2);
                     echo "<td  align='right' width='120px'>
 						USD 	{$total_conversion}
 					  </td>";
 				}else{
-                    $total_conversion_sin_formato=floatval($element->total_ttc);
-                    $total_conversion=price($element->total_ttc,0,'',0,2,2);
+                    $total_conversion_sin_formato=floatval($element->total_ht);
+                    $total_conversion=price($element->total_ht,0,'',0,2,2);
                     echo "<td  align='right' width='120px'>
 							USD  {$total_conversion}
 					  </td>";
@@ -665,7 +665,7 @@ foreach ($listofreferent as $key => $value)
 			************************************************************************************
 			Subtotal Base imponible	y Importe total	por moneda
 			*/
- 
+
 			foreach ($arrayCurrencys as $divisa => $arrayTotales)	{
 				print '<tr class="liste_total">';
 				print '<td>Total</td>';
@@ -677,9 +677,11 @@ foreach ($listofreferent as $key => $value)
 				}else{
 					print '<td>&nbsp;</td>';
 				}				
+				/*
 				if(isset($arrayTotales['tcc']) ){ //&& 	$view_tcc ){
 					print '<td align="right" title="venta"><b><I> '.$divisa.' '.price($arrayTotales['tcc']).'</I></b></td>';
 				}
+				*/
 				if(isset($arrayTotales['c'])){											
 					//print '<td align="right" title="Gasto"><b><I> '.$divisa.' '.price($arrayTotales['c'],0,'',0,2,2).'</I></b></td>';
 				}else{
@@ -782,7 +784,7 @@ print '<table class="noborder" width="100%">
 	<tr class="liste_titre">
 		<th >Titulo</th>
 		<th align=center >Divisa Consolidada</th>
-		<th  align=right>Importe Venta (+IVA)</th>
+		<th  align=center>Importe</th>
 		<!--<th  align=right>Costo</th>-->
 	</tr>
 </thead>

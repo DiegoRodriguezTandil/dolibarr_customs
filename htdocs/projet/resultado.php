@@ -146,23 +146,25 @@ INSERT INTO llx_consolidation_salesorder
 
  */
 
-if(!empty($_POST['salesorder_id']) &&  empty($_POST['resetTipo']) ){
+if(!empty($_POST['entidad_id']) &&  empty($_POST['resetTipo']) ){
     $divisa_origen 				= $_POST['divisa_origen'];
     $valor_divisa_origen		= $_POST['valor_divisa_origen'];
     $valor_divisa_destino		= $_POST['valor_divisa_destino'];
-    $salesorder_id				= $_POST['salesorder_id'];
+    $entidad_id					= $_POST['entidad_id'];
     $fecha_i					= $_POST['fecha_ingreso'];
-    $consolidation_selesorder_id= $_POST['id_consolidation_selesorder'];
+    $id_consolidation			= $_POST['id_consolidation'];
+    $entidad= $_POST['entidad'];
 
-	if(isset($consolidation_selesorder_id)){
-		$sql ="INSERT INTO ".MAIN_DB_PREFIX."consolidation_salesorder (id, salesorder_id,fecha_ingreso,divisa_origen,valor_divisa_origen,valor_divisa_destino)";
-		$sql.= " VALUES (".$consolidation_selesorder_id.",".$salesorder_id.",'".$fecha_i."','".$divisa_origen."',".$valor_divisa_origen.",'".$valor_divisa_destino."')";
+
+
+	if(isset($id_consolidation) && !empty( $id_consolidation)){
+		$sql ="INSERT INTO ".MAIN_DB_PREFIX."consolidation_".$entidad." (id,".$entidad."_id,fecha_ingreso,divisa_origen,valor_divisa_origen,valor_divisa_destino)";
+		$sql.= " VALUES (".$id_consolidation.",".$entidad_id.",'".$fecha_i."','".$divisa_origen."',".$valor_divisa_origen.",'".$valor_divisa_destino."')";
 	}else{
-		$sql ="INSERT INTO ".MAIN_DB_PREFIX."consolidation_salesorder (salesorder_id,fecha_ingreso,divisa_origen,valor_divisa_origen,valor_divisa_destino)";
-		$sql.= " VALUES (".$salesorder_id.",'".$fecha_i."','".$divisa_origen."',".$valor_divisa_origen.",'".$valor_divisa_destino."')";
+		$sql ="INSERT INTO ".MAIN_DB_PREFIX."consolidation_".$entidad." (".$entidad."_id,fecha_ingreso,divisa_origen,valor_divisa_origen,valor_divisa_destino)";
+		$sql.= " VALUES (".$entidad_id.",'".$fecha_i."','".$divisa_origen."',".$valor_divisa_origen.",'".$valor_divisa_destino."')";
 	}
-
-	if(isset($consolidation_selesorder_id)){
+	if(isset($id_consolidation) && !empty( $id_consolidation)){
         $sql.= " ON DUPLICATE KEY UPDATE valor_divisa_origen=".$valor_divisa_origen.",valor_divisa_destino='".$valor_divisa_destino."'";
 	}else{
         $sql.=";";
@@ -170,9 +172,12 @@ if(!empty($_POST['salesorder_id']) &&  empty($_POST['resetTipo']) ){
 	$resql = $db->query($sql);
 
 }else if(!empty($_POST['resetTipo'])){
-    $consolidation_selesorder_id= $_POST['id_consolidation_selesorder'];
-    $sql ="DELETE FROM ".MAIN_DB_PREFIX. "consolidation_salesorder WHERE id={$consolidation_selesorder_id}";
+	//Elimina la cotizacion cargada para una tupla
+    $entidad= $_POST['entidad'];
+    $id_consolidation= $_POST['id_consolidation'];
+    $sql ="DELETE FROM ".MAIN_DB_PREFIX. "consolidation_".$entidad."  WHERE id={$id_consolidation}";
     $resql = $db->query($sql);
+
 }
 
 /**************************************************************************************************************/
@@ -249,11 +254,6 @@ print '</table>';
 
 print '</div>';
 
-
-
-
-
-
 echo
 	"<script>
 		function conversionManual(linea){
@@ -299,12 +299,13 @@ $listofreferent=array(
 	'class'=>'Salesorder',
 	'test'=>$conf->salesorder->enabled,
 	'operation'=>'+'),
-/*'trip'=>array(
+
+'trip'=>array(
 	'title'=>"ListTripAssociatedProject",
 	'class'=>'Deplacement',
 	'test'=>$conf->deplacement->enabled,
 	'operation'=>'-'),
-
+/*
 'policy'=>array(
 	'title'=>"Listado de pólizas asociadas al proyecto",
 	'class'=>'Policy',
@@ -317,16 +318,19 @@ $listofreferent=array(
 	'test'=>$conf->deplacement->enabled)
 */
 );
+
 $arrayCurrencys = array();
 $importeTotales = array();
+$linea=0;
 foreach ($listofreferent as $key => $value)
 {
 	$title=$value['title'];
 	$operation=$value['operation'];
-	$classname=$value['class'];
+	$classname=strtolower($value['class']);
+    $entidadName=$classname;
 	$qualified=$value['test'];
 	$importeTotales[$title]['operation']=$operation;
-	$linea=0;
+
 	$view_tcc=false;
 	if ($qualified)
 	{
@@ -376,9 +380,7 @@ foreach ($listofreferent as $key => $value)
 			for ($i = 0; $i < $num; $i++)
 			{
 				$element = new $classname($db);
-
 				$element->fetch($elementarray[$i]);
-
 				$element->fetch_thirdparty();
 				//print $classname;
 
@@ -439,9 +441,12 @@ foreach ($listofreferent as $key => $value)
 				*/
 				//	print '<td align="right">'.(isset($element->cost)?price($element->cost*$rate,0,'',0,2,2):'&nbsp;').'</td>';
 
-
+                $resqlFinal=0;
+                //Solo si es diferente de usd se visualizara el form
                 if($element->fk_currency!='USD') {
-               		 $sqlQuerySalesorder = " 
+
+                	//query de la entidad a realizar cotizacion
+               		 $sqlQueryEntidad = " 
 						SELECT 	cs.id
 								,cs.fecha_ingreso
 								,cs.divisa_origen
@@ -449,15 +454,17 @@ foreach ($listofreferent as $key => $value)
 								,cs.valor_divisa_origen
 								,cs.valor_divisa_destino 
 								,tipo
-						FROM   llx_consolidation_salesorder cs 
-						left join llx_salesorder   on (cs.salesorder_id=llx_salesorder.rowid)
-						where llx_salesorder.rowid={$element->id};
+						FROM   llx_consolidation_".$entidadName." cs 
+						left join llx_".$entidadName."   on (cs.".$entidadName."_id=llx_".$entidadName.".rowid)
+						where llx_".$entidadName.".rowid={$element->id} ;
 					";
-					$resqlSalesorder = $db->query($sqlQuerySalesorder);
 
-					if( $resqlSalesorder  && $db->num_rows($resqlSalesorder)>0) {
-                        $resqlFinal = $resqlSalesorder;
+					$resqlEntidad = $db->query($sqlQueryEntidad);
+
+					if( $resqlEntidad  && $db->num_rows($resqlEntidad)>0) {
+                        $resqlFinal = $resqlEntidad;
                     }else{
+							//de no existir una cotizacin para la entidad entonces se obtiene de consolidation_day segun la fecha obtenida de la entidad
 							$fecha=dol_print_date($date,'day');
 							$fecha_ingreso	= DateTime::createFromFormat('d/m/Y',$fecha)
 							->format('Y-m-d');
@@ -475,8 +482,10 @@ foreach ($listofreferent as $key => $value)
 								ORDER BY fecha_ingreso DESC LIMIT 1";
 							$resqlConsolidationDay = $db->query($sqlQuery);
 							if( $resqlConsolidationDay  && $db->num_rows($resqlConsolidationDay)>0) {
+                                var_dump("488");
 								$resqlFinal = $resqlConsolidationDay;
 							}else{
+								//Obtiene la fecha mas cercana a la fecha de la entidad ya sea < o >
                                 $sqlQueryFechaMinMax =
                                     "
 										SELECT  id
@@ -500,26 +509,28 @@ foreach ($listofreferent as $key => $value)
 														FROM llx_consolidation_day
 														where fecha_ingreso  > '{$fecha_ingreso}'
 													) as fmax
-												where llx_consolidation_day.fecha_ingreso=fmin.fMin
-												or   llx_consolidation_day.fecha_ingreso=fmax.fMax
+												where (llx_consolidation_day.fecha_ingreso=fmin.fMin
+												or   llx_consolidation_day.fecha_ingreso=fmax.fMax)
+												AND divisa_origen='{$element->fk_currency}'
+											
 										);
 									";
                                 $resqlFechaMinMax = $db->query($sqlQueryFechaMinMax);
                                 if($resqlFechaMinMax  && $db->num_rows($resqlFechaMinMax)){
                                     $resqlFinal= $resqlFechaMinMax;
-
 								}
 							}
-
 					}
 
                     $date = new DateTime();
                     $fecha_ingreso_format_db= date_format($date, 'Y-m-d');
                     $fecha_ingreso_format_view = date_format($date, 'd/m/Y');
 					if( $resqlFinal  && $db->num_rows($resqlFinal)>0){
+						//Si existe cotizacion ya sea en consolidation_day o en la tabla de cotizacion de la entidad a cotizar
+
+
                         $obj = $db->fetch_object($resqlFinal);
-                        $fecha_ingreso_format_view	= DateTime::createFromFormat('Y-m-d',$obj->fecha_ingreso)
-                            ->format('d/m/Y');
+                        $fecha_ingreso_format_view	= DateTime::createFromFormat('Y-m-d',$obj->fecha_ingreso)->format('d/m/Y');
                         echo"<td  style='font-size:80%; padding-left:10px;' align='left' width='200px' >
 							 <span>Cotización al dia <b>{$fecha_ingreso_format_view}</b><span><br>
 							 <div id='conversion_general-{$linea}'>
@@ -549,10 +560,13 @@ foreach ($listofreferent as $key => $value)
 									</b> 
 											<input name='valor_divisa_destino' class='input_nueva_conversion-{$linea}'  style='width:50px;'  type='NUMBER' step='any' required'>
 											<input name='divisa_origen' class='input_nueva_conversion-{$linea}'  type='hidden' value='{$element->fk_currency}' >
-											<input name='salesorder_id'  class='input_nueva_conversion-{$linea}'  type='hidden' value='{$element->id}' >
+											<input name='entidad_id'  class='input_nueva_conversion-{$linea}'  type='hidden' value='{$element->id}' >
 											<input name='fecha_ingreso'  class='input_nueva_conversion-{$linea}'  type='hidden' value='{$fecha_ingreso_format_db}' >
-											<input name='id_consolidation_selesorder'  class=''  type='hidden' value='{$obj->id}' >
+											<input name='id_consolidation'  class=''  type='hidden' value='{$obj->id}' >
 											<input name='resetTipo' id='resetTipoGeneral-{$linea}' value='0'  type='hidden' >
+											
+											<input name='entidad' id='resetTipoGeneral-{$linea}' value='{$entidadName}'  type='hidden' >
+											
 									
 									<br>
 									<div style='margin-top: 5px; margin-left:1px;'>
@@ -564,6 +578,7 @@ foreach ($listofreferent as $key => $value)
 							 </div> 							
 							</td>";
 					}else{
+						//Si no existe cotizacion entonces por defecto se mostrara este formulario
 						echo "
 							<td  style='font-size:80%; padding-left:10px;' align='left' width='200px' >
 								<div id='conversion_general-{$linea}' >
@@ -589,9 +604,9 @@ foreach ($listofreferent as $key => $value)
 												</b>
 											<input name='valor_divisa_destino' class='input_nueva_conversion-{$linea}'  style='width:50px;'  type='NUMBER' step='any' required'>
 											<input name='divisa_origen' class='input_nueva_conversion-{$linea}'  type='hidden' value='{$element->fk_currency}' >
-											<input name='salesorder_id'  class='input_nueva_conversion-{$linea}'  type='hidden' value='{$element->id}' >
+											<input name='entidad_id'  class='input_nueva_conversion-{$linea}'  type='hidden' value='{$element->id}' >
 											<input name='fecha_ingreso'  class='input_nueva_conversion-{$linea}'  type='hidden' value='{$fecha_ingreso_format_db}' >																					
-																				
+												<input name='entidad' id='resetTipoGeneral-{$linea}' value='{$entidadName}'  type='hidden' >						
 												<br>
 											
 										</div>

@@ -155,8 +155,6 @@ if(!empty($_POST['entidad_id']) &&  empty($_POST['resetTipo']) ){
     $id_consolidation			= $_POST['id_consolidation'];
     $entidad= $_POST['entidad'];
 
-
-
 	if(isset($id_consolidation) && !empty( $id_consolidation)){
 		$sql ="INSERT INTO ".MAIN_DB_PREFIX."consolidation_".$entidad." (id,".$entidad."_id,fecha_ingreso,divisa_origen,valor_divisa_origen,valor_divisa_destino)";
 		$sql.= " VALUES (".$id_consolidation.",".$entidad_id.",'".$fecha_i."','".$divisa_origen."',".$valor_divisa_origen.",'".$valor_divisa_destino."')";
@@ -169,6 +167,8 @@ if(!empty($_POST['entidad_id']) &&  empty($_POST['resetTipo']) ){
 	}else{
         $sql.=";";
 	}
+
+	print_r($sql);
 	$resql = $db->query($sql);
 
 }else if(!empty($_POST['resetTipo'])){
@@ -442,6 +442,7 @@ foreach ($listofreferent as $key => $value)
 				//	print '<td align="right">'.(isset($element->cost)?price($element->cost*$rate,0,'',0,2,2):'&nbsp;').'</td>';
 
                 $resqlFinal=0;
+                $id_de_consolidacion_manual=false;
                 //Solo si es diferente de usd se visualizara el form
                 if($element->fk_currency!='USD') {
 
@@ -458,11 +459,10 @@ foreach ($listofreferent as $key => $value)
 						left join llx_".$entidadName."   on (cs.".$entidadName."_id=llx_".$entidadName.".rowid)
 						where llx_".$entidadName.".rowid={$element->id} ;
 					";
-
 					$resqlEntidad = $db->query($sqlQueryEntidad);
-
 					if( $resqlEntidad  && $db->num_rows($resqlEntidad)>0) {
                         $resqlFinal = $resqlEntidad;
+                        $id_de_consolidacion_manual=true;
                     }else{
 							//de no existir una cotizacin para la entidad entonces se obtiene de consolidation_day segun la fecha obtenida de la entidad
 							$fecha=dol_print_date($date,'day');
@@ -482,7 +482,6 @@ foreach ($listofreferent as $key => $value)
 								ORDER BY fecha_ingreso DESC LIMIT 1";
 							$resqlConsolidationDay = $db->query($sqlQuery);
 							if( $resqlConsolidationDay  && $db->num_rows($resqlConsolidationDay)>0) {
-                                var_dump("488");
 								$resqlFinal = $resqlConsolidationDay;
 							}else{
 								//Obtiene la fecha mas cercana a la fecha de la entidad ya sea < o >
@@ -550,7 +549,7 @@ foreach ($listofreferent as $key => $value)
 							 </div>";
                         echo "<div hidden id='conversion_manual-{$linea}'>
 								<span>Tipo: {$obj->tipo}</span><br>
-								<form method='POST' id='form-{$linea}' action='/projet/resultado.php?id={$projectid}'  >
+								<form method='POST' id='form-{$linea}' action=".DOL_URL_ROOT."/projet/resultado.php?id={$projectid}  >
 									<b>
 										{$obj->divisa_origen}
 									</b> 
@@ -562,7 +561,10 @@ foreach ($listofreferent as $key => $value)
 											<input name='divisa_origen' class='input_nueva_conversion-{$linea}'  type='hidden' value='{$element->fk_currency}' >
 											<input name='entidad_id'  class='input_nueva_conversion-{$linea}'  type='hidden' value='{$element->id}' >
 											<input name='fecha_ingreso'  class='input_nueva_conversion-{$linea}'  type='hidden' value='{$fecha_ingreso_format_db}' >
-											<input name='id_consolidation'  class=''  type='hidden' value='{$obj->id}' >
+											";
+                        				echo $id_de_consolidacion_manual===true ? "
+											<input name='id_consolidation'  class=''  type='hidden' value='{$obj->id}' >" :  "";
+                        				echo "
 											<input name='resetTipo' id='resetTipoGeneral-{$linea}' value='0'  type='hidden' >
 											
 											<input name='entidad' id='resetTipoGeneral-{$linea}' value='{$entidadName}'  type='hidden' >
@@ -593,7 +595,7 @@ foreach ($listofreferent as $key => $value)
 										Cotización al dia
 										<b>{$fecha_ingreso_format_view}</b>
 									<span><br>
-									<form method='POST' action='/projet/resultado.php?id={$projectid}'>
+									<form method='POST' action=".DOL_URL_ROOT."/projet/resultado.php?id={$projectid}>
 										<div >
 												<b>
 													{$element->fk_currency}

@@ -168,7 +168,6 @@ if(!empty($_POST['entidad_id']) &&  empty($_POST['resetTipo']) ){
         $sql.=";";
 	}
 
-	print_r($sql);
 	$resql = $db->query($sql);
 
 }else if(!empty($_POST['resetTipo'])){

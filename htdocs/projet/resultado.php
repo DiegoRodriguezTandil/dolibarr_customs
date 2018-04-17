@@ -119,7 +119,7 @@ $valor_moneda_conversion= $(".seleccion_de_divisa").val();
 */
 
 if(!empty($_POST['consolidation'])){
-	
+
     $moneda_consolidacion=$_POST['seleccion_de_divisa'];
 	$sql ="INSERT INTO ".MAIN_DB_PREFIX."consolidation (fk_projet, fk_currency)";
 	$sql.= " VALUES (".$projectid.",'".$moneda_consolidacion."')";
@@ -133,16 +133,16 @@ if(!empty($_POST['consolidation'])){
 				$sql.="INSERT INTO ".MAIN_DB_PREFIX."consolidation_detail (fk_projet, fk_currency, value,CURRENCY_CONVERTION_VALUE )";
 				$sql.= " VALUES (".$projectid.",'". $divisa."',".$valores_conversion['val_original'].",".$valores_conversion['val_conversion'].")";
 				$sql.= " ON DUPLICATE KEY UPDATE VALUE=".$valores_conversion['val_original'].",CURRENCY_CONVERTION_VALUE=".$valores_conversion['val_conversion'].";";
-				$resql = $db->query($sql);			
+				$resql = $db->query($sql);
 		}
  	}
-	 
+
 
 }
 
 /**************************************************************************************************************/
 /*************************************************************************************************************
-INSERT INTO llx_consolidation_salesorder
+INSERT INTO llx_consolidation_(dinamyc entity)
 
  */
 
@@ -167,7 +167,6 @@ if(!empty($_POST['entidad_id']) &&  empty($_POST['resetTipo']) ){
 	}else{
         $sql.=";";
 	}
-
 	$resql = $db->query($sql);
 
 }else if(!empty($_POST['resetTipo'])){
@@ -293,17 +292,25 @@ echo
  */
 
 $listofreferent=array(
-'salesorder'=>array(
-	'title'=>"Listado de Ordenes de Venta asociadas al proyecto",
-	'class'=>'Salesorder',
-	'test'=>$conf->salesorder->enabled,
-	'operation'=>'+'),
+	'salesorder'=>array(
+		'title'=>"Listado de Ordenes de Venta asociadas al proyecto",
+		'class'=>'Salesorder',
+		'test'=>$conf->salesorder->enabled,
+        'entity_table'=>'salesorder',
+		'operation'=>'+'),
+    'order_supplier'=>array(
+        'title'=>"ListSupplierOrdersAssociatedProject",
+        'class'=>'CommandeFournisseur',
+        'entity_table'=>'commande_fournisseur',
+        'test'=>$conf->fournisseur->enabled,
+        'operation'=>'-'),
+	'trip'=>array(
+		'title'=>"ListTripAssociatedProject",
+		'class'=>'Deplacement',
+        'entity_table'=>'deplacement',
+		'test'=>$conf->deplacement->enabled,
+		'operation'=>'-'),
 
-'trip'=>array(
-	'title'=>"ListTripAssociatedProject",
-	'class'=>'Deplacement',
-	'test'=>$conf->deplacement->enabled,
-	'operation'=>'-'),
 /*
 'policy'=>array(
 	'title'=>"Listado de pólizas asociadas al proyecto",
@@ -318,6 +325,7 @@ $listofreferent=array(
 */
 );
 
+
 $arrayCurrencys = array();
 $importeTotales = array();
 $linea=0;
@@ -326,7 +334,7 @@ foreach ($listofreferent as $key => $value)
 	$title=$value['title'];
 	$operation=$value['operation'];
 	$classname=strtolower($value['class']);
-    $entidadName=$classname;
+    $entidadName=strtolower($value[entity_table]);
 	$qualified=$value['test'];
 	$importeTotales[$title]['operation']=$operation;
 
@@ -413,7 +421,7 @@ foreach ($listofreferent as $key => $value)
 
 				
 				//FEDE
-				$rate=$element->getRate($elementarray[$i],$conf->currency);
+				// 	$rate=$element->getRate($elementarray[$i],$conf->currency);
 				/*
 				$resql=$db->query("SELECT rate FROM llx_currency_conversion a join llx_deplacement b on a.source=b.fk_currency and a.target='ARS' where rowid=".$elementarray[$i]." order by date desc");
 				if($conv = $db->fetch_object($resql))
@@ -458,6 +466,7 @@ foreach ($listofreferent as $key => $value)
 						left join llx_".$entidadName."   on (cs.".$entidadName."_id=llx_".$entidadName.".rowid)
 						where llx_".$entidadName.".rowid={$element->id} ;
 					";
+
 					$resqlEntidad = $db->query($sqlQueryEntidad);
 					if( $resqlEntidad  && $db->num_rows($resqlEntidad)>0) {
                         $resqlFinal = $resqlEntidad;
@@ -514,6 +523,7 @@ foreach ($listofreferent as $key => $value)
 										);
 									";
                                 $resqlFechaMinMax = $db->query($sqlQueryFechaMinMax);
+                                var_dump($resqlFechaMinMax);  print_r($sqlQueryFechaMinMax); var_dump($db->num_rows($resqlFechaMinMax));
                                 if($resqlFechaMinMax  && $db->num_rows($resqlFechaMinMax)){
                                     $resqlFinal= $resqlFechaMinMax;
 								}
@@ -525,7 +535,6 @@ foreach ($listofreferent as $key => $value)
                     $fecha_ingreso_format_view = date_format($date, 'd/m/Y');
 					if( $resqlFinal  && $db->num_rows($resqlFinal)>0){
 						//Si existe cotizacion ya sea en consolidation_day o en la tabla de cotizacion de la entidad a cotizar
-
 
                         $obj = $db->fetch_object($resqlFinal);
                         $fecha_ingreso_format_view	= DateTime::createFromFormat('Y-m-d',$obj->fecha_ingreso)->format('d/m/Y');

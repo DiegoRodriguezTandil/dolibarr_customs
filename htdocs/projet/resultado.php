@@ -120,8 +120,10 @@ INSERT INTO llx_consolidation_(dinamyc entity)
 
 if(!empty($_POST['entidad_id']) &&  empty($_POST['resetTipo']) ){
     $divisa_origen 				= $_POST['divisa_origen'];
-    $valor_divisa_origen		= empty($_POST['valor_divisa_origen'])  ? 1 : $_POST['valor_divisa_origen'];
-    $valor_divisa_destino		= empty($_POST['valor_divisa_destino']) ? 1 : $_POST['valor_divisa_destino'] ;
+    $valor_divisa_origen_format_dot= empty($_POST['valor_divisa_origen'])  ? 1 : str_replace(".", "", $_POST['valor_divisa_origen']);
+    $valor_divisa_origen		=    empty($_POST['valor_divisa_origen'])  ? 1 : str_replace(",", ".",$valor_divisa_origen_format_dot);
+    $valor_divisa_destino_format_dot= empty($_POST['valor_divisa_destino'])  ? 1 : str_replace(".", "", $_POST['valor_divisa_destino']);
+    $valor_divisa_destino		=    empty($_POST['valor_divisa_destino'])  ? 1 : str_replace(",", ".",$valor_divisa_destino_format_dot);
     $entidad_id					= $_POST['entidad_id'];
     $fecha_i					= $_POST['fecha_ingreso'];
     $id_consolidation			= $_POST['id_consolidation'];
@@ -255,7 +257,56 @@ echo
 		    $(id_input_nueva_conversion).attr('required',false);  
 		 	$(id_form).submit(); 
 		}			
+		$( document ).ready(function() {
+	
+	
+			/*valida que los campos valor_unitario y valor_total de detalle pedido sean numericos pero permitan ingresar coma*/
+			$(document).on('keydown', '.input_only_number', function(e){
+				 -1!==$.inArray(e.keyCode,[46,8,9,27,13,110,190,188])||(/65|67|86|88/.test(e.keyCode)&&(e.ctrlKey===true||e.metaKey===true))&&(!0===e.ctrlKey||!0===e.metaKey)||35<=e.keyCode&&40>=e.keyCode||(e.shiftKey||48>e.keyCode||57<e.keyCode)&&(96>e.keyCode||105<e.keyCode)&&e.preventDefault()
+			});
 		
+			/*controla el ingreso de datos con formato ###.###,## para los campos valor_unitario y valor_total de detalle pedido */
+			$(document).on('keyup', '.input_only_number', function () {
+				$(this).val( numberFormat($(this).val() )  );
+			
+			});
+		
+			function numberFormat(numero){
+				// Variable que contendra el resultado final
+				var resultado = '';
+		
+				// Si el numero empieza por el valor \"-\" (numero negativo)
+				if(numero[0]=='-')
+				{
+					// Cogemos el numero eliminando los posibles puntos que tenga, y sin
+					// el signo negativo
+					nuevoNumero=numero.replace(/\./g,'').substring(1);
+		
+				}else{
+					// Cogemos el numero eliminando los posibles puntos que tenga
+					nuevoNumero=numero.replace(/\./g,'');
+				}
+				// Si tiene decimales, se los quitamos al numero
+				if(numero.indexOf(',')>=0)
+					nuevoNumero=nuevoNumero.substring(0,nuevoNumero.indexOf(','));
+		
+				// Ponemos un punto cada 3 caracteres
+				for (var j, i = nuevoNumero.length - 1, j = 0; i >= 0; i--, j++)
+		
+					resultado = nuevoNumero.charAt(i) + ((j > 0) && (j % 3 == 0)? '.': '') + resultado;
+				// Si tiene decimales, se lo añadimos al numero una vez forateado con 
+				// los separadores de miles
+				if(numero.indexOf(',')>=0)
+					resultado+=numero.substring(numero.indexOf(','));
+				if(numero[0]=='-')
+				{
+					// Devolvemos el valor añadiendo al inicio el signo negativo
+					return '-'+resultado;
+				}else{
+					return resultado;
+				}
+			}		 	
+		});	
 	</script>";
 
 
@@ -533,11 +584,12 @@ foreach ($listofreferent as $key => $value)
 									<b>
 										{$obj->divisa_origen}
 									</b> 
-									<input name='valor_divisa_origen' class='input_nueva_conversion-{$linea}' style='width:50px;' type='NUMBER' step='any' required> /
+									<input name='valor_divisa_origen' class='input_nueva_conversion-{$linea} input_only_number' style='width:50px;'   required> /
 									<b>
 										{$obj->divisa_destino}
+										
 									</b> 
-											<input name='valor_divisa_destino' class='input_nueva_conversion-{$linea}'  style='width:50px;'  type='NUMBER' step='any' required'>
+											<input name='valor_divisa_destino' class='input_nueva_conversion-{$linea} input_only_number'  style='width:50px;'   required>
 											<input name='divisa_origen' class='input_nueva_conversion-{$linea}'  type='hidden' value='{$element->fk_currency}' >
 											<input name='entidad_id'  class='input_nueva_conversion-{$linea}'  type='hidden' value='{$element->id}' >
 											<input name='fecha_ingreso'  class='input_nueva_conversion-{$linea}'  type='hidden' value='{$fecha_ingreso_format_db}' >
@@ -580,11 +632,11 @@ foreach ($listofreferent as $key => $value)
 												<b>
 													{$element->fk_currency}
 												</b>
-													<input name='valor_divisa_origen' class='input_nueva_conversion-{$linea}'   style='width:50px;' type='NUMBER' step='any' required'>
+													<input name='valor_divisa_origen' class='input_nueva_conversion-{$linea}'   style='width:50px;' type='NUMBER'  step='.01' required>
 												<b>
 													USD
 												</b>
-											<input name='valor_divisa_destino' class='input_nueva_conversion-{$linea}'  style='width:50px;'  type='NUMBER' step='any' required'>
+											<input name='valor_divisa_destino' class='input_nueva_conversion-{$linea}'  style='width:50px;'  type='NUMBER' step='any' required>
 											<input name='divisa_origen' class='input_nueva_conversion-{$linea}'  type='hidden' value='{$element->fk_currency}' >
 											<input name='entidad_id'  class='input_nueva_conversion-{$linea}'  type='hidden' value='{$element->id}' >
 											<input name='fecha_ingreso'  class='input_nueva_conversion-{$linea}'  type='hidden' value='{$fecha_ingreso_format_db}' >																					

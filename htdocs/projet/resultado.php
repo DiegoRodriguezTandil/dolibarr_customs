@@ -112,35 +112,7 @@ $valor_moneda_conversion= $(".seleccion_de_divisa").val();
 </script>';
 /*************************************************************************/
 
-
-/*************************************************************************************************************
-	insert if consolidation is true
-	when send post for save consolidation currencies of projet the insert this into consolidation scheme
-*/
-
-if(!empty($_POST['consolidation'])){
-
-    $moneda_consolidacion=$_POST['seleccion_de_divisa'];
-	$sql ="INSERT INTO ".MAIN_DB_PREFIX."consolidation (fk_projet, fk_currency)";
-	$sql.= " VALUES (".$projectid.",'".$moneda_consolidacion."')";
-    $sql.= " ON DUPLICATE KEY UPDATE fk_currency= '".$moneda_consolidacion."';";
-	$resql = $db->query($sql);
-
-	if(!empty($_POST['divisas'])){
-		$arrDivisas=$_POST['divisas'];
-		foreach ($arrDivisas as $divisa => $valores_conversion) {
-				$sql='';
-				$sql.="INSERT INTO ".MAIN_DB_PREFIX."consolidation_detail (fk_projet, fk_currency, value,CURRENCY_CONVERTION_VALUE )";
-				$sql.= " VALUES (".$projectid.",'". $divisa."',".$valores_conversion['val_original'].",".$valores_conversion['val_conversion'].")";
-				$sql.= " ON DUPLICATE KEY UPDATE VALUE=".$valores_conversion['val_original'].",CURRENCY_CONVERTION_VALUE=".$valores_conversion['val_conversion'].";";
-				$resql = $db->query($sql);
-		}
- 	}
-
-
-}
-
-/**************************************************************************************************************/
+ /**************************************************************************************************************/
 /*************************************************************************************************************
 INSERT INTO llx_consolidation_(dinamyc entity)
 
@@ -148,8 +120,8 @@ INSERT INTO llx_consolidation_(dinamyc entity)
 
 if(!empty($_POST['entidad_id']) &&  empty($_POST['resetTipo']) ){
     $divisa_origen 				= $_POST['divisa_origen'];
-    $valor_divisa_origen		= $_POST['valor_divisa_origen'];
-    $valor_divisa_destino		= $_POST['valor_divisa_destino'];
+    $valor_divisa_origen		= empty($_POST['valor_divisa_origen'])  ? 1 : $_POST['valor_divisa_origen'];
+    $valor_divisa_destino		= empty($_POST['valor_divisa_destino']) ? 1 : $_POST['valor_divisa_destino'] ;
     $entidad_id					= $_POST['entidad_id'];
     $fecha_i					= $_POST['fecha_ingreso'];
     $id_consolidation			= $_POST['id_consolidation'];
@@ -523,7 +495,7 @@ foreach ($listofreferent as $key => $value)
 										);
 									";
                                 $resqlFechaMinMax = $db->query($sqlQueryFechaMinMax);
-                                var_dump($resqlFechaMinMax);  print_r($sqlQueryFechaMinMax); var_dump($db->num_rows($resqlFechaMinMax));
+                               // var_dump($resqlFechaMinMax);  print_r($sqlQueryFechaMinMax); var_dump($db->num_rows($resqlFechaMinMax));
                                 if($resqlFechaMinMax  && $db->num_rows($resqlFechaMinMax)){
                                     $resqlFinal= $resqlFechaMinMax;
 								}
@@ -631,6 +603,7 @@ foreach ($listofreferent as $key => $value)
 
                 }else{
                     echo "<td  align='center' > - </td>";
+                    $obj='';
 				}
 
 				if(!empty($element->total_ht) and !empty($obj->valor_divisa_destino) and $element->fk_currency<>$obj->divisa_destino){
@@ -639,13 +612,13 @@ foreach ($listofreferent as $key => $value)
                     $total_conversion_sin_formato=$total_conversion/$obj->valor_divisa_origen;
                     $total_conversion=price($total_conversion_sin_formato,0,'',0,2,2);
                     echo "<td  align='right' width='120px'>
-						USD 	{$total_conversion}
+						USD {$total_conversion} 
 					  </td>";
 				}else{
                     $total_conversion_sin_formato=floatval($element->total_ht);
                     $total_conversion=price($element->total_ht,0,'',0,2,2);
                     echo "<td  align='right' width='120px'>
-							USD  {$total_conversion}
+							USD {$total_conversion}
 					  </td>";
 				}
 

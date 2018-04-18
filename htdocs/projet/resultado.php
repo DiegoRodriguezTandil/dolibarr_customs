@@ -112,50 +112,22 @@ $valor_moneda_conversion= $(".seleccion_de_divisa").val();
 </script>';
 /*************************************************************************/
 
-
+ /**************************************************************************************************************/
 /*************************************************************************************************************
-	insert if consolidation is true
-	when send post for save consolidation currencies of projet the insert this into consolidation scheme
-*/
-
-if(!empty($_POST['consolidation'])){
-	
-    $moneda_consolidacion=$_POST['seleccion_de_divisa'];
-	$sql ="INSERT INTO ".MAIN_DB_PREFIX."consolidation (fk_projet, fk_currency)";
-	$sql.= " VALUES (".$projectid.",'".$moneda_consolidacion."')";
-    $sql.= " ON DUPLICATE KEY UPDATE fk_currency= '".$moneda_consolidacion."';";
-	$resql = $db->query($sql);
-
-	if(!empty($_POST['divisas'])){
-		$arrDivisas=$_POST['divisas'];
-		foreach ($arrDivisas as $divisa => $valores_conversion) {
-				$sql='';
-				$sql.="INSERT INTO ".MAIN_DB_PREFIX."consolidation_detail (fk_projet, fk_currency, value,CURRENCY_CONVERTION_VALUE )";
-				$sql.= " VALUES (".$projectid.",'". $divisa."',".$valores_conversion['val_original'].",".$valores_conversion['val_conversion'].")";
-				$sql.= " ON DUPLICATE KEY UPDATE VALUE=".$valores_conversion['val_original'].",CURRENCY_CONVERTION_VALUE=".$valores_conversion['val_conversion'].";";
-				$resql = $db->query($sql);			
-		}
- 	}
-	 
-
-}
-
-/**************************************************************************************************************/
-/*************************************************************************************************************
-INSERT INTO llx_consolidation_salesorder
+INSERT INTO llx_consolidation_(dinamyc entity)
 
  */
 
 if(!empty($_POST['entidad_id']) &&  empty($_POST['resetTipo']) ){
     $divisa_origen 				= $_POST['divisa_origen'];
-    $valor_divisa_origen		= $_POST['valor_divisa_origen'];
-    $valor_divisa_destino		= $_POST['valor_divisa_destino'];
+    $valor_divisa_origen_format_dot= empty($_POST['valor_divisa_origen'])  ? 1 : str_replace(".", "", $_POST['valor_divisa_origen']);
+    $valor_divisa_origen		=    empty($_POST['valor_divisa_origen'])  ? 1 : str_replace(",", ".",$valor_divisa_origen_format_dot);
+    $valor_divisa_destino_format_dot= empty($_POST['valor_divisa_destino'])  ? 1 : str_replace(".", "", $_POST['valor_divisa_destino']);
+    $valor_divisa_destino		=    empty($_POST['valor_divisa_destino'])  ? 1 : str_replace(",", ".",$valor_divisa_destino_format_dot);
     $entidad_id					= $_POST['entidad_id'];
     $fecha_i					= $_POST['fecha_ingreso'];
     $id_consolidation			= $_POST['id_consolidation'];
     $entidad= $_POST['entidad'];
-
-
 
 	if(isset($id_consolidation) && !empty( $id_consolidation)){
 		$sql ="INSERT INTO ".MAIN_DB_PREFIX."consolidation_".$entidad." (id,".$entidad."_id,fecha_ingreso,divisa_origen,valor_divisa_origen,valor_divisa_destino)";
@@ -285,7 +257,56 @@ echo
 		    $(id_input_nueva_conversion).attr('required',false);  
 		 	$(id_form).submit(); 
 		}			
+		$( document ).ready(function() {
+	
+	
+			/*valida que los campos valor_unitario y valor_total de detalle pedido sean numericos pero permitan ingresar coma*/
+			$(document).on('keydown', '.input_only_number', function(e){
+				 -1!==$.inArray(e.keyCode,[46,8,9,27,13,110,190,188])||(/65|67|86|88/.test(e.keyCode)&&(e.ctrlKey===true||e.metaKey===true))&&(!0===e.ctrlKey||!0===e.metaKey)||35<=e.keyCode&&40>=e.keyCode||(e.shiftKey||48>e.keyCode||57<e.keyCode)&&(96>e.keyCode||105<e.keyCode)&&e.preventDefault()
+			});
 		
+			/*controla el ingreso de datos con formato ###.###,## para los campos valor_unitario y valor_total de detalle pedido */
+			$(document).on('keyup', '.input_only_number', function () {
+				$(this).val( numberFormat($(this).val() )  );
+			
+			});
+		
+			function numberFormat(numero){
+				// Variable que contendra el resultado final
+				var resultado = '';
+		
+				// Si el numero empieza por el valor \"-\" (numero negativo)
+				if(numero[0]=='-')
+				{
+					// Cogemos el numero eliminando los posibles puntos que tenga, y sin
+					// el signo negativo
+					nuevoNumero=numero.replace(/\./g,'').substring(1);
+		
+				}else{
+					// Cogemos el numero eliminando los posibles puntos que tenga
+					nuevoNumero=numero.replace(/\./g,'');
+				}
+				// Si tiene decimales, se los quitamos al numero
+				if(numero.indexOf(',')>=0)
+					nuevoNumero=nuevoNumero.substring(0,nuevoNumero.indexOf(','));
+		
+				// Ponemos un punto cada 3 caracteres
+				for (var j, i = nuevoNumero.length - 1, j = 0; i >= 0; i--, j++)
+		
+					resultado = nuevoNumero.charAt(i) + ((j > 0) && (j % 3 == 0)? '.': '') + resultado;
+				// Si tiene decimales, se lo añadimos al numero una vez forateado con 
+				// los separadores de miles
+				if(numero.indexOf(',')>=0)
+					resultado+=numero.substring(numero.indexOf(','));
+				if(numero[0]=='-')
+				{
+					// Devolvemos el valor añadiendo al inicio el signo negativo
+					return '-'+resultado;
+				}else{
+					return resultado;
+				}
+			}		 	
+		});	
 	</script>";
 
 
@@ -294,17 +315,25 @@ echo
  */
 
 $listofreferent=array(
-'salesorder'=>array(
-	'title'=>"Listado de Ordenes de Venta asociadas al proyecto",
-	'class'=>'Salesorder',
-	'test'=>$conf->salesorder->enabled,
-	'operation'=>'+'),
+	'salesorder'=>array(
+		'title'=>"Listado de Ordenes de Venta asociadas al proyecto",
+		'class'=>'Salesorder',
+		'test'=>$conf->salesorder->enabled,
+        'entity_table'=>'salesorder',
+		'operation'=>'+'),
+    'order_supplier'=>array(
+        'title'=>"ListSupplierOrdersAssociatedProject",
+        'class'=>'CommandeFournisseur',
+        'entity_table'=>'commande_fournisseur',
+        'test'=>$conf->fournisseur->enabled,
+        'operation'=>'-'),
+	'trip'=>array(
+		'title'=>"ListTripAssociatedProject",
+		'class'=>'Deplacement',
+        'entity_table'=>'deplacement',
+		'test'=>$conf->deplacement->enabled,
+		'operation'=>'-'),
 
-'trip'=>array(
-	'title'=>"ListTripAssociatedProject",
-	'class'=>'Deplacement',
-	'test'=>$conf->deplacement->enabled,
-	'operation'=>'-'),
 /*
 'policy'=>array(
 	'title'=>"Listado de pólizas asociadas al proyecto",
@@ -319,6 +348,7 @@ $listofreferent=array(
 */
 );
 
+
 $arrayCurrencys = array();
 $importeTotales = array();
 $linea=0;
@@ -327,7 +357,7 @@ foreach ($listofreferent as $key => $value)
 	$title=$value['title'];
 	$operation=$value['operation'];
 	$classname=strtolower($value['class']);
-    $entidadName=$classname;
+    $entidadName=strtolower($value[entity_table]);
 	$qualified=$value['test'];
 	$importeTotales[$title]['operation']=$operation;
 
@@ -414,7 +444,7 @@ foreach ($listofreferent as $key => $value)
 
 				
 				//FEDE
-				$rate=$element->getRate($elementarray[$i],$conf->currency);
+				// 	$rate=$element->getRate($elementarray[$i],$conf->currency);
 				/*
 				$resql=$db->query("SELECT rate FROM llx_currency_conversion a join llx_deplacement b on a.source=b.fk_currency and a.target='ARS' where rowid=".$elementarray[$i]." order by date desc");
 				if($conv = $db->fetch_object($resql))
@@ -442,6 +472,7 @@ foreach ($listofreferent as $key => $value)
 				//	print '<td align="right">'.(isset($element->cost)?price($element->cost*$rate,0,'',0,2,2):'&nbsp;').'</td>';
 
                 $resqlFinal=0;
+                $id_de_consolidacion_manual=false;
                 //Solo si es diferente de usd se visualizara el form
                 if($element->fk_currency!='USD') {
 
@@ -460,9 +491,9 @@ foreach ($listofreferent as $key => $value)
 					";
 
 					$resqlEntidad = $db->query($sqlQueryEntidad);
-
 					if( $resqlEntidad  && $db->num_rows($resqlEntidad)>0) {
                         $resqlFinal = $resqlEntidad;
+                        $id_de_consolidacion_manual=true;
                     }else{
 							//de no existir una cotizacin para la entidad entonces se obtiene de consolidation_day segun la fecha obtenida de la entidad
 							$fecha=dol_print_date($date,'day');
@@ -482,7 +513,6 @@ foreach ($listofreferent as $key => $value)
 								ORDER BY fecha_ingreso DESC LIMIT 1";
 							$resqlConsolidationDay = $db->query($sqlQuery);
 							if( $resqlConsolidationDay  && $db->num_rows($resqlConsolidationDay)>0) {
-                                var_dump("488");
 								$resqlFinal = $resqlConsolidationDay;
 							}else{
 								//Obtiene la fecha mas cercana a la fecha de la entidad ya sea < o >
@@ -516,6 +546,7 @@ foreach ($listofreferent as $key => $value)
 										);
 									";
                                 $resqlFechaMinMax = $db->query($sqlQueryFechaMinMax);
+                               // var_dump($resqlFechaMinMax);  print_r($sqlQueryFechaMinMax); var_dump($db->num_rows($resqlFechaMinMax));
                                 if($resqlFechaMinMax  && $db->num_rows($resqlFechaMinMax)){
                                     $resqlFinal= $resqlFechaMinMax;
 								}
@@ -527,7 +558,6 @@ foreach ($listofreferent as $key => $value)
                     $fecha_ingreso_format_view = date_format($date, 'd/m/Y');
 					if( $resqlFinal  && $db->num_rows($resqlFinal)>0){
 						//Si existe cotizacion ya sea en consolidation_day o en la tabla de cotizacion de la entidad a cotizar
-
 
                         $obj = $db->fetch_object($resqlFinal);
                         $fecha_ingreso_format_view	= DateTime::createFromFormat('Y-m-d',$obj->fecha_ingreso)->format('d/m/Y');
@@ -550,19 +580,23 @@ foreach ($listofreferent as $key => $value)
 							 </div>";
                         echo "<div hidden id='conversion_manual-{$linea}'>
 								<span>Tipo: {$obj->tipo}</span><br>
-								<form method='POST' id='form-{$linea}' action='/projet/resultado.php?id={$projectid}'  >
+								<form method='POST' id='form-{$linea}' action=".DOL_URL_ROOT."/projet/resultado.php?id={$projectid}  >
 									<b>
 										{$obj->divisa_origen}
 									</b> 
-									<input name='valor_divisa_origen' class='input_nueva_conversion-{$linea}' style='width:50px;' type='NUMBER' step='any' required> /
+									<input name='valor_divisa_origen' class='input_nueva_conversion-{$linea} input_only_number' style='width:50px;'   required> /
 									<b>
 										{$obj->divisa_destino}
+										
 									</b> 
-											<input name='valor_divisa_destino' class='input_nueva_conversion-{$linea}'  style='width:50px;'  type='NUMBER' step='any' required'>
+											<input name='valor_divisa_destino' class='input_nueva_conversion-{$linea} input_only_number'  style='width:50px;'   required>
 											<input name='divisa_origen' class='input_nueva_conversion-{$linea}'  type='hidden' value='{$element->fk_currency}' >
 											<input name='entidad_id'  class='input_nueva_conversion-{$linea}'  type='hidden' value='{$element->id}' >
 											<input name='fecha_ingreso'  class='input_nueva_conversion-{$linea}'  type='hidden' value='{$fecha_ingreso_format_db}' >
-											<input name='id_consolidation'  class=''  type='hidden' value='{$obj->id}' >
+											";
+                        				echo $id_de_consolidacion_manual===true ? "
+											<input name='id_consolidation'  class=''  type='hidden' value='{$obj->id}' >" :  "";
+                        				echo "
 											<input name='resetTipo' id='resetTipoGeneral-{$linea}' value='0'  type='hidden' >
 											
 											<input name='entidad' id='resetTipoGeneral-{$linea}' value='{$entidadName}'  type='hidden' >
@@ -593,16 +627,16 @@ foreach ($listofreferent as $key => $value)
 										Cotización al dia
 										<b>{$fecha_ingreso_format_view}</b>
 									<span><br>
-									<form method='POST' action='/projet/resultado.php?id={$projectid}'>
+									<form method='POST' action=".DOL_URL_ROOT."/projet/resultado.php?id={$projectid}>
 										<div >
 												<b>
 													{$element->fk_currency}
 												</b>
-													<input name='valor_divisa_origen' class='input_nueva_conversion-{$linea}'   style='width:50px;' type='NUMBER' step='any' required'>
+													<input name='valor_divisa_origen' class='input_nueva_conversion-{$linea}'   style='width:50px;' type='NUMBER'  step='.01' required>
 												<b>
 													USD
 												</b>
-											<input name='valor_divisa_destino' class='input_nueva_conversion-{$linea}'  style='width:50px;'  type='NUMBER' step='any' required'>
+											<input name='valor_divisa_destino' class='input_nueva_conversion-{$linea}'  style='width:50px;'  type='NUMBER' step='any' required>
 											<input name='divisa_origen' class='input_nueva_conversion-{$linea}'  type='hidden' value='{$element->fk_currency}' >
 											<input name='entidad_id'  class='input_nueva_conversion-{$linea}'  type='hidden' value='{$element->id}' >
 											<input name='fecha_ingreso'  class='input_nueva_conversion-{$linea}'  type='hidden' value='{$fecha_ingreso_format_db}' >																					
@@ -621,6 +655,7 @@ foreach ($listofreferent as $key => $value)
 
                 }else{
                     echo "<td  align='center' > - </td>";
+                    $obj='';
 				}
 
 				if(!empty($element->total_ht) and !empty($obj->valor_divisa_destino) and $element->fk_currency<>$obj->divisa_destino){
@@ -629,13 +664,13 @@ foreach ($listofreferent as $key => $value)
                     $total_conversion_sin_formato=$total_conversion/$obj->valor_divisa_origen;
                     $total_conversion=price($total_conversion_sin_formato,0,'',0,2,2);
                     echo "<td  align='right' width='120px'>
-						USD 	{$total_conversion}
+						USD {$total_conversion} 
 					  </td>";
 				}else{
                     $total_conversion_sin_formato=floatval($element->total_ht);
                     $total_conversion=price($element->total_ht,0,'',0,2,2);
                     echo "<td  align='right' width='120px'>
-							USD  {$total_conversion}
+							USD {$total_conversion}
 					  </td>";
 				}
 

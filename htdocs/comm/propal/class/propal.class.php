@@ -742,8 +742,8 @@ class Propal extends CommonObject
         //FEDE
         $sql.= ", ".$this->office;
         //FIN FEDE
-        $sql.= ", ".($this->line_ref?"'".$this->line_ref."'":"null");
-	$sql.= ")";
+        $sql.=!empty($line_ref)?",'".$line_ref."'":',NULL';
+        $sql.= ")";
        
 
         dol_syslog(get_class($this)."::create sql=".$sql, LOG_DEBUG);
@@ -2752,7 +2752,7 @@ class PropaleLigne
         $sql.= ' total_ht, total_tva, total_localtax1, total_localtax2,'; 
         $sql.= ' total_ttc, fk_product_fournisseur_price, buy_price_ht,'; 
         $sql.= ' special_code, rang';
-        $sql.= isset($this->line_ref)?', line_ref':'';
+        $sql.= 'line_ref';
         $sql.= ')';
         $sql.= " VALUES (".$this->fk_propal.",";
         $sql.= " ".($this->fk_parent_line>0?"'".$this->fk_parent_line."'":"null").",";
@@ -2783,7 +2783,7 @@ class PropaleLigne
         $sql.= " ".(isset($this->pa_ht)?"'".price2num($this->pa_ht)."'":"null").",";
         $sql.= ' '.$this->special_code.',';
         $sql.= ' '.$this->rang;
-        $sql.= isset($this->line_ref)?", '{$this->line_ref}'":'';
+        $sql.=  !empty($line_ref)?",'".$line_ref."'":',NULL';
         $sql.= ')';
 
         dol_syslog(get_class($this).'::insert sql='.$sql, LOG_DEBUG);

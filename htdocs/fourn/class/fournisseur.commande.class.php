@@ -1264,7 +1264,7 @@ class CommandeFournisseur extends CommonOrder
             $sql.= "'".price2num($total_localtax1)."',";
             $sql.= "'".price2num($total_localtax2)."',";
             $sql.= "'".price2num($total_ttc)."'";
-            $sql.=!empty($line_ref)?",'".$line_ref."'":'';
+            $sql.=!empty($line_ref)?",'".$line_ref."'":',NULL';
             $sql.= ")";
             dol_syslog(get_class($this)."::addline sql=".$sql);
             $resql=$this->db->query($sql);

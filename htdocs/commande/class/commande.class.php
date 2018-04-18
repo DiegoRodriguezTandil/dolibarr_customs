@@ -672,7 +672,7 @@ class Commande extends CommonOrder
         $sql.= ", ".($this->remise_absolue>0?$this->remise_absolue:'NULL');
         $sql.= ", '".$this->remise_percent."'";
         $sql.= ", ".$conf->entity;
-        $sql.=", ".($this->line_ref?trim($this->line_ref):'NULL');
+        $sql.=!empty($line_ref)?",'".$line_ref."'":',NULL';
         $sql.= ")";
 
         dol_syslog("Commande::create sql=".$sql);

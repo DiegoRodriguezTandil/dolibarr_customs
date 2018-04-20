@@ -2751,7 +2751,7 @@ class PropaleLigne
         $sql.= ' info_bits, ';
         $sql.= ' total_ht, total_tva, total_localtax1, total_localtax2,'; 
         $sql.= ' total_ttc, fk_product_fournisseur_price, buy_price_ht,'; 
-        $sql.= ' special_code, rang';
+        $sql.= ' special_code, rang,';
         $sql.= 'line_ref';
         $sql.= ')';
         $sql.= " VALUES (".$this->fk_propal.",";

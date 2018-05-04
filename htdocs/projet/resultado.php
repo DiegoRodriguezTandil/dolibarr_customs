@@ -721,9 +721,11 @@ foreach ($listofreferent as $key => $value)
 				print '<td>Total</td>';
 				print '<td>&nbsp;</td>';
 				print '<td>&nbsp;</td>';
-				print '<td>&nbsp;</td>';
+
 				if(isset($arrayTotales['ht'])){
+                    print '<td>&nbsp;</td>';
 					print '<td align="right" title="Importe"><b><I>'.$divisa.' '.price($arrayTotales['ht']).'</I></b></td>';
+
 				}else{
 					print '<td>&nbsp;</td>';
 				}				

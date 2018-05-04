@@ -557,6 +557,7 @@ foreach ($listofreferent as $key => $value)
                     $fecha_ingreso_format_db= date_format($date, 'Y-m-d');
                     $fecha_ingreso_format_view = date_format($date, 'd/m/Y');
 					if( $resqlFinal  && $db->num_rows($resqlFinal)>0){
+                        $no_exite_cotizacion=false;
 						//Si existe cotizacion ya sea en consolidation_day o en la tabla de cotizacion de la entidad a cotizar
 
                         $obj = $db->fetch_object($resqlFinal);
@@ -611,7 +612,9 @@ foreach ($listofreferent as $key => $value)
 								</form>
 							 </div> 							
 							</td>";
+                        $no_exite_cotizacion=false;
 					}else{
+							$no_exite_cotizacion=true;
 						//Si no existe cotizacion entonces por defecto se mostrara este formulario
 						echo "
 							<td  style='font-size:80%; padding-left:10px;' align='left' width='200px' >
@@ -658,19 +661,25 @@ foreach ($listofreferent as $key => $value)
                     $obj='';
 				}
 
-				if(!empty($element->total_ht) and !empty($obj->valor_divisa_destino) and $element->fk_currency<>$obj->divisa_destino){
-
+				if(!empty($element->total_ht) and !empty($obj->valor_divisa_destino) and $element->fk_currency<>$obj->divisa_destino and $no_exite_cotizacion===false){
                     $total_conversion=$element->total_ht * $obj->valor_divisa_destino;
                     $total_conversion_sin_formato=$total_conversion/$obj->valor_divisa_origen;
                     $total_conversion=price($total_conversion_sin_formato,0,'',0,2,2);
                     echo "<td  align='right' width='120px'>
 						USD {$total_conversion} 
 					  </td>";
-				}else{
+				}else if ($element->fk_currency==='USD'){
                     $total_conversion_sin_formato=floatval($element->total_ht);
                     $total_conversion=price($element->total_ht,0,'',0,2,2);
                     echo "<td  align='right' width='120px'>
-							USD {$total_conversion}
+							USD {$total_conversion} 
+					  </td>";
+				}
+				else{
+                    $total_conversion_sin_formato=floatval(0,00);
+                    $total_conversion=price(0,0,'',0,2,2);
+                    echo "<td  align='right' width='120px'>
+							-
 					  </td>";
 				}
 

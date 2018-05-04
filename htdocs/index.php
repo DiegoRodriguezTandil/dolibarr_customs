@@ -917,7 +917,7 @@ echo '
                         <td>Eliminar</td>
                     </tr> 
             <tbody>
-                <form action="index.php?mainmenu=home&leftmenu" id="form_table_conversion"  method="post">	                     ';
+                                ';
 
                     $i = 0;
                     if($num===0){
@@ -933,33 +933,36 @@ echo '
                         $date=DateTime::createFromFormat('Y-m-d', $obj->fecha_ingreso)->format('d/m/Y');
                         $d_origen= number_format($obj->valor_divisa_origen, 2, ',', ' ');
                         $d_destino=number_format($obj->valor_divisa_destino, 2, ',', ' ');
+
                         echo "
-                             <tr  class='fila_tabla_divisas'>
-                                <td  class='fila_tabla_divisas'>
-                                    {$date}
-                                </td>
-                                <td>
-                                    {$obj->divisa_origen}
-                                </td>						
-                                <td align='right'>
-                                    {$d_origen}
-                                </td>												
-                                <td>
-                                    {$obj->divisa_destino}
-                                </td>
-                                <td align='right' >
-                                    {$d_destino}
-                                </td>
-                                <td>							
-                                    <input type='hidden' name='elimniar_tupla_conversion'  value={$obj->id} >
-                                    <button   class='buttonSubmit' value=\"Submit\"><img src=\"/theme/auguria/img/delete.png\" alt=\"Eliminar\"                                                     title=\"Eliminar\"  border=\"0\">
-                                    </button>
-                                </td>						
-                             </tr>";
+                            <form action=\"index.php?mainmenu=home&leftmenu\" id=\"form_table_conversion\"  method=\"post\">
+                                 <tr  class='fila_tabla_divisas'>
+                                    <td  class='fila_tabla_divisas'>
+                                        {$date}
+                                    </td>
+                                    <td>
+                                        {$obj->divisa_origen}
+                                    </td>						
+                                    <td align='right'>
+                                        {$d_origen}
+                                    </td>												
+                                    <td>
+                                        {$obj->divisa_destino}
+                                    </td>
+                                    <td align='right' >
+                                        {$d_destino}
+                                    </td>
+                                    <td>							
+                                        <input type='hidden' name='elimniar_tupla_conversion'  value={$obj->id} >
+                                        <button   class='buttonSubmit' value=\"Submit\"><img src=\"/theme/auguria/img/delete.png\" alt=\"Eliminar\"                                                     title=\"Eliminar\"  border=\"0\">
+                                        </button>
+                                    </td>						
+                                 </tr>
+                            </form> ";
                         $i++;
                     }
                 echo "
-                </form> 
+               
                 
             </tbody>	
           

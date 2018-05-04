@@ -61,6 +61,19 @@ if ($projectid == '' && $ref == '')
 }
 
 
+echo "
+<style>
+ 
+  a {
+	font-size:1em;
+ }
+ 
+  table {
+	font-size:1em;
+ }
+</style>
+";
+
 /************************************************************************
  show o hide form de consolidation
 */

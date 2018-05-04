@@ -711,7 +711,7 @@ if(!empty($_POST['divisas_hidden'])){
         $resql = $db->query($sql);
     }
     if(!empty($divisas_euro) and !empty($divisas_euro_a_dolar) ){
-        $sqlQuery ="SELECT id,fecha_ingreso FROM ".MAIN_DB_PREFIX."consolidation_day where fecha_ingreso='{$fecha_ingreso}'  and divisa_origen='EUR'";
+        $sqlQuery ="SELECT id,fecha_ingreso FROM ".MAIN_DB_PREFIX."consolidation_day where fecha_ingreso='{$fecha_inicio_euro}'  and divisa_origen='EUR'";
         $resqlQuery = $db->query($sqlQuery);
         if ( $resqlQuery  and $db->num_rows($resqlQuery)){
             $Obj = $db->fetch_object($resqlQuery);
@@ -719,22 +719,10 @@ if(!empty($_POST['divisas_hidden'])){
             $delete=$db->query($sqlDelete);
 
         }
-        $resqlQuery = $db->query($sqlQuery);
-        if (!empty($resqlQuery) ){
-            $obj= $db->fetch_object($resql);
-            $obj= $obj->id;
-            $sqlDelete ="DELETE FROM".MAIN_DB_PREFIX."consolidation_day where id={$obj}";
-            $delete=$db->query($sqlDelete);
-            $sqlQuery ="SELECT id,fecha_ingreso FROM".MAIN_DB_PREFIX."consolidation_day where fecha_ingreso={$fecha_ingreso} and divisa_origen=$divisas_euro";
-            $resqlQuery = $db->query($sqlQuery);
-            if (!empty($resqlQuery) ){
-                $sqlDelete ="DELETE FROM".MAIN_DB_PREFIX."consolidation_day where id={$resqlQuery['id'] }";
-            }
             $sql ="INSERT INTO ".MAIN_DB_PREFIX."consolidation_day (fecha_ingreso,divisa_origen,valor_divisa_origen,valor_divisa_destino)";
-            $sql.= " VALUES ('".$fecha_ingreso."','EUR','".$divisas_euro."','".$divisas_euro_a_dolar."')";
+            $sql.= " VALUES ('".$fecha_inicio_euro."','EUR','".$divisas_euro."','".$divisas_euro_a_dolar."')";
             $resql = $db->query($sql);
-        }}
-
+        }
 }
 
 //OBTIENE LOS DATOS PARA LA TABLA DE CONVERSION DE MONEDAS
@@ -983,7 +971,7 @@ echo '
                 <input type='hidden' id='divisa_id' name='divisa_filter'>                                   
                 <button   class='buttonSubmit buttonRows' value=\"Submit\">
                     <img style='heigth:5px;' src=\"/theme/auguria/img/edit_add.png\"
-                        alt=\"Nuevo evento\" title=\"Nuevo evento\" border=\"0\">   
+                        alt=\"+\" title='+' border=\"0\">   
                 </button>
                 <p class='informationRows'>Total Filas {$num}</p> 
             </form>     

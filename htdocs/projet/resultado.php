@@ -60,18 +60,17 @@ if ($projectid == '' && $ref == '')
 	exit;
 }
 
-
 echo "
-<style>
- 
-  a {
-	font-size:1em;
- }
- 
-  table {
-	font-size:1em;
- }
-</style>
+	<style>
+	 
+	  a {
+		font-size:1em;
+	 }
+	 
+	  table {
+		font-size:1em;
+	 }
+	</style>
 ";
 
 /************************************************************************
@@ -132,15 +131,18 @@ INSERT INTO llx_consolidation_(dinamyc entity)
  */
 
 if(!empty($_POST['entidad_id']) &&  empty($_POST['resetTipo']) ){
-    $divisa_origen 				= $_POST['divisa_origen'];
-    $valor_divisa_origen_format_dot= empty($_POST['valor_divisa_origen'])  ? 1 : str_replace(".", "", $_POST['valor_divisa_origen']);
-    $valor_divisa_origen		=    empty($_POST['valor_divisa_origen'])  ? 1 : str_replace(",", ".",$valor_divisa_origen_format_dot);
+    $divisa_origen 					= $_POST['divisa_origen'];
+    $valor_divisa_origen_format_dot	= empty($_POST['valor_divisa_origen'])  ? 1 : str_replace(".", "", $_POST['valor_divisa_origen']);
+    $valor_divisa_origen			= empty($_POST['valor_divisa_origen'])  ? 1 : str_replace(",", ".",$valor_divisa_origen_format_dot);
     $valor_divisa_destino_format_dot= empty($_POST['valor_divisa_destino'])  ? 1 : str_replace(".", "", $_POST['valor_divisa_destino']);
-    $valor_divisa_destino		=    empty($_POST['valor_divisa_destino'])  ? 1 : str_replace(",", ".",$valor_divisa_destino_format_dot);
-    $entidad_id					= $_POST['entidad_id'];
-    $fecha_i					= $_POST['fecha_ingreso'];
-    $id_consolidation			= $_POST['id_consolidation'];
-    $entidad= $_POST['entidad'];
+    $valor_divisa_destino			= empty($_POST['valor_divisa_destino'])  ? 1 : str_replace(",", ".",$valor_divisa_destino_format_dot);
+    $entidad_id						= $_POST['entidad_id'];
+    $linea							= $_POST['linea'];
+    $fi_aux							= "fecha_ingreso-".$linea;
+    $f_format					 	= DateTime::createFromFormat('d/m/Y',$_POST[$fi_aux]);
+    $fecha_i						= $f_format->format('Y-m-d');
+    $id_consolidation				= $_POST['id_consolidation'];
+    $entidad						= $_POST['entidad'];
 
 	if(isset($id_consolidation) && !empty( $id_consolidation)){
 		$sql ="INSERT INTO ".MAIN_DB_PREFIX."consolidation_".$entidad." (id,".$entidad."_id,fecha_ingreso,divisa_origen,valor_divisa_origen,valor_divisa_destino)";
@@ -150,7 +152,7 @@ if(!empty($_POST['entidad_id']) &&  empty($_POST['resetTipo']) ){
 		$sql.= " VALUES (".$entidad_id.",'".$fecha_i."','".$divisa_origen."',".$valor_divisa_origen.",'".$valor_divisa_destino."')";
 	}
 	if(isset($id_consolidation) && !empty( $id_consolidation)){
-        $sql.= " ON DUPLICATE KEY UPDATE valor_divisa_origen=".$valor_divisa_origen.",valor_divisa_destino='".$valor_divisa_destino."'";
+        $sql.= " ON DUPLICATE KEY UPDATE valor_divisa_origen=".$valor_divisa_origen.",valor_divisa_destino='".$valor_divisa_destino."',fecha_ingreso='".$fecha_i."';";
 	}else{
         $sql.=";";
 	}
@@ -570,14 +572,16 @@ foreach ($listofreferent as $key => $value)
                     $fecha_ingreso_format_db= date_format($date, 'Y-m-d');
                     $fecha_ingreso_format_view = date_format($date, 'd/m/Y');
 					if( $resqlFinal  && $db->num_rows($resqlFinal)>0){
-                        $no_exite_cotizacion=false;
-						//Si existe cotizacion ya sea en consolidation_day o en la tabla de cotizacion de la entidad a cotizar
+                        //Si existe cotizacion ya sea en consolidation_day o en la tabla de cotizacion de la entidad a cotizar
 
+                        $no_exite_cotizacion=false;
                         $obj = $db->fetch_object($resqlFinal);
                         $fecha_ingreso_format_view	= DateTime::createFromFormat('Y-m-d',$obj->fecha_ingreso)->format('d/m/Y');
-                        echo"<td  style='font-size:80%; padding-left:10px;' align='left' width='200px' >
-							 <span>Cotización al dia <b>{$fecha_ingreso_format_view}</b><span><br>
+                        echo"
+						<td  style='font-size:80%; padding-left:10px;' align='left' width='200px' >
+							 
 							 <div id='conversion_general-{$linea}'>
+							 <span>Cotización al dia <b>{$fecha_ingreso_format_view}</b><span><br>
 								<span>Tipo: {$obj->tipo}</span><br>
 								<span>
 									<b>
@@ -592,9 +596,12 @@ foreach ($listofreferent as $key => $value)
 								</span>
 								<a id='boton_conversion-{$linea}' onclick='conversionManual({$linea})'><i>Modificar Cotización<i></a>
 							 </div>";
-                        echo "<div hidden id='conversion_manual-{$linea}'>
-								<span>Tipo: {$obj->tipo}</span><br>
-								<form method='POST' id='form-{$linea}' action=".DOL_URL_ROOT."/projet/resultado.php?id={$projectid}  >
+							echo
+							"<div hidden id='conversion_manual-{$linea}'>                        					
+								<form method='POST' id='form-{$linea}' action=".DOL_URL_ROOT."/projet/resultado.php?id={$projectid}  >";
+                        			echo "
+									<span>".$form->select_date(($date_start?$date_start:''),('fecha_ingreso-'.$linea))."</span><br>		
+									<span>Tipo: {$obj->tipo}</span><br>							
 									<b>
 										{$obj->divisa_origen}
 									</b> 
@@ -606,7 +613,7 @@ foreach ($listofreferent as $key => $value)
 											<input name='valor_divisa_destino' class='input_nueva_conversion-{$linea} input_only_number'  style='width:50px;'   required>
 											<input name='divisa_origen' class='input_nueva_conversion-{$linea}'  type='hidden' value='{$element->fk_currency}' >
 											<input name='entidad_id'  class='input_nueva_conversion-{$linea}'  type='hidden' value='{$element->id}' >
-											<input name='fecha_ingreso'  class='input_nueva_conversion-{$linea}'  type='hidden' value='{$fecha_ingreso_format_db}' >
+											<input name='linea' id='linea-{$linea}' value='{$linea}'  type='hidden' >											
 											";
                         				echo $id_de_consolidacion_manual===true ? "
 											<input name='id_consolidation'  class=''  type='hidden' value='{$obj->id}' >" :  "";
@@ -624,11 +631,12 @@ foreach ($listofreferent as $key => $value)
 									</div> 
 								</form>
 							 </div> 							
-							</td>";
+						</td>";
                         $no_exite_cotizacion=false;
 					}else{
-							$no_exite_cotizacion=true;
 						//Si no existe cotizacion entonces por defecto se mostrara este formulario
+
+                        $no_exite_cotizacion=true;
 						echo "
 							<td  style='font-size:80%; padding-left:10px;' align='left' width='200px' >
 								<div id='conversion_general-{$linea}' >
@@ -640,11 +648,11 @@ foreach ($listofreferent as $key => $value)
 								</div>
 								<div hidden id='conversion_manual-{$linea}' >
 									<span>
-										Cotización al dia
-										<b>{$fecha_ingreso_format_view}</b>
+										Cotización al dia 									
 									<span><br>
-									<form method='POST' action=".DOL_URL_ROOT."/projet/resultado.php?id={$projectid}>
-										<div >
+									<form method='POST' action=".DOL_URL_ROOT."/projet/resultado.php?id={$projectid}>";
+                        				echo "<b>". $form->select_date(($date_start?$date_start:''), ('fecha_ingreso-'.$linea))."</b>						
+										<div>
 												<b>
 													{$element->fk_currency}
 												</b>
@@ -652,11 +660,11 @@ foreach ($listofreferent as $key => $value)
 												<b>
 													USD
 												</b>
-											<input name='valor_divisa_destino' class='input_nueva_conversion-{$linea}'  style='width:50px;'  type='NUMBER' step='any' required>
-											<input name='divisa_origen' class='input_nueva_conversion-{$linea}'  type='hidden' value='{$element->fk_currency}' >
-											<input name='entidad_id'  class='input_nueva_conversion-{$linea}'  type='hidden' value='{$element->id}' >
-											<input name='fecha_ingreso'  class='input_nueva_conversion-{$linea}'  type='hidden' value='{$fecha_ingreso_format_db}' >																					
-												<input name='entidad' id='resetTipoGeneral-{$linea}' value='{$entidadName}'  type='hidden' >						
+													<input name='valor_divisa_destino' class='input_nueva_conversion-{$linea}'  style='width:50px;'  type='NUMBER' step='any' required>
+													<input name='divisa_origen' class='input_nueva_conversion-{$linea}'  type='hidden' value='{$element->fk_currency}' >
+													<input name='entidad_id'  class='input_nueva_conversion-{$linea}'  type='hidden' value='{$element->id}' >																																
+													<input name='entidad' id='resetTipoGeneral-{$linea}' value='{$entidadName}'  type='hidden' >
+													<input name='linea' id='linea-{$linea}' value='{$linea}'  type='hidden' >						
 												<br>
 											
 										</div>

@@ -85,7 +85,7 @@ print '<script>
 					$("#conf_consolidation").css("display", "none");
 					$("#conf_consolidation").css("margin-top","15px");	
 				}
-$valor_moneda_conversion= $(".seleccion_de_divisa").val();
+			$valor_moneda_conversion= $(".seleccion_de_divisa").val();
 
 			$( ".modeda_seleccionada_origen" ).each(function() {
 				if($( this ).text() == $valor_moneda_conversion){
@@ -330,6 +330,12 @@ echo
  */
 
 $listofreferent=array(
+    'invoice'=>array(
+        'title'=>"Facturas",
+        'class'=>'facture',
+        'test'=>true,
+        'entity_table'=>'facture',
+        'operation'=>'+'),
 	'salesorder'=>array(
 		'title'=>"Listado de Ordenes de Venta asociadas al proyecto",
 		'class'=>'Salesorder',
@@ -414,6 +420,7 @@ foreach ($listofreferent as $key => $value)
 		print '</tr>';
 		
 		$elementarray = $project->get_element_list($key);
+
 		if (count($elementarray)>0 && is_array($elementarray))
 		{
 			$var=true;
@@ -598,29 +605,44 @@ foreach ($listofreferent as $key => $value)
 							 </div>";
 							echo
 							"<div hidden id='conversion_manual-{$linea}'>                        					
-								<form method='POST' id='form-{$linea}' action=".DOL_URL_ROOT."/projet/resultado.php?id={$projectid}  >";
-                        			echo "
-									<span>".$form->select_date(($date_start?$date_start:''),('fecha_ingreso-'.$linea))."</span><br>		
-									<span>Tipo: {$obj->tipo}</span><br>							
+								<form method='POST' id='form-{$linea}' action=".DOL_URL_ROOT."/projet/resultado.php?id={$projectid}  > 							
+									<div style='width: 100%;padding-top:2px; margin-bottom: 2px; height: 20px; '>
+										<div style='width:15%;float: left; '>												 
+												<b>Fecha</b> 												 
+										</div>
+										<div style='width: 80%; float: left;'>											
+											<b>";
+												echo $form->select_date(($date_start?$date_start:''), ('fecha_ingreso-'.$linea))."</b>
+										</div>
+									</div>	
+									<div style='width: 100%;padding-top:2px; margin-bottom: 2px; height: 20px; '>
+										<div style='width:15%;float: left; '>												 
+												<b>Tipo</b> 												 
+										</div>
+										<div style='width: 80%; float: left;'>											
+											<b>";
+												echo $obj->tipo."</b>
+										</div>
+									</div>
 									<b>
 										{$obj->divisa_origen}
 									</b> 
-									<input name='valor_divisa_origen' class='input_nueva_conversion-{$linea} input_only_number' style='width:50px;'   required> /
+									<input name='valor_divisa_origen' class='input_nueva_conversion-{$linea} input_only_number' style='width:50px;margin-left:10px;'   required> /
 									<b>
 										{$obj->divisa_destino}
 										
 									</b> 
-											<input name='valor_divisa_destino' class='input_nueva_conversion-{$linea} input_only_number'  style='width:50px;'   required>
-											<input name='divisa_origen' class='input_nueva_conversion-{$linea}'  type='hidden' value='{$element->fk_currency}' >
-											<input name='entidad_id'  class='input_nueva_conversion-{$linea}'  type='hidden' value='{$element->id}' >
-											<input name='linea' id='linea-{$linea}' value='{$linea}'  type='hidden' >											
-											";
-                        				echo $id_de_consolidacion_manual===true ? "
-											<input name='id_consolidation'  class=''  type='hidden' value='{$obj->id}' >" :  "";
-                        				echo "
-											<input name='resetTipo' id='resetTipoGeneral-{$linea}' value='0'  type='hidden' >
-											
-											<input name='entidad' id='resetTipoGeneral-{$linea}' value='{$entidadName}'  type='hidden' >
+										<input name='valor_divisa_destino' class='input_nueva_conversion-{$linea} input_only_number'  style='width:50px;'   required>
+										<input name='divisa_origen' class='input_nueva_conversion-{$linea}'  type='hidden' value='{$element->fk_currency}' >
+										<input name='entidad_id'  class='input_nueva_conversion-{$linea}'  type='hidden' value='{$element->id}' >
+										<input name='linea' id='linea-{$linea}' value='{$linea}'  type='hidden' >											
+										";
+									echo $id_de_consolidacion_manual===true ? "
+										<input name='id_consolidation'  class=''  type='hidden' value='{$obj->id}' >" :  "";
+									echo "
+										<input name='resetTipo' id='resetTipoGeneral-{$linea}' value='0'  type='hidden' >
+										
+										<input name='entidad' id='resetTipoGeneral-{$linea}' value='{$entidadName}'  type='hidden' >
 											
 									
 									<br>
@@ -646,26 +668,31 @@ foreach ($listofreferent as $key => $value)
 										<i>
 									</a>
 								</div>
-								<div hidden id='conversion_manual-{$linea}' >
-									<span>
-										Cotización al dia 									
-									<span><br>
-									<form method='POST' action=".DOL_URL_ROOT."/projet/resultado.php?id={$projectid}>";
-                        				echo "<b>". $form->select_date(($date_start?$date_start:''), ('fecha_ingreso-'.$linea))."</b>						
+								<div hidden id='conversion_manual-{$linea}' >								
+									<form method='POST' action=".DOL_URL_ROOT."/projet/resultado.php?id={$projectid}>
+										<div style='width: 100%;padding-top:2px; margin-bottom: 2px; height: 20px; '>
+											<div style='width:15%;float: left; '>												 
+													<b>Fecha</b> 												 
+											</div>
+											<div style='width: 80%; float: left;'>";
+											echo
+												"<b>". $form->select_date(($date_start?$date_start:''), ('fecha_ingreso-'.$linea))."</b>
+											</div>
+										</div>
 										<div>
-												<b>
-													{$element->fk_currency}
-												</b>
-													<input name='valor_divisa_origen' class='input_nueva_conversion-{$linea}'   style='width:50px;' type='NUMBER'  step='.01' required>
-												<b>
-													USD
-												</b>
-													<input name='valor_divisa_destino' class='input_nueva_conversion-{$linea}'  style='width:50px;'  type='NUMBER' step='any' required>
-													<input name='divisa_origen' class='input_nueva_conversion-{$linea}'  type='hidden' value='{$element->fk_currency}' >
-													<input name='entidad_id'  class='input_nueva_conversion-{$linea}'  type='hidden' value='{$element->id}' >																																
-													<input name='entidad' id='resetTipoGeneral-{$linea}' value='{$entidadName}'  type='hidden' >
-													<input name='linea' id='linea-{$linea}' value='{$linea}'  type='hidden' >						
-												<br>
+											<b>
+												{$element->fk_currency}
+											</b>
+												<input name='valor_divisa_origen' class='input_nueva_conversion-{$linea}'   style='width:50px;margin-left: 10px;' type='NUMBER'  step='.01' required>
+											<b>
+												USD
+											</b>
+												<input name='valor_divisa_destino' class='input_nueva_conversion-{$linea}'  style='width:50px;'  type='NUMBER' step='any' required>
+												<input name='divisa_origen' class='input_nueva_conversion-{$linea}'  type='hidden' value='{$element->fk_currency}' >
+												<input name='entidad_id'  class='input_nueva_conversion-{$linea}'  type='hidden' value='{$element->id}' >																																
+												<input name='entidad' id='resetTipoGeneral-{$linea}' value='{$entidadName}'  type='hidden' >
+												<input name='linea' id='linea-{$linea}' value='{$linea}'  type='hidden' >						
+											<br>
 											
 										</div>
 										<div style='margin-top: 5px; margin-left:1px;'>

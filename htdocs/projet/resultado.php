@@ -59,9 +59,9 @@ if ($projectid == '' && $ref == '')
 	dol_print_error('','Bad parameter');
 	exit;
 }
-
+print '<input checked data-toggle="toggle" type="checkbox">';
 echo "
-	<style>
+<style>
 	 
 	  a {
 		font-size:1em;
@@ -333,27 +333,33 @@ $listofreferent=array(
     'invoice'=>array(
         'title'=>"Facturas",
         'class'=>'facture',
-        'test'=>true,
+        'test'=>$conf->facture->enabled,
         'entity_table'=>'facture',
-        'operation'=>'+'),
+        'operation'=>'+',
+		'searchDomain'=>1,
+		'defaultDomain'=>0),
 	'salesorder'=>array(
 		'title'=>"Listado de Ordenes de Venta asociadas al proyecto",
 		'class'=>'Salesorder',
 		'test'=>$conf->salesorder->enabled,
         'entity_table'=>'salesorder',
-		'operation'=>'+'),
+		'operation'=>'+',
+		'searchDomain'=>1,
+        'defaultDomain'=>1),
     'order_supplier'=>array(
         'title'=>"ListSupplierOrdersAssociatedProject",
         'class'=>'CommandeFournisseur',
         'entity_table'=>'commande_fournisseur',
         'test'=>$conf->fournisseur->enabled,
-        'operation'=>'-'),
+        'operation'=>'-',
+        'searchDomain'=>0),
 	'trip'=>array(
 		'title'=>"ListTripAssociatedProject",
 		'class'=>'Deplacement',
         'entity_table'=>'deplacement',
 		'test'=>$conf->deplacement->enabled,
-		'operation'=>'-'),
+		'operation'=>'-',
+        'searchDomain'=>0),
 
 /*
 'policy'=>array(
@@ -377,6 +383,14 @@ foreach ($listofreferent as $key => $value)
 {
 	$title=$value['title'];
 	$operation=$value['operation'];
+    $searchDomain=$value['searchDomain'];
+    if($searchDomain===1){
+        $defaultDomain=$value['defaultDomain'];
+	}else{
+        $defaultDomain=-1;
+	}
+
+
 	$classname=strtolower($value['class']);
     $entidadName=strtolower($value[entity_table]);
 	$qualified=$value['test'];
@@ -493,11 +507,24 @@ foreach ($listofreferent as $key => $value)
 				*/
 				//	print '<td align="right">'.(isset($element->cost)?price($element->cost*$rate,0,'',0,2,2):'&nbsp;').'</td>';
 
+                $retSearchDomain=0;
+                if($searchDomain){
+               		 $sqlSearchDomain = " 
+						SELECT count(*)	 as domain
+						FROM   vw_salesorder_facture_cotizacion 
+						where  {$entidadName}_rowid = {$element->id} 
+						and domain_{$entidadName}=1 
+						and misma_moneda=1;";
+
+               		 $sqlSearchDomain = $db->query($sqlSearchDomain);
+               		 $retSearchDomain = $db->fetch_object($sqlSearchDomain);
+				}
+				
+				
                 $resqlFinal=0;
                 $id_de_consolidacion_manual=false;
                 //Solo si es diferente de usd se visualizara el form
-                if($element->fk_currency!='USD') {
-
+                if($element->fk_currency!='USD' && $retSearchDomain->domain==1) {
                 	//query de la entidad a realizar cotizacion
                		 $sqlQueryEntidad = " 
 						SELECT 	cs.id
@@ -733,8 +760,19 @@ foreach ($listofreferent as $key => $value)
 
                 // Status
                 print '<td align="center">'.$element->getLibStatut(5).'</td>';
+				if($searchDomain===1){
+                    if($defaultDomain===1 && $retSearchDomain->domain==0 ){
+                        print '
+<input checked data-toggle="toggle" type="checkbox" name="asdas">
+<td align="center">1</td>';
+                    }else{
+                        print '<td align="center">'.$retSearchDomain->domain.'</td>';
+					}
 
-				print '</tr>';
+				}
+
+
+                print '</tr>';
 				/******************************************************************************************************************
 				  Array currencys 
 				*/

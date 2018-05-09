@@ -874,3 +874,37 @@ ALTER TABLE `llx_consolidation_facture`
 -- Fin tabla llx_consolidation_facture
 -- *************************************************************************************************************/
 -- *******************************************************************************************************************
+
+
+ create view vw_salesorder_facture_cotizacion as
+	select salesorder.* ,llx_facture.fk_currency,llx_facture.rowid as facture_rowid
+	from
+        (
+		select llx_salesorder.rowid as salesorder_rowid,
+		CASE
+			WHEN sum(llx_facture.total_ttc) < llx_salesorder.total_ttc THEN 1
+		ELSE 0
+		END as domain_salesorder,
+		CASE
+			WHEN sum(llx_facture.total_ttc) > llx_salesorder.total_ttc THEN 1
+		ELSE 0
+		END as domain_facture,
+		CASE
+			WHEN llx_facture.fk_currency=llx_salesorder.fk_currency THEN 1
+		ELSE 0
+		END as misma_moneda,
+        llx_salesorder.fk_currency as moneda_salesorder,
+        llx_salesorder.fk_projet
+		from llx_salesorder
+		join llx_element_element on(llx_element_element.fk_source=llx_salesorder.rowid
+		and llx_element_element.sourcetype="salesorder" and llx_element_element.targettype="facture"
+		 )
+		join  llx_facture on(llx_facture.rowid=llx_element_element.fk_target)
+		group by llx_facture.fk_projet,llx_salesorder.total_ttc,llx_salesorder.rowid,llx_salesorder.fk_currency,llx_facture.fk_currency
+	) salesorder
+	join llx_element_element on
+		(
+			llx_element_element.fk_source=salesorder.salesorder_rowid
+			and llx_element_element.sourcetype="salesorder" and llx_element_element.targettype="facture"
+		)
+	join llx_facture on(llx_facture.rowid=llx_element_element.fk_target);

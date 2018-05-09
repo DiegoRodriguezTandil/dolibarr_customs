@@ -834,16 +834,43 @@ END ;;
 
  END ;;
 
-
-
-
-
-
-
  -- -------------------------------------
  -- ------------
  -- ------------------------------------
 
+ -- *******************************************************************************************************************
+ --  Tabla llx_consolidation_facture
 
+-- tabla requerida para salvar la cotizacion manual de cada factura
 
+CREATE TABLE `llx_consolidation_facture` (
+  `id` int(11) NOT NULL COMMENT 'Identificador de llx_consolidation_feature',
+  `facture_id` int(11) NOT NULL COMMENT 'Fk de llx_facture',
+  `fecha_ingreso` date DEFAULT NULL COMMENT 'Fecha en que se realizo el ingreso',
+  `divisa_origen` varchar(3) DEFAULT NULL  COMMENT 'Divisa a la cual se realizara la conversion a la divisa destino',
+  `divisa_destino` varchar(3) DEFAULT "USD" COMMENT 'Divisa a la cual se convertira la divisa origen',
+  `valor_divisa_origen` DECIMAL (11,2) DEFAULT NULL,
+  `valor_divisa_destino` DECIMAL(11,2) DEFAULT NULL,
+  `tipo` varchar(10) DEFAULT 'Manual'
+ ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='Registra las divisas de conversión para ordenes de venta';
 
+--
+-- Indices de la tabla `llx_consolidation_facture`
+--
+ALTER TABLE `llx_consolidation_facture`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- AUTO_INCREMENT de la tabla `llx_consolidation_facture`
+--
+ALTER TABLE `llx_consolidation_facture`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'Identificador de llx_consolidation_feature', AUTO_INCREMENT=1;
+
+  ALTER TABLE `llx_consolidation_facture`
+  ADD CONSTRAINT `llx_consolidation_facture_llx_c_currencies-divisa_origen` FOREIGN KEY (`divisa_origen`) REFERENCES `llx_c_currencies` (`code_iso`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  ADD CONSTRAINT `llx_consolidation_facture_llx_c_currencies-divisa_destino` FOREIGN KEY (`divisa_destino`) REFERENCES `llx_c_currencies` (`code_iso`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  ADD CONSTRAINT `llx_consolidation_facture_llx_facture-facture_id` FOREIGN KEY (`facture_id`) REFERENCES `llx_facture` (`rowid`) ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+-- Fin tabla llx_consolidation_facture
+-- *************************************************************************************************************/
+-- *******************************************************************************************************************

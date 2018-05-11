@@ -51,7 +51,6 @@ if (! empty($conf->propal->enabled))   	$langs->load("propal");
 if (! empty($conf->ficheinter->enabled))	$langs->load("interventions");
 
 
-
 $projectid=GETPOST('id');
 $ref=GETPOST('ref');
 if ($projectid == '' && $ref == '')
@@ -59,7 +58,6 @@ if ($projectid == '' && $ref == '')
 	dol_print_error('','Bad parameter');
 	exit;
 }
-print '<input checked data-toggle="toggle" type="checkbox">';
 echo "
 <style>
 	 
@@ -119,12 +117,92 @@ print '<script>
 			
 		}	
 
+	
+		
+ 	function checkEntity(t){
+		console.log(t);
+		
+		var id_domain				= t.context.dataset["entity_id"];
+	  	var consolidationDomain_id	= t.context.dataset["consolidationdomain"];
+		var id_project				= t.context.dataset["pj"];
+		var domainName				= t.context.dataset["domain"];
+		var domain					= 0;
+		if ($(t[0]).is(":checked"))
+		{
+		    domain=1;
+		   console.log("cecked");
+		} 
 		
 
+        
+/*        
+        var id_project = 178; 
+        var domain="salesorder";
+        var id_domain=208;
+        var consolidationDomain_id=1;
+*/        
+		function url_redirect(options){
+			 var $form = $("<form />");
+			 
+			 $form.attr("action",options.url);
+			 $form.attr("method",options.method);
+			 
+			 for (var data in options.data)
+			 $form.append(\'<input type="hidden" name="\'+data+\'" value="\'+options.data[data]+\'" />\');
+			  
+			 $("body").append($form);
+			 $form.submit();
+		}
+		 
+		$(function(){
+			/*jquery statements */
+			url_redirect({url: "'.DOL_URL_ROOT.'/projet/resultado.php?id="+id_project,
+			  method: "post",
+			  data: {
+			    	"domainName":domainName,
+			    	"id_domain":id_domain,
+			    	"consolidationDomain_id":consolidationDomain_id,
+			    	"domain":domain
+			  		}
+			 });
+		});
+				
+                            	
+	}
 </script>';
 /*************************************************************************/
 
  /**************************************************************************************************************/
+
+/*************************************************************************************************************
+INSERT INTO llx_consolidation_domain
+
+ */
+if(!empty($_POST['domainName'])) {
+    $date_domain 			= new DateTime();
+    $fecha_ingreso_domain 	= date_format($date_domain, 'Y-m-d');
+    $entitiDomain			= $_POST['domainName'];
+    $domain					= $_POST['domain'];
+    $id_domain 				= $_POST['id_domain'];
+    $consolidationDomain_id = $_POST['consolidationDomain_id'];
+    if(empty($consolidationDomain_id) ) {
+        $sql = "INSERT INTO " . MAIN_DB_PREFIX . "consolidation_domain_" . $entitiDomain . " (entidad_id,fecha_ingreso,domain)";
+        $sql .= " VALUES (" . $id_domain . ",'" . $fecha_ingreso_domain . "','" . $domain . "')";
+    }else{
+		$sql = "INSERT INTO " . MAIN_DB_PREFIX . "consolidation_domain_" . $entitiDomain . " (id,entidad_id,fecha_ingreso)";
+        $sql .= " VALUES (".$consolidationDomain_id .",". $id_domain . ",'" . $fecha_ingreso_domain . "')";
+	}
+	if(!empty( $consolidationDomain_id)){
+        $sql.= " ON DUPLICATE KEY UPDATE domain=".$domain.",fecha_ingreso='".$fecha_ingreso_domain."';";
+	}else{
+        $sql.=";";
+	}
+    $resql = $db->query($sql);
+}
+
+
+
+
 /*************************************************************************************************************
 INSERT INTO llx_consolidation_(dinamyc entity)
 
@@ -337,7 +415,9 @@ $listofreferent=array(
         'entity_table'=>'facture',
         'operation'=>'+',
 		'searchDomain'=>1,
-		'defaultDomain'=>0),
+		'defaultDomain'=>0,
+		'entityFather'=>'salesorder'
+		),
 	'salesorder'=>array(
 		'title'=>"Listado de Ordenes de Venta asociadas al proyecto",
 		'class'=>'Salesorder',
@@ -383,14 +463,6 @@ foreach ($listofreferent as $key => $value)
 {
 	$title=$value['title'];
 	$operation=$value['operation'];
-    $searchDomain=$value['searchDomain'];
-    if($searchDomain===1){
-        $defaultDomain=$value['defaultDomain'];
-	}else{
-        $defaultDomain=-1;
-	}
-
-
 	$classname=strtolower($value['class']);
     $entidadName=strtolower($value[entity_table]);
 	$qualified=$value['test'];
@@ -402,9 +474,9 @@ foreach ($listofreferent as $key => $value)
 		print '<br>';
 
 		print_titre($langs->trans($title));
-		print '<table class="noborder" width="100%">';
+		print '<table class="noborder" width="100%" >';
 
-		print '<tr class="liste_titre">';
+		echo "<tr class='liste_titre' >";
 		print '<td width="100">'.$langs->trans("Ref").'</td>';
 		print '<td width="100" align="center">'.$langs->trans("Date").'</td>';
 		print '<td width="500">'.$langs->trans("ThirdParty").'</td>';
@@ -431,6 +503,7 @@ foreach ($listofreferent as $key => $value)
         print '<td  width="180" >(USD) Importe</td>';
 
 		print '<td align="center" width="200">'.$langs->trans("Status").'</td>';
+		print '<td align="center" width="10">Priorizar</td>';
 		print '</tr>';
 		
 		$elementarray = $project->get_element_list($key);
@@ -443,15 +516,136 @@ foreach ($listofreferent as $key => $value)
 			$total_cost=0;
             $total_tcccot=0;
 			$num=count($elementarray);
+            $styleTr= "style=''";
 			for ($i = 0; $i < $num; $i++)
 			{
 				$element = new $classname($db);
 				$element->fetch($elementarray[$i]);
 				$element->fetch_thirdparty();
-				//print $classname;
+
+                /*****************************************************************************************************************************************************
+                 *Para el caso de facturas y ordenes de venta, busca cual es la entidad que domina o se priorizara. Si el total del valor de las facturas es > que el total de la o.v entonces domina la factura
+                 *
+                 */
+
+                //configuraciones del reporte
+                $dom= $_POST['domain'];
+                $searchDomain=$value['searchDomain'];
+                if($searchDomain===1){
+                    $defaultDomain=$value['defaultDomain'];
+                    if($defaultDomain==0){
+						$entityFather= $value['entityFather'];
+					}
+                }else{
+                    $defaultDomain=-1;
+                }
+
+                $retSearchDomain=0;
+                //si se permite la busqueda de que entidad domina o se priorizara
+                if($searchDomain){
+                    $sqlSearchDomain = " 
+						SELECT *
+						FROM   vw_salesorder_facture_cotizacion 
+						where  {$entidadName}_rowid = {$element->id} limit 1;";
+                    $domainEntidad="domain_".$entidadName;
+
+                    $sqlSearchDomain = $db->query($sqlSearchDomain);
+                    $retSearchDomain = $db->fetch_object($sqlSearchDomain);
+                    $domain= $retSearchDomain->$domainEntidad;
+
+                    //si no es la entidad que domina o es priorizada por defecto entinces:
+					if($defaultDomain==0){
+						$entityNameConsolidationDomain=$entityFather;
+                        $domainEntidad_id ="{$entityNameConsolidationDomain}_rowid";
+					}else{
+                        $entityNameConsolidationDomain=$entidadName;
+                        $domainEntidad_id="{$entidadName}_rowid";
+					}
+                    $domain_id= $retSearchDomain->$domainEntidad_id;
+
+
+					// verifica si hay una restriccion de dominio o priorizacion configurada.
+					// Si es asi existira una tupla en la tabla   llx_consolidation_domain_entityNameConsolidationDomain
+                    $sqlsetDomain = " 
+						SELECT case 
+								   when count(*) >= 1  then 1 
+								   when count(*) < 1  then 0
+							   end as exist,
+							   case 
+								   when count(*) >= 1  then domain
+								   when count(*) < 1  then 1
+							   end as domain,
+							   id							   							   
+						FROM   llx_consolidation_domain_{$entityNameConsolidationDomain} 
+						where  entidad_id = {$domain_id}
+						group by  domain,id limit 1;";
+
+                    $sqlsetDomain 				= $db->query($sqlsetDomain);
+                    $retSqlsetDomain 			= $db->fetch_object($sqlsetDomain);
+                    $entityFatherDomainExists	= !isset($retSqlsetDomain->exist)  ?  0  : $retSqlsetDomain->exist;
+                    $entityFatherDomain			= !isset($retSqlsetDomain->domain) ?  1  : $retSqlsetDomain->domain ;
+                    $entityFatherDomainId 		= !isset($retSqlsetDomain->id) 	   ? ''  : $retSqlsetDomain->id ;
+
+					// si no es la entidad que domina o se priorizo por defecto
+                    if($defaultDomain==0){
+                       if ( ($domain==0  && $entityFatherDomainExists==0) || ($entityFatherDomainExists==1 && $entityFatherDomain==1)  ){
+                           $styleTr		= "style='background-color: #8C9CAB'";
+                           $esCotizable	=0;
+                       } else{
+                           $styleTr= "style=''";
+                           $esCotizable=1;
+                       }
+                    }
+
+                    // si es la entidad que domina o se priorizo por defecto
+                    if($defaultDomain==1){
+                        if ( ($domain==0 && $entityFatherDomainExists==0 ) ||  ($entityFatherDomainExists==1 && $entityFatherDomain==0) ){
+                            $styleTr			= "style='background-color: #8C9CAB'";
+                            $esCotizable		= 0;
+                        } else{
+                            $styleTr			= "style=''";
+                            $esCotizable		=	1;
+
+                        }
+                    }
+                $sqlDimainNames = "
+                    SELECT *
+                    FROM   vw_salesorder_facture_cotizacion_priorizada 
+                    where  {$entityNameConsolidationDomain}_rowid = {$domain_id};";
+                $sqlDimainNames		= $db->query($sqlDimainNames);
+                $arryNameEntity		= array();
+ 
+                $i_aux_names=0;
+                $continue=true;
+                while($sqlDimainNames && $db->num_rows($sqlDimainNames)>$i_aux_names && $continue){
+                    $ob  = $db->fetch_object($sqlDimainNames);                  
+                    $name= $ob->name_domain;                    
+                    $arryNameEntity[]=$name;                      
+                    if($ob->domain==1){    
+                        $continue=false;  
+                    }                    
+                    $i_aux_names++;   
+                }
+                    
+                    
+                }
+
+
+
+              
+                /****************************************************************************************************************************************************/
+
+
+
+
+
+
+
+
+                //print $classname;
 
 				$var=!$var;
-				print "<tr $bc[$var]>";
+				echo "<tr $bc[$var] {$styleTr}>";
 
 				// Ref
 				print '<td align="left" nowrap>';
@@ -476,55 +670,11 @@ foreach ($listofreferent as $key => $value)
 
                 // Amount
 				if (empty($value['disableamount'])) print "<td align='right' style='padding-left:5px;'>".(isset($element->total_ht)?price($element->total_ht):'&nbsp;')."</td>";
-
-
-				
-				//FEDE
-				// 	$rate=$element->getRate($elementarray[$i],$conf->currency);
-				/*
-				$resql=$db->query("SELECT rate FROM llx_currency_conversion a join llx_deplacement b on a.source=b.fk_currency and a.target='ARS' where rowid=".$elementarray[$i]." order by date desc");
-				if($conv = $db->fetch_object($resql))
-				{
-					$rate=$conv->rate;
-				}
-				*/
-				
-				
-				// Amount
-				//if (empty($value['disableamount'])) print '<td align="right">'.(isset($element->total_ttc)?price($element->total_ttc*$rate,0,'',0,2,2):'&nbsp;').'</td>';
-
-					// Amount
-				/*if (empty($value['disableamount'])){
-					 print '<td align="right">';
-						if(isset($element->total_ttc)){
-                            echo price($element->total_ttc ,0,'',0,2,2);
-						}else{
-							print '&nbsp;';
-						}
-					print'</td>';
-
-					};
-				*/
-				//	print '<td align="right">'.(isset($element->cost)?price($element->cost*$rate,0,'',0,2,2):'&nbsp;').'</td>';
-
-                $retSearchDomain=0;
-                if($searchDomain){
-               		 $sqlSearchDomain = " 
-						SELECT count(*)	 as domain
-						FROM   vw_salesorder_facture_cotizacion 
-						where  {$entidadName}_rowid = {$element->id} 
-						and domain_{$entidadName}=1 
-						and misma_moneda=1;";
-
-               		 $sqlSearchDomain = $db->query($sqlSearchDomain);
-               		 $retSearchDomain = $db->fetch_object($sqlSearchDomain);
-				}
-				
 				
                 $resqlFinal=0;
                 $id_de_consolidacion_manual=false;
-                //Solo si es diferente de usd se visualizara el form
-                if($element->fk_currency!='USD' && $retSearchDomain->domain==1) {
+                //Solo si es diferente de usd y es cotizable si visualizara el form
+                if($element->fk_currency!='USD' &&  $esCotizable==1){
                 	//query de la entidad a realizar cotizacion
                		 $sqlQueryEntidad = " 
 						SELECT 	cs.id
@@ -595,7 +745,6 @@ foreach ($listofreferent as $key => $value)
 										);
 									";
                                 $resqlFechaMinMax = $db->query($sqlQueryFechaMinMax);
-                               // var_dump($resqlFechaMinMax);  print_r($sqlQueryFechaMinMax); var_dump($db->num_rows($resqlFechaMinMax));
                                 if($resqlFechaMinMax  && $db->num_rows($resqlFechaMinMax)){
                                     $resqlFinal= $resqlFechaMinMax;
 								}
@@ -732,9 +881,14 @@ foreach ($listofreferent as $key => $value)
 					}
 
                 }else{
-                    echo "<td  align='center' > - </td>";
+                    if($searchDomain===1 and $esCotizable==0){                        
+                        echo "<td  align='center' ><i>Se tomará la cotización de <b>".implode(",", $arryNameEntity)."</b></i></td>";                                            
+                    }else{
+                         echo "<td  align='center' > - </td>";
+                    }
+                    
                     $obj='';
-				}
+                }
 
 				if(!empty($element->total_ht) and !empty($obj->valor_divisa_destino) and $element->fk_currency<>$obj->divisa_destino and $no_exite_cotizacion===false){
                     $total_conversion=$element->total_ht * $obj->valor_divisa_destino;
@@ -743,7 +897,7 @@ foreach ($listofreferent as $key => $value)
                     echo "<td  align='right' width='120px'>
 						USD {$total_conversion} 
 					  </td>";
-				}else if ($element->fk_currency==='USD'){
+				}else if ($element->fk_currency==='USD' &&  $esCotizable==1){
                     $total_conversion_sin_formato=floatval($element->total_ht);
                     $total_conversion=price($element->total_ht,0,'',0,2,2);
                     echo "<td  align='right' width='120px'>
@@ -760,16 +914,21 @@ foreach ($listofreferent as $key => $value)
 
                 // Status
                 print '<td align="center">'.$element->getLibStatut(5).'</td>';
-				if($searchDomain===1){
-                    if($defaultDomain===1 && $retSearchDomain->domain==0 ){
-                        print '
-<input checked data-toggle="toggle" type="checkbox" name="asdas">
-<td align="center">1</td>';
-                    }else{
-                        print '<td align="center">'.$retSearchDomain->domain.'</td>';
-					}
 
-				}
+
+                    // seleccion de priorida/dominio ante entidad hija
+                    // si es checked entonces domina entidad padre de lo contrario la entidad hija
+                    if($searchDomain===1 and  $defaultDomain==1){
+                        if ( ($domain==0 && $entityFatherDomainExists==0 ) ||  ($entityFatherDomainExists==1 && $entityFatherDomain==0) ){
+                                print '<td align="center"><input  type="checkbox" data-pj="'.$projectid.'" data-consolidationDomain="'.$entityFatherDomainId.'" data-entity_id="'.$domain_id.'" data-domain="salesorder" name="ov" value="1" onchange="var t=$(this);checkEntity(t);"  	></td>';
+
+                        } else{
+                                print '<td align="center"><input  type="checkbox" data-pj="'.$projectid.'" data-consolidationDomain="'.$entityFatherDomainId.'" data-entity_id="'.$domain_id.'" data-domain="salesorder" name="ov" value="0" onchange="var t=$(this);checkEntity(t);" checked="1"></td>';
+
+                        }
+                }else{
+                    print '<td align="center"> </td>';
+                }
 
 
                 print '</tr>';
@@ -843,6 +1002,7 @@ foreach ($listofreferent as $key => $value)
                     print '<td>&nbsp;</td>';
                 }
 
+                print '<td></td>';
                 print '<td></td>';
 
 				print '</tr>';

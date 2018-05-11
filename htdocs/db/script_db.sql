@@ -875,32 +875,56 @@ ALTER TABLE `llx_consolidation_facture`
 -- *************************************************************************************************************/
 -- *******************************************************************************************************************
 
-
+/*
  create view vw_salesorder_facture_cotizacion as
-	select salesorder.* ,llx_facture.fk_currency,llx_facture.rowid as facture_rowid
-	from
-        (
-		select llx_salesorder.rowid as salesorder_rowid,
-		CASE
-			WHEN sum(llx_facture.total_ttc) < llx_salesorder.total_ttc THEN 1
-		ELSE 0
-		END as domain_salesorder,
-		CASE
-			WHEN sum(llx_facture.total_ttc) > llx_salesorder.total_ttc THEN 1
-		ELSE 0
-		END as domain_facture,
-		CASE
-			WHEN llx_facture.fk_currency=llx_salesorder.fk_currency THEN 1
-		ELSE 0
-		END as misma_moneda,
-        llx_salesorder.fk_currency as moneda_salesorder,
-        llx_salesorder.fk_projet
+ select
+        case
+                when salesorder.same_currency =0 or domain_salesorder =1  then 1
+                else  0
+                end domain_salesorder,
+        case
+                when salesorder.same_currency =1 or domain_salesorder =1  then 1
+                else  0
+         end domain_facture
+        ,salesorder.salesorder_rowid
+        ,salesorder.same_currency
+        ,salesorder.moneda_salesorder
+        ,salesorder.fk_projet
+        ,salesorder.salesorder_name
+        ,llx_facture.fk_currency
+
+        ,llx_facture.rowid as facture_rowid
+        ,llx_facture.facnumber as facture_name,
+        case
+          when salesorder.same_currency =0 or domain_salesorder =1  then salesorder_name
+          when salesorder.same_currency =1 and domain_salesorder =1  then salesorder_name
+          when salesorder.same_currency =1 and domain_salesorder =0  then llx_facture.facnumber
+        end name_domain
+from
+    (
+		select
+		  llx_salesorder.rowid as salesorder_rowid,
+      CASE
+        WHEN sum(llx_facture.total_ttc) < llx_salesorder.total_ttc THEN 1
+        ELSE 0
+		  END as domain_salesorder,
+      CASE
+        WHEN sum(llx_facture.total_ttc) > llx_salesorder.total_ttc THEN 1
+        ELSE 0
+      END as domain_facture,
+      CASE
+        WHEN llx_facture.fk_currency=llx_salesorder.fk_currency THEN 1
+        ELSE 0
+      END as same_currency,
+      llx_salesorder.fk_currency as moneda_salesorder,
+      llx_salesorder.fk_projet,
+      llx_salesorder.ref as salesorder_name
 		from llx_salesorder
 		join llx_element_element on(llx_element_element.fk_source=llx_salesorder.rowid
 		and llx_element_element.sourcetype="salesorder" and llx_element_element.targettype="facture"
 		 )
 		join  llx_facture on(llx_facture.rowid=llx_element_element.fk_target)
-		group by llx_facture.fk_projet,llx_salesorder.total_ttc,llx_salesorder.rowid,llx_salesorder.fk_currency,llx_facture.fk_currency
+		group by llx_facture.fk_projet,llx_salesorder.total_ttc,llx_salesorder.rowid,llx_salesorder.fk_currency,llx_facture.fk_currency,llx_salesorder.ref
 	) salesorder
 	join llx_element_element on
 		(
@@ -908,3 +932,109 @@ ALTER TABLE `llx_consolidation_facture`
 			and llx_element_element.sourcetype="salesorder" and llx_element_element.targettype="facture"
 		)
 	join llx_facture on(llx_facture.rowid=llx_element_element.fk_target);
+	 -- where salesorder.fk_projet=358;
+*/
+create view vw_salesorder_facture_cotizacion as
+ select
+        case
+                when salesorder.same_currency =0	then 1
+                when domain_salesorder =1 		  	then 1 
+                else  0
+                end domain_salesorder,
+        case
+                when salesorder.same_currency =1 && domain_salesorder =0  then 1
+                else  0
+         end domain_facture
+        ,salesorder.salesorder_rowid
+        ,salesorder.same_currency
+        ,salesorder.moneda_salesorder
+        ,salesorder.fk_projet
+        ,salesorder.salesorder_name
+        ,llx_facture.fk_currency
+        ,llx_facture.rowid as facture_rowid
+        ,llx_facture.facnumber as facture_name
+from
+    (
+		select
+		  llx_salesorder.rowid as salesorder_rowid,
+      CASE
+        WHEN sum(llx_facture.total_ttc) < llx_salesorder.total_ttc THEN 1
+        ELSE 0
+		  END as domain_salesorder,
+      CASE
+        WHEN sum(llx_facture.total_ttc) > llx_salesorder.total_ttc THEN 1
+        ELSE 0
+      END as domain_facture,
+      CASE
+        WHEN llx_facture.fk_currency=llx_salesorder.fk_currency THEN 1
+        ELSE 0
+      END as same_currency,
+      llx_salesorder.fk_currency as moneda_salesorder,
+      llx_salesorder.fk_projet,
+      llx_salesorder.ref as salesorder_name
+		from llx_salesorder
+		join llx_element_element on(llx_element_element.fk_source=llx_salesorder.rowid
+		and llx_element_element.sourcetype="salesorder" and llx_element_element.targettype="facture"
+		 )
+		join  llx_facture on(llx_facture.rowid=llx_element_element.fk_target)
+		group by llx_facture.fk_projet,llx_salesorder.total_ttc,llx_salesorder.rowid,llx_salesorder.fk_currency,llx_facture.fk_currency,llx_salesorder.ref
+	) salesorder
+	join llx_element_element on
+		(
+			llx_element_element.fk_source=salesorder.salesorder_rowid
+			and llx_element_element.sourcetype="salesorder" and llx_element_element.targettype="facture"
+		)
+	join llx_facture on(llx_facture.rowid=llx_element_element.fk_target);
+
+
+
+ -- *******************************************************************************************************************
+ --  Tabla llx_consolidation_domain_salesorder
+
+-- tabla requerida para indicar si si se prioriza la entidad padre (ejemplo salesorder y no facture)
+
+CREATE TABLE `llx_consolidation_domain_salesorder` (
+  `id` int(11) NOT NULL COMMENT 'Identificador de llx_consolidation_domain_salesorder',
+  `entidad_id` int(11) NOT NULL COMMENT 'Fk',
+  'domain' int(11) NOT NULL COMMENT 'Fk de llx_facture',
+  `fecha_ingreso` date DEFAULT NULL COMMENT 'Fecha en que se realizo el ingreso'
+ ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='Registra las divisas de conversión para ordenes de venta';
+
+--
+-- Indices de la tabla `llx_consolidation_domain_salesorder`
+--
+ALTER TABLE `llx_consolidation_domain_salesorder`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- AUTO_INCREMENT de la tabla `llx_consolidation_domain_salesorder`
+--
+ALTER TABLE `llx_consolidation_domain_salesorder`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'Identificador de llx_consolidation_domain_salesorder', AUTO_INCREMENT=1;
+
+
+-- Fin tabla llx_consolidation_domain_salesorder
+-- *************************************************************************************************************/
+-- *******************************************************************************************************************
+create view vw_salesorder_facture_cotizacion_priorizada as
+select 
+	vw_sf.*	
+    ,domain as domain1
+	,case
+		when domain is null then 0
+		else domain
+	end domain
+	,ds.entidad_id
+	,ds.fecha_ingreso
+	,ds.id
+	,
+	case
+	  when (domain_salesorder =1)  &&  (domain=0) 			then facture_name
+       when (domain_salesorder =1)  &&  (domain=1) 			then salesorder_name
+	  when (domain_salesorder =1)  &&  (domain is null) 	then salesorder_name
+	  when (domain_salesorder =0)  &&  (domain is not null && domain=1) then  salesorder_name 
+	  when (domain_salesorder =0) then facture_name
+      else salesorder_name
+	end name_domain
+from 	vw_salesorder_facture_cotizacion vw_sf 
+left join 	llx_consolidation_domain_salesorder ds  on(ds.entidad_id= vw_sf.salesorder_rowid ); 

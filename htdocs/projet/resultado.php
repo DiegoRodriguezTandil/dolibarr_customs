@@ -539,7 +539,7 @@ foreach ($listofreferent as $key => $value)
                 }else{
                     $defaultDomain=-1;
                 }
-
+                $esCotizable=1;
                 $retSearchDomain=0;
                 //si se permite la busqueda de que entidad domina o se priorizara
                 if($searchDomain){

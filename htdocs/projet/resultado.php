@@ -172,8 +172,6 @@ print '<script>
 </script>';
 /*************************************************************************/
 
- /**************************************************************************************************************/
-
 /*************************************************************************************************************
 INSERT INTO llx_consolidation_domain
 
@@ -210,8 +208,8 @@ INSERT INTO llx_consolidation_(dinamyc entity)
 
 if(!empty($_POST['entidad_id']) &&  empty($_POST['resetTipo']) ){
     $divisa_origen 					= $_POST['divisa_origen'];
-    $valor_divisa_origen_format_dot	= empty($_POST['valor_divisa_origen'])  ? 1 : str_replace(".", "", $_POST['valor_divisa_origen']);
-    $valor_divisa_origen			= empty($_POST['valor_divisa_origen'])  ? 1 : str_replace(",", ".",$valor_divisa_origen_format_dot);
+    $valor_divisa_origen_format_dot	= empty($_POST['valor_divisa_origen'])   ? 1 : str_replace(".", "", $_POST['valor_divisa_origen']);
+    $valor_divisa_origen			= empty($_POST['valor_divisa_origen'])   ? 1 : str_replace(",", ".",$valor_divisa_origen_format_dot);
     $valor_divisa_destino_format_dot= empty($_POST['valor_divisa_destino'])  ? 1 : str_replace(".", "", $_POST['valor_divisa_destino']);
     $valor_divisa_destino			= empty($_POST['valor_divisa_destino'])  ? 1 : str_replace(",", ".",$valor_divisa_destino_format_dot);
     $entidad_id						= $_POST['entidad_id'];
@@ -233,7 +231,7 @@ if(!empty($_POST['entidad_id']) &&  empty($_POST['resetTipo']) ){
         $sql.= " ON DUPLICATE KEY UPDATE valor_divisa_origen=".$valor_divisa_origen.",valor_divisa_destino='".$valor_divisa_destino."',fecha_ingreso='".$fecha_i."';";
 	}else{
         $sql.=";";
-	}
+	}//var_dump($sql);die("res 236");
 	$resql = $db->query($sql);
 
 }else if(!empty($_POST['resetTipo'])){
@@ -440,7 +438,12 @@ $listofreferent=array(
 		'test'=>$conf->deplacement->enabled,
 		'operation'=>'-',
         'searchDomain'=>0),
-
+    'policy'=>array(
+        'title'=>"Polizas",
+        'class'=>'policy',
+        'test'=>true,
+        'entity_table'=>'policy',
+        'operation'=>'-'),
 /*
 'policy'=>array(
 	'title'=>"Listado de pólizas asociadas al proyecto",
@@ -455,24 +458,37 @@ $listofreferent=array(
 */
 );
 
+$date           =   new DateTime();
+$intDate        =   $date->getTimestamp();
+$fileName       =   "excel{$intDate}.csv";
+$path           =   DOL_DOCUMENT_ROOT."export_text_format_excel/".$fileName;
+$pathUrl        =   DOL_URL_ROOT."/export_text_format_excel/".$fileName;
 
+//$path2           =   DOL_DOCUMENT_ROOT."excel{$intDate}.txt";
+
+echo "
+    <div style='float:right;margin-right: 10px;'>
+        <a class='button' href='{$pathUrl}' download target='_blank'>Exportar a Excel</a>
+    </div>
+    ";
 $arrayCurrencys = array();
 $importeTotales = array();
 $linea=0;
+$arrayExport=array();
 foreach ($listofreferent as $key => $value)
 {
-	$title=$value['title'];
-	$operation=$value['operation'];
-	$classname=strtolower($value['class']);
-    $entidadName=strtolower($value[entity_table]);
-	$qualified=$value['test'];
-	$importeTotales[$title]['operation']=$operation;
-
+	$title                              =   $value['title'];
+	$operation                          =   $value['operation'];
+	$classname                          =   strtolower($value['class']);
+    $entidadName                        =   strtolower($value[entity_table]);
+	$qualified                          =   $value['test'];
+	$importeTotales[$title]['operation']=   $operation;
 	$view_tcc=false;
+
 	if ($qualified)
 	{
-		print '<br>';
 
+		print '<br>';
 		print_titre($langs->trans($title));
 		print '<table class="noborder" width="100%" >';
 
@@ -519,6 +535,7 @@ foreach ($listofreferent as $key => $value)
             $styleTr= "style=''";
 			for ($i = 0; $i < $num; $i++)
 			{
+			    $arryNameEntity	= array();
 				$element = new $classname($db);
 				$element->fetch($elementarray[$i]);
 				$element->fetch_thirdparty();
@@ -543,16 +560,21 @@ foreach ($listofreferent as $key => $value)
                 $retSearchDomain=0;
                 //si se permite la busqueda de que entidad domina o se priorizara
                 if($searchDomain){
+                    $rows_exists=0;
                     $sqlSearchDomain = " 
-						SELECT *
-						FROM   vw_salesorder_facture_cotizacion 
-						where  {$entidadName}_rowid = {$element->id} limit 1;";
+                        SELECT *
+                        FROM   vw_salesorder_facture_cotizacion 
+                        where  {$entidadName}_rowid = {$element->id} limit 1;";
                     $domainEntidad="domain_".$entidadName;
 
                     $sqlSearchDomain = $db->query($sqlSearchDomain);
                     $retSearchDomain = $db->fetch_object($sqlSearchDomain);
                     $domain= $retSearchDomain->$domainEntidad;
-
+                    
+                    //comprueba que existan tuplas,de lo contrario no se debe mostrar ni el check de priorización, ni el remarcado de la tupla 
+                    if($db->num_rows($sqlDimainNames)>0){
+                        $rows_exists=1;
+                    }
                     //si no es la entidad que domina o es priorizada por defecto entinces:
 					if($defaultDomain==0){
 						$entityNameConsolidationDomain=$entityFather;
@@ -588,7 +610,7 @@ foreach ($listofreferent as $key => $value)
 
 					// si no es la entidad que domina o se priorizo por defecto
                     if($defaultDomain==0){
-                       if ( ($domain==0  && $entityFatherDomainExists==0) || ($entityFatherDomainExists==1 && $entityFatherDomain==1)  ){
+                       if ( ($domain==0  && $entityFatherDomainExists==0) || ($entityFatherDomainExists==1 && $entityFatherDomain==1) and $rows_exists==1 ){
                            $styleTr		= "style='background-color: #8C9CAB'";
                            $esCotizable	=0;
                        } else{
@@ -599,7 +621,7 @@ foreach ($listofreferent as $key => $value)
 
                     // si es la entidad que domina o se priorizo por defecto
                     if($defaultDomain==1){
-                        if ( ($domain==0 && $entityFatherDomainExists==0 ) ||  ($entityFatherDomainExists==1 && $entityFatherDomain==0) ){
+                        if ( ($domain==0 && $entityFatherDomainExists==0 ) ||  ($entityFatherDomainExists==1 && $entityFatherDomain==0)  and $rows_exists==1 ){
                             $styleTr			= "style='background-color: #8C9CAB'";
                             $esCotizable		= 0;
                         } else{
@@ -613,10 +635,11 @@ foreach ($listofreferent as $key => $value)
                     FROM   vw_salesorder_facture_cotizacion_priorizada 
                     where  {$entityNameConsolidationDomain}_rowid = {$domain_id};";
                 $sqlDimainNames		= $db->query($sqlDimainNames);
-                $arryNameEntity		= array();
- 
+
                 $i_aux_names=0;
                 $continue=true;
+                $arryNameEntity	= array();
+                $arrayReferemces=array();
                 while($sqlDimainNames && $db->num_rows($sqlDimainNames)>$i_aux_names && $continue){
                     $ob  = $db->fetch_object($sqlDimainNames);                  
                     $name= $ob->name_domain;                    
@@ -648,9 +671,19 @@ foreach ($listofreferent as $key => $value)
 				echo "<tr $bc[$var] {$styleTr}>";
 
 				// Ref
-				print '<td align="left" nowrap>';
-				print $element->getNomUrl(1);
-				print "</td>\n";
+                $nameDoc="";
+                if($key=="policy"){
+                    print '<td align="left" nowrap>';
+                    print $element->getNomUrl(1,0,0,0,1);
+                    $nameDoc=$element->ref;
+                    print "</td>\n";
+                } else {
+                    print '<td align="left" nowrap>';
+                    print $element->getNomUrl(1);
+                    $nameDoc=$element->ref;
+                    print "</td>\n";
+                }
+                                
 
 				// Date
 				$date=$element->date;
@@ -665,7 +698,7 @@ foreach ($listofreferent as $key => $value)
                 if (is_object($element->client)) print $element->client->getNomUrl(1,'',48);
 				print '</td>';
 
-			
+		//	var_dump($element->client);die();
                 print '<td  align="center" >'.$element->fk_currency.'</td>';
 
                 // Amount
@@ -754,11 +787,18 @@ foreach ($listofreferent as $key => $value)
                     $date = new DateTime();
                     $fecha_ingreso_format_db= date_format($date, 'Y-m-d');
                     $fecha_ingreso_format_view = date_format($date, 'd/m/Y');
-					if( $resqlFinal  && $db->num_rows($resqlFinal)>0){
+                    $tipo_de_cotizacion="";
+
+                    if( $resqlFinal  && $db->num_rows($resqlFinal)>0){
+
                         //Si existe cotizacion ya sea en consolidation_day o en la tabla de cotizacion de la entidad a cotizar
 
                         $no_exite_cotizacion=false;
                         $obj = $db->fetch_object($resqlFinal);
+                        $tipo_de_cotizacion=$obj->tipo;
+                        $valor_divisa_origen=$obj->valor_divisa_origen;
+                        $valor_divisa_destino=$obj->valor_divisa_destino;
+
                         $fecha_ingreso_format_view	= DateTime::createFromFormat('Y-m-d',$obj->fecha_ingreso)->format('d/m/Y');
                         echo"
 						<td  style='font-size:80%; padding-left:10px;' align='left' width='200px' >
@@ -881,12 +921,12 @@ foreach ($listofreferent as $key => $value)
 					}
 
                 }else{
-                    if($searchDomain===1 and $esCotizable==0){                        
-                        echo "<td  align='center' ><i>Se tomará la cotización de <b>".implode(",", $arryNameEntity)."</b></i></td>";                                            
+                    if($searchDomain===1 and $esCotizable==0){
+                        echo "<td  align='center' ><i>Se tomará la cotización de <b>".implode(",", $arryNameEntity)."</b></i></td>";
+                        $arrayReferemces=$arryNameEntity;
                     }else{
                          echo "<td  align='center' > - </td>";
                     }
-                    
                     $obj='';
                 }
 
@@ -916,20 +956,57 @@ foreach ($listofreferent as $key => $value)
                 print '<td align="center">'.$element->getLibStatut(5).'</td>';
 
 
-                    // seleccion de priorida/dominio ante entidad hija
-                    // si es checked entonces domina entidad padre de lo contrario la entidad hija
-                    if($searchDomain===1 and  $defaultDomain==1){
-                        if ( ($domain==0 && $entityFatherDomainExists==0 ) ||  ($entityFatherDomainExists==1 && $entityFatherDomain==0) ){
-                                print '<td align="center"><input  type="checkbox" data-pj="'.$projectid.'" data-consolidationDomain="'.$entityFatherDomainId.'" data-entity_id="'.$domain_id.'" data-domain="salesorder" name="ov" value="1" onchange="var t=$(this);checkEntity(t);"  	></td>';
+                // seleccion de priorida/dominio ante entidad hija
+                // si es checked entonces domina entidad padre de lo contrario la entidad hija
+                if($searchDomain===1 and  $defaultDomain==1  and $rows_exists==1){
+                    if ( ($domain==0 && $entityFatherDomainExists==0 ) ||  ($entityFatherDomainExists==1 && $entityFatherDomain==0) ){
+                            print '<td align="center"><input  type="checkbox" data-pj="'.$projectid.'" data-consolidationDomain="'.$entityFatherDomainId.'" data-entity_id="'.$domain_id.'" data-domain="salesorder" name="ov" value="1" onchange="var t=$(this);checkEntity(t);"  	></td>';
+                    } else{
+                            print '<td align="center"><input  type="checkbox" data-pj="'.$projectid.'" data-consolidationDomain="'.$entityFatherDomainId.'" data-entity_id="'.$domain_id.'" data-domain="salesorder" name="ov" value="0" onchange="var t=$(this);checkEntity(t);" checked="1"></td>';
+                    }
+                }else {
+                        print '<td align="center"> </td>';
+                 }
 
-                        } else{
-                                print '<td align="center"><input  type="checkbox" data-pj="'.$projectid.'" data-consolidationDomain="'.$entityFatherDomainId.'" data-entity_id="'.$domain_id.'" data-domain="salesorder" name="ov" value="0" onchange="var t=$(this);checkEntity(t);" checked="1"></td>';
+                /*********************************************************************************************************************************************************
+                ARRAY DE DATOS A SALVAR EN ARCHIVO A A EXPORTAR
+                 */
+                $tupla=array();
+                //$tupla[]  =   $date;//dol_print_date($date,'day');
+                $tupla[]  =   $nameDoc;
+                $tupla[]  =   $element->client->name;
+                $tupla[]  =   $element->fk_currency;
+                $tupla[]  =   price($element->total_ht);
+                $tupla[]  =  ((is_array($arrayReferemces) && sizeof($arrayReferemces)>0 ) || $element->fk_currency=="USD") ? "NO": "SI";
+                $tupla[]  =   price($obj->valor_divisa_origen);
+                $tupla[]  =   price($obj->valor_divisa_destino);
+                $tupla[]  =   is_array($arrayReferemces) && sizeof($arrayReferemces)>0? "SI": "NO";
+                $tupla[]  =   implode(",", $arrayReferemces);
+                $tupla[]  =   $total_conversion;
+                $arrayExport[$title][$element->id]  = $tupla;
 
-                        }
-                }else{
-                    print '<td align="center"> </td>';
+                /*********************************************************************************************************************************************************/
+                /*********************************************************************************************************************************************************
+                excel: insert de datos en el archivo
+                 */
+
+                $myfile = fopen($path, "w") ;//or die("Unable to open file!") ;
+                fwrite($myfile, "Documento;Código(Ref);Cliente;Divísa;Importe;Cotizable;Valor de Cotización Divisa Origen;Valor de Cotización USD;Excluido/Desligado;Referencia;Importe USD");
+                fwrite($myfile, "\n");
+                foreach ($arrayExport as $arr=>$arraId){
+                    foreach ($arraId as $k=>$v){
+                        fwrite($myfile, $langs->trans($arr));
+                        fwrite($myfile, ";");
+                        $dataString=implode(";",$v)."\n";
+                        fwrite($myfile, $dataString);
+                    }
                 }
+                fclose($myfile);
 
+                /*********************************************************************************************************************************************************
+                 */
+
+                /*********************************************************************************************************************************************************/
 
                 print '</tr>';
 				/******************************************************************************************************************
@@ -959,6 +1036,10 @@ foreach ($listofreferent as $key => $value)
 				$total_cost= $total_cost + $element->cost*$rate;
                 $linea++;
 			}
+
+
+
+
             $linea;
 		//	print_r($arrayCurrencys);
 			$total[$value['class']]=$total_ttc;
@@ -1030,60 +1111,12 @@ foreach ($listofreferent as $key => $value)
 		print "</table>";
 
 
-		/*
-		 * Barre d'action
-		 */
-		print '<div class="tabsAction">';
-
-		if ($project->statut > 0)
-		{
-			if ($project->societe->prospect || $project->societe->client)
-			{
-				if ($key == 'propal' && ! empty($conf->propal->enabled) && $user->rights->propale->creer)
-				{
-					print '<a class="butAction" href="'.DOL_URL_ROOT.'/comm/addpropal.php?socid='.$project->societe->id.'&amp;action=create&amp;origin='.$project->element.'&amp;originid='.$project->id.'">'.$langs->trans("AddProp").'</a>';
-				}
-				if ($key == 'order' && ! empty($conf->commande->enabled) && $user->rights->commande->creer)
-				{
-					print '<a class="butAction" href="'.DOL_URL_ROOT.'/commande/fiche.php?socid='.$project->societe->id.'&amp;action=create&amp;origin='.$project->element.'&amp;originid='.$project->id.'">'.$langs->trans("AddCustomerOrder").'</a>';
-				}
-				if ($key == 'invoice' && ! empty($conf->facture->enabled) && $user->rights->facture->creer)
-				{
-					print '<a class="butAction" href="'.DOL_URL_ROOT.'/compta/facture/list.php?socid='.$project->societe->id.'&amp;action=create&amp;origin='.$project->element.'&amp;originid='.$project->id.'">'.$langs->trans("AddCustomerInvoice").'</a>';
-				}
-			}
-			if ($project->societe->fournisseur)
-			{
-				if ($key == 'order_supplier' && ! empty($conf->fournisseur->enabled) && $user->rights->fournisseur->commande->creer)
-				{
-					print '<a class="butAction" href="'.DOL_URL_ROOT.'/fourn/facture/fiche.php?socid='.$project->societe->id.'&amp;action=create&amp;origin='.$project->element.'&amp;originid='.$project->id.'">'.$langs->trans("AddSupplierInvoice").'</a>';
-				}
-				if ($key == 'invoice_supplier' && ! empty($conf->fournisseur->enabled) && $user->rights->fournisseur->facture->creer)
-				{
-					print '<a class="butAction" href="'.DOL_URL_ROOT.'/fourn/commande/fiche.php?socid='.$project->societe->id.'&amp;action=create&amp;origin='.$project->element.'&amp;originid='.$project->id.'">'.$langs->trans("AddSupplierOrder").'</a>';
-				}
-			}
-		}
-
-		print '</div>';
 
 	}
 }
-/*
-print '<table class="noborder" width="100%">';
-print '<tr class="liste_titre">';
-print '<td width="90%">Resultado</td>';
-print '<td width="10%" align="center"></td>';
-print '<td></td>';
-print '</tr>';
-print '<tr>';
-print '<td width="90%">Resultado</td>';
-//print '<td width="10%" align="right">'.price($total['Salesorder']-$costo['Salesorder']-$costo['Deplacement']-$costo['Policy'],0,'',0,2,2).'</td>';
-print '<td></td>';
-print '</tr>';
-print "</table>";
 
-*/
+
+
 
 echo "<h4>Totales consolidados en la divisa {$moneda_consolidada}</h4>";
 print '<table class="noborder" width="100%">
@@ -1189,8 +1222,30 @@ llxFooter();
 
 $db->close();
 
+/*********************************************************************************************************************************************************
+download file text excel
+ */// Get parameters
 
+$filepath = $path;
+// Process download
 
+if (file_exists($filepath)) {
+    header('Pragma: public'); 	// required
+    header('Expires: 0');		// no cache
+    header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
+    header('Cache-Control: private',false);
+    header('Content-Type: application/text ');
+    header("Content-Disposition: attachment; filename={$fileName}");
+    header('Content-Transfer-Encoding: binary');
+    header('Connection: close');
+    readfile($path);		// push it out
+
+    exit();
+}
+
+/*********************************************************************************************************************************************************
+excel: insert de datos en el archivo
+ */
 
 
 ?>

@@ -1,0 +1,8 @@
+Documento;Código(Ref);Cliente;Divísa;Importe;Cotizado;Valor de Cotización Divisa Origen;Moneda de conversión USD;Valor de Cotización USD;Excluido/Desligado;Referencia;Importe USD
+Facturas;FC0011-201503;Macair Jet;ARS;13 092,91;-;ARS;0,00;;0,00;SI;FC0011-201503;0,00
+Facturas;FC0012-201503;Macair Jet;ARS;13 092,91;-;ARS;0,00;;0,00;SI;FC0011-201503,OV0020-201503;0,00
+Facturas;FC0013-201503;Macair Jet;ARS;13 092,91;-;ARS;0,00;;0,00;SI;FC0011-201503,OV0020-201503,OV0021-201503;0,00
+Listado de Ordenes de Venta asociadas al proyecto;OV0019-201503;Macair Jet;USD;1 475,00;-;USD;0,00;;0,00;SI;FC0011-201503;0,00
+Listado de Ordenes de Venta asociadas al proyecto;OV0020-201503;Macair Jet;USD;1 475,00;-;USD;0,00;;0,00;SI;FC0011-201503,OV0020-201503;1 475,00
+Listado de Ordenes de Venta asociadas al proyecto;OV0021-201503;Macair Jet;USD;1 475,00;-;USD;0,00;;0,00;SI;FC0011-201503,OV0020-201503,OV0021-201503;1 475,00
+ListSupplierOrdersAssociatedProject;PO0060-201503;Sandel Avionics Inc.;USD;2 808,00;-;USD;0,00;;0,00;NO;;2 808,00

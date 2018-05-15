@@ -404,6 +404,12 @@ class Project extends CommonObject
 			$sql = $sql."SELECT a.rowid from ".MAIN_DB_PREFIX. "deplacement a join ".MAIN_DB_PREFIX."salesorder s on a.fk_docid=s.rowid and a.fk_doctype='OV' where s.fk_projet=". $this->id." UNION ";			
 			$sql = $sql."SELECT a.rowid from ".MAIN_DB_PREFIX. "deplacement a join ".MAIN_DB_PREFIX."commande_fournisseur f on a.fk_docid=f.rowid and a.fk_doctype='PO' where f.fk_projet=". $this->id;
 		}
+        if ($type == 'policy'){
+             $sql = "SELECT pl.rowid FROM " . MAIN_DB_PREFIX . "policy pl join " . MAIN_DB_PREFIX ."salesorder so  on (pl.fk_docid=so.rowid) "
+                     . "  WHERE pl.fk_doctype='SO' and so.fk_projet=" . $this->id;
+        }            
+        
+                    
         if ($type == 'agenda')
             $sql = "SELECT id as rowid FROM " . MAIN_DB_PREFIX . "actioncomm WHERE fk_project=" . $this->id;
         if (! $sql) return -1;
@@ -668,7 +674,7 @@ class Project extends CommonObject
 
         if ($mode == 0)
         {
-            return $langs->trans($this->statuts[$statut]);
+            return  $langs->trans($this->statuts[$statut]);
         }
         if ($mode == 1)
         {

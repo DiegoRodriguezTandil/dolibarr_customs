@@ -988,6 +988,11 @@ from
 
 
 
+
+
+
+
+ 
  -- *******************************************************************************************************************
  --  Tabla llx_consolidation_domain_salesorder
 
@@ -996,7 +1001,7 @@ from
 CREATE TABLE `llx_consolidation_domain_salesorder` (
   `id` int(11) NOT NULL COMMENT 'Identificador de llx_consolidation_domain_salesorder',
   `entidad_id` int(11) NOT NULL COMMENT 'Fk',
-  'domain' int(11) NOT NULL COMMENT 'Fk de llx_facture',
+  `domain` int(11) NOT NULL COMMENT 'Fk de llx_facture',
   `fecha_ingreso` date DEFAULT NULL COMMENT 'Fecha en que se realizo el ingreso'
  ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='Registra las divisas de conversión para ordenes de venta';
 
@@ -1038,3 +1043,45 @@ select
 	end name_domain
 from 	vw_salesorder_facture_cotizacion vw_sf 
 left join 	llx_consolidation_domain_salesorder ds  on(ds.entidad_id= vw_sf.salesorder_rowid ); 
+
+-- *******************************************************************************************************************
+ --  Tabla llx_consolidation_policy
+
+-- tabla requerida para salvar la cotizacion manual de cada poliza
+
+CREATE TABLE `llx_consolidation_policy` (
+  `id` int(11) NOT NULL COMMENT 'Identificador de llx_consolidation_feature',
+  `policy_id` int(11) NOT NULL COMMENT 'Fk de llx_policy',
+  `fecha_ingreso` date DEFAULT NULL COMMENT 'Fecha en que se realizo el ingreso',
+  `divisa_origen` varchar(3) DEFAULT NULL  COMMENT 'Divisa a la cual se realizara la conversion a la divisa destino',
+  `divisa_destino` varchar(3) DEFAULT "USD" COMMENT 'Divisa a la cual se convertira la divisa origen',
+  `valor_divisa_origen` DECIMAL (11,2) DEFAULT NULL,
+  `valor_divisa_destino` DECIMAL(11,2) DEFAULT NULL,
+  `tipo` varchar(10) DEFAULT 'Manual',
+  `fk_doctype` varchar(2) DEFAULT 'SO'
+ ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='Registra las divisas de conversión para ordenes de venta';
+
+--
+-- Indices de la tabla `llx_consolidation_policy`
+--
+ALTER TABLE `llx_consolidation_policy`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- AUTO_INCREMENT de la tabla `llx_consolidation_policy`
+--
+ALTER TABLE `llx_consolidation_policy`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'Identificador de llx_consolidation_policy', AUTO_INCREMENT=1;
+
+  ALTER TABLE `llx_consolidation_policy`
+  ADD CONSTRAINT `llx_consolidation_policy_llx_c_currencies-divisa_origen` FOREIGN KEY (`divisa_origen`) REFERENCES `llx_c_currencies` (`code_iso`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  ADD CONSTRAINT `llx_consolidation_policy_llx_c_currencies-divisa_destino` FOREIGN KEY (`divisa_destino`) REFERENCES `llx_c_currencies` (`code_iso`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  ADD CONSTRAINT `llx_consolidation_policy_llx_policy-policy_id` FOREIGN KEY (`policy_id`) REFERENCES `llx_policy` (`rowid`) ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+-- Fin tabla llx_consolidation_policy
+-- *************************************************************************************************************/
+-- *******************************************************************************************************************
+
+
+
+alter table llx_policy add fk_currency varchar(3) default "USD";

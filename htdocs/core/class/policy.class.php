@@ -66,8 +66,7 @@ class Policy // extends CommonObject
     function __construct($db)
     {
         $this->db = $db;
-		$this->endorsemen=1;
-		$this->fk_currency='USD';
+        $this->endorsemen=1;
         return 1;
     }
 
@@ -176,7 +175,9 @@ class Policy // extends CommonObject
 		$sql.= " t.ref,";
 		$sql.= " t.expiration_date,";
 		$sql.= " t.price,";
-		$sql.= " t.endorsement";
+		$sql.= " t.endorsement,";                
+		$sql.= " t.fk_status,";                                
+		$sql.= " t.fk_currency";
         $sql.= " FROM ".MAIN_DB_PREFIX."policy as t";
         $sql.= " WHERE t.rowid = ".$id;
 
@@ -191,15 +192,17 @@ class Policy // extends CommonObject
                 $this->id    = $obj->rowid;
                 $this->fk_docid = $obj->fk_docid;
                 $this->fk_doctype = $obj->fk_doctype;
-				$this->fk_soc = $obj->fk_soc;
-				$this->ref = $obj->ref;
-				$this->total_ht=$obj->price;
-				$this->cost=$obj->price;
-				$this->endorsement = $obj->endorsement;
-				$this->expiration_date=$this->db->jdate($obj->expiration_date);
-				$this->assurance= new Societe($this->db);
-				$this->assurance->fetch($this->fk_soc);
-				$this->client=$this->assurance;
+                $this->fk_soc = $obj->fk_soc;
+                $this->ref = $obj->ref;
+                $this->total_ht=$obj->price;
+                $this->cost=$obj->price;
+                $this->endorsement = $obj->endorsement;
+                $this->expiration_date=$this->db->jdate($obj->expiration_date);
+                $this->assurance= new Societe($this->db);
+                $this->assurance->fetch($this->fk_soc);
+                $this->client=$this->assurance;
+                $this->status=$obj->fk_status;
+                $this->fk_currency = $obj->fk_currency;
             }
             $this->db->free($resql);
 			
@@ -214,45 +217,48 @@ class Policy // extends CommonObject
     }
 	function fetch_by_doc($docid,$doctype)
     {
+            
     	global $langs;
         $sql = "SELECT";
-		$sql.= " t.rowid,";
-		$sql.= " t.fk_docid,";
-		$sql.= " t.fk_doctype,";
-		$sql.= " t.fk_soc,";
-		$sql.= " t.ref,";
-		$sql.= " t.endorsement,";
-		$sql.= " t.expiration_date,";
-		$sql.= " t.price,";
-		$sql.= " t.fk_status";
+        $sql.= " t.rowid,";
+        $sql.= " t.fk_docid,";
+        $sql.= " t.fk_doctype,";
+        $sql.= " t.fk_soc,";
+        $sql.= " t.ref,";
+        $sql.= " t.endorsement,";
+        $sql.= " t.expiration_date,";
+        $sql.= " t.price,";
+        $sql.= " t.fk_status,";                                
+        $sql.= " t.fk_currency";
         $sql.= " FROM ".MAIN_DB_PREFIX."policy as t";
         $sql.= " WHERE t.fk_docid = ".$docid;
-		$sql.= " AND t.fk_doctype = '".$doctype."'";
-		$sql.= " ORDER BY t.endorsement DESC";
+        $sql.= " AND t.fk_doctype = '".$doctype."'";
+        $sql.= " ORDER BY t.endorsement DESC";
 
-		
+	
     	dol_syslog(get_class($this)."::fetch_by_doc sql=".$sql, LOG_DEBUG);
         $resql=$this->db->query($sql);
         if ($resql)
         {
-			if ($this->db->num_rows($resql))
+            if ($this->db->num_rows($resql))
             {
                 $obj = $this->db->fetch_object($resql);
 
                 $this->id    = $obj->rowid;
                 $this->fk_docid = $obj->fk_docid;
                 $this->fk_doctype = $obj->fk_doctype;
-				$this->fk_soc = $obj->fk_soc;
-				$this->ref = $obj->ref;
-				$this->endorsement = $obj->endorsement;
-				$this->expiration_date=$this->db->jdate($obj->expiration_date);
-				$this->cost = $obj->price;
-				$this->status = $obj->fk_status;
-				
-				$this->assurance= new Societe($this->db);
-				$this->assurance->fetch($this->fk_soc);
-				$this->client=$this->assurance;
-				return 1;
+                $this->fk_soc = $obj->fk_soc;
+                $this->ref = $obj->ref;
+                $this->endorsement = $obj->endorsement;
+                $this->expiration_date=$this->db->jdate($obj->expiration_date);
+                $this->cost = $obj->price;
+                $this->status = $obj->fk_status;
+
+                $this->assurance= new Societe($this->db);
+                $this->assurance->fetch($this->fk_soc);
+                $this->client=$this->assurance;
+                $this->fk_currency = $obj->fk_currency;
+                return 1;
             }
             $this->db->free($resql);
 
@@ -296,7 +302,7 @@ class Policy // extends CommonObject
 
         return $result;
     }
-	function getNomUrl($withpicto=0,$option=0,$max=0,$short=0)
+	function getNomUrl($withpicto=0,$option=0,$max=0,$short=0,$logDescription=0)
     {
         global $conf, $langs;
 
@@ -311,15 +317,34 @@ class Policy // extends CommonObject
 
         $picto='order';
         $label=$langs->trans("ShowOrder").': '.$this->ref;
+        $refS='';
+        if($logDescription===1){
+            $sql = " 
+                SELECT ref from llx_salesorder where rowid={$this->fk_docid};";
+            $sqlSalesorder      =$this->db->query($sql);
+            $retSqlSalesorder  = $this->db->fetch_object($sqlSalesorder);
+            $refSalesOrder = $retSqlSalesorder->ref;
+            if(isset($refSalesOrder) ){
+                 $refS='('.$refSalesOrder.') - ';
+            }   
+        }
+        $sql = " 
+            SELECT ref from llx_salesorder where rowid={$this->fk_docid};";
+        $sqlSalesorder      =$this->db->query($sql);
+        $retSqlSalesorder  = $this->db->fetch_object($sqlSalesorder);
+        $refSalesOrder = $retSqlSalesorder->ref;
 
         if ($withpicto) $result.=($linkstart.img_object($label,$picto).$linkend);
         if ($withpicto && $withpicto != 2) $result.=' ';
-        $result.=$linkstart.$this->ref.'('.$this->endorsement.')'.$linkend;
+        $result.=$linkstart.$refS.$this->ref.'('.$this->endorsement.')'.$linkend;
         return $result;
     }
-	function getLibStatut($mode)
+    
+    function getLibStatut($mode)
     {
-        return 1;
+           if ($statut==0) return "Aprovada";
+           if ($statut==1) return "Cancelada";
+           
     }
     /**
      *  Update object into database
@@ -672,6 +697,58 @@ class Policy // extends CommonObject
 			return 1;
 		}
     }
+    
+ 	function update_currency($currency)
+    {
+    	global $conf, $langs;
+		$error=0;
+
+		// Update request
+        $sql = "UPDATE ".MAIN_DB_PREFIX."policy SET";
+        $sql.= " fk_currency='".$currency."'";
+        $sql.= " WHERE rowid=".$this->id;
+		$this->db->begin();
+
+        dol_syslog(get_class($this)."::update sql=".$sql, LOG_DEBUG);
+        $resql = $this->db->query($sql);
+    	if (! $resql) { $error++; $this->errors[]="Error ".$this->db->lasterror(); }
+
+		if (! $error)
+		{
+			$this->fk_currency=$currency;
+			if (! $notrigger)
+			{
+	            // Uncomment this and change MYOBJECT to your own tag if you
+	            // want this action calls a trigger.
+
+	            //// Call triggers
+	            //include_once DOL_DOCUMENT_ROOT . '/core/class/interfaces.class.php';
+	            //$interface=new Interfaces($this->db);
+	            //$result=$interface->run_triggers('MYOBJECT_MODIFY',$this,$user,$langs,$conf);
+	            //if ($result < 0) { $error++; $this->errors=$interface->errors; }
+	            //// End call triggers
+	    	}
+		}
+
+        // Commit or rollback
+		if ($error)
+		{
+			foreach($this->errors as $errmsg)
+			{
+	            dol_syslog(get_class($this)."::update ".$errmsg, LOG_ERR);
+	            $this->error.=($this->error?', '.$errmsg:$errmsg);
+			}
+			$this->db->rollback();
+			return -1*$error;
+		}
+		else
+		{
+			$this->db->commit();
+			return 1;
+		}
+    }   
+    
+    
  	/**
 	 *  Delete object in database
 	 *

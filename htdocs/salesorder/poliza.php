@@ -64,6 +64,7 @@ if(!$object->policy->fetch_by_doc(GETPOST('id'),'SO'))
 	$object->policy->price=0;
 	$object->policy->create($user);
 }
+   
 
 if ($action == 'setpolicy_number' && $user->rights->propale->creer)
 {	
@@ -97,6 +98,15 @@ else if ($action == 'setstatus' && $user->rights->propale->creer)
 	$result=$object->policy->update_status($status);
 	if ($result < 0) dol_print_error($db,$object->error);
 }
+else if ($action == 'setCurrency' && $user->rights->propale->creer)
+{
+    if(!empty(GETPOST('currency_val'))){
+        $result=$object->policy->update_currency(GETPOST('currency_val'));
+        if ($result < 0) dol_print_error($db,$object->error);
+    }
+}
+
+
 /******************************************************************************/
 /* Affichage fiche                                                            */
 /******************************************************************************/

@@ -114,6 +114,69 @@ else $typeofdata='textarea:1:50';
 			}
 		?></div>
 	</div>
+    	<div class="table-border-row">
+		<div class="table-key-border-col"<?php echo ' style="width: '.$colwidth.'%"'; ?>><table class="nobordernopadding" width="100%"><tr><td nowrap="nowrap">Divisa</td><td align="right">
+		<?php
+			if ($action != 'editsCurrency') print '<a href="'.$_SERVER['PHP_SELF'].'?action=editsCurrency&amp;id='.$object->id.'">'.img_edit($langs->trans('SetStatus')).'</a>';
+		?></td></tr></table></div>
+		<div class="table-val-border-col">
+		<?php
+                 
+			if ($action == 'editsCurrency')
+			{                       
+                            //todas las monedas
+                            $sqlAllCurrencies = " 
+                                SELECT  code_iso from llx_c_currencies;";
+                            $sqlAllc    = $db->query($sqlAllCurrencies);
+                             
+                            $stringOptionSelectCurrencies="";
+                            if($sqlAllc==true){                                 
+                                for ($i=0;$i<=$db->num_rows($sqlSalesorder);$i++){                                
+                                    $row=$db->fetch_object($sqlSalesorder);                                  
+                                   $stringOptionSelectCurrencies.="<option value='".$row->code_iso."'>".$row->code_iso."</option>";
+                                }                                      
+                            }
+
+                            if(empty($object->policy->fk_currency) or !isset($object->policy->fk_currency)){   
+                                // la moneda de la ov
+                                $sqlSalesorderCurrency = " 
+                                     SELECT code_iso 
+                                    from llx_c_currencies 
+                                    join llx_salesorder on(llx_c_currencies.code_iso=llx_salesorder.fk_currency)
+                                    where llx_salesorder.rowid={$object->id};";
+                                $sqlSC  = $db->query($sqlSalesorderCurrency);
+                                $sc     = $db->fetch_object($sqlSC); 
+                                $stringOptionSelectOv="<option value='saab'>".$sc->code_iso."</option>";
+                                $stringOptionSelectOv.=$stringOptionSelectCurrencies;
+                                $stringOptionSelectCurrencies=$stringOptionSelectOv;
+                            }
+                            
+                                if(!empty($object->policy->fk_currency) or !isset($object->policy->fk_currency)){   
+                                // la moneda de la ov                               
+                                $stringOptionSelectOv="<option value='saab'>".$object->policy->fk_currency."</option>";
+                                $stringOptionSelectOv.=$stringOptionSelectCurrencies;
+                                $stringOptionSelectCurrencies=$stringOptionSelectOv;
+                            }
+                          
+				print '<form method="post" action="'.$_SERVER['PHP_SELF'].'?action=setCurrency&amp;id='.$object->id.'" name="formcurrency">';
+				print '<input type="hidden" name="action" value="setCurrency">';
+				print '<input type="hidden" name="token" value="'.$_SESSION['newtoken'].'">';
+				print '<table class="nobordernopadding" cellpadding="0" cellspacing="0">';
+				print '<tr><td>';
+				echo 
+                                      " <select class='flat' name='currency_val'>".
+                                         $stringOptionSelectCurrencies
+                                       ."</select> ";                                
+				print '</td>';
+				print '<td align="left"><input type="submit" class="button" value="'.$langs->trans("Modify").'"></td>';
+				print '</tr></table></form>';
+                            
+			}else {
+                                print $object->policy->fk_currency;
+                        } 
+			
+		?></div>
+	</div>
 <?php } ?>
 </div>
 <!-- END PHP TEMPLATE NOTES-->

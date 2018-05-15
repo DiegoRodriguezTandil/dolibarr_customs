@@ -934,11 +934,12 @@ from
 	join llx_facture on(llx_facture.rowid=llx_element_element.fk_target);
 	 -- where salesorder.fk_projet=358;
 */
+
 create view vw_salesorder_facture_cotizacion as
  select
         case
                 when salesorder.same_currency =0	then 1
-                when domain_salesorder =1 		  	then 1 
+                when domain_salesorder =1 		  	then 1
                 else  0
                 end domain_salesorder,
         case
@@ -988,7 +989,28 @@ from
 
 
 
-
+create view vw_salesorder_facture_cotizacion_priorizada as
+select
+	vw_sf.*
+    ,domain as domain1
+	,case
+		when domain is null then 0
+		else domain
+	end domain
+	,ds.entidad_id
+	,ds.fecha_ingreso
+	,ds.id
+	,
+	case
+	  when (domain_salesorder =1)  &&  (domain=0) 			then facture_name
+       when (domain_salesorder =1)  &&  (domain=1) 			then salesorder_name
+	  when (domain_salesorder =1)  &&  (domain is null) 	then salesorder_name
+	  when (domain_salesorder =0)  &&  (domain is not null && domain=1) then  salesorder_name
+	  when (domain_salesorder =0) then facture_name
+      else salesorder_name
+	end name_domain
+from 	vw_salesorder_facture_cotizacion vw_sf
+left join 	llx_consolidation_domain_salesorder ds  on(ds.entidad_id= vw_sf.salesorder_rowid );
 
 
 
@@ -1042,7 +1064,14 @@ select
       else salesorder_name
 	end name_domain
 from 	vw_salesorder_facture_cotizacion vw_sf 
-left join 	llx_consolidation_domain_salesorder ds  on(ds.entidad_id= vw_sf.salesorder_rowid ); 
+left join 	llx_consolidation_domain_salesorder ds  on(ds.entidad_id= vw_sf.salesorder_rowid );
+
+
+
+create view vw_salesorder_facture_cotizacion_priorizada as ( select 	vw_sf.* ,domain as domain1 , case	when domain is null then 0	else domain	end  domain	,ds.entidad_id	,ds.fecha_ingreso	,ds.id	,	(case 	  when (domain_salesorder =1)  &&  (domain=0) 			then facture_name       when (domain_salesorder =1)  &&  (domain=1) 			then salesorder_name	  when (domain_salesorder =1)  &&  (domain is null) 	then salesorder_name	  when (domain_salesorder =0)  &&  (domain is not null && domain=1) then  salesorder_name	  when (domain_salesorder =0) then facture_name      else salesorder_name	end) as name_domain from 	vw_salesorder_facture_cotizacion vw_sf left join 	llx_consolidation_domain_salesorder ds  on(ds.entidad_id= vw_sf.salesorder_rowid ));
+
+
+
 
 -- *******************************************************************************************************************
  --  Tabla llx_consolidation_policy

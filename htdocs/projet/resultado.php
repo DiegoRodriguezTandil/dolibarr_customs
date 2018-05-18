@@ -575,7 +575,7 @@ foreach ($listofreferent as $key => $value)
                     if($db->num_rows($sqlDimainNames)>0){
                         $rows_exists=1;
                     }
-                    //si no es la entidad que domina o es priorizada por defecto entinces:
+                    //si no es la entidad que domina o es priorizada por defecto entonces:
 					if($defaultDomain==0){
 						$entityNameConsolidationDomain=$entityFather;
                         $domainEntidad_id ="{$entityNameConsolidationDomain}_rowid";
@@ -640,16 +640,43 @@ foreach ($listofreferent as $key => $value)
                 $continue=true;
                 $arryNameEntity	= array();
                 $arrayReferemces=array();
+
                 while($sqlDimainNames && $db->num_rows($sqlDimainNames)>$i_aux_names && $continue){
-                    $ob  = $db->fetch_object($sqlDimainNames);                  
-                    $name= $ob->name_domain;                    
-                    $arryNameEntity[]=$name;                      
-                    if($ob->domain==1){    
+
+                    $ob  = $db->fetch_object($sqlDimainNames);
+                    $dm= $ob->domain;
+                    $ds= $ob->domain_salesorder;
+                    //domina la entidad padre
+                    if($ds==1 and $dm==1){
+                        $nameDocPriorizado= $ob->salesorder_name;
+                    }  //domina la entidad padre pero fue despriorizada
+                    else if($ds==1 and $entityFatherDomainExists==1 and $dm==0){
+                        $nameDocPriorizado= $ob->facture_name;
+                    }//domina la entidad y no uso priorizacion
+                    else if($ds==1  and $entityFatherDomainExists==0){
+                        $nameDocPriorizado= $ob->salesorder_name;
+                    }//domina la entidad hija
+                    else if($ds==0  and $entityFatherDomainExists==0){
+                        $nameDocPriorizado= $ob->facture_name;
+                    }//domina la entidad hija
+                    else if($ds==0  and $entityFatherDomainExists==1 and $dm==0 ){
+                        $nameDocPriorizado= $ob->facture_name;
+                    }//prioriza el padre
+                    else{
+                        $nameDocPriorizado= $ob->salesorder_name;
+                    }
+
+                    $arryNameEntity[]=$nameDocPriorizado;
+                    //si huvo priorizacion no cicla mas que una vez
+                    if($dm==1){
                         $continue=false;  
-                    }                    
+                    }
+                    //si domina la etindad padre no cicla mas de una vez
+                    if($ds==1 and $entityFatherDomainExists==0){
+                        $continue=false;
+                    }
                     $i_aux_names++;   
                 }
-                    
                     
                 }
 
@@ -657,12 +684,6 @@ foreach ($listofreferent as $key => $value)
 
               
                 /****************************************************************************************************************************************************/
-
-
-
-
-
-
 
 
                 //print $classname;

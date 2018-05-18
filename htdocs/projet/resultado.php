@@ -1222,7 +1222,7 @@ excel: insert de datos en el archivo
  */
 if(!empty($_GET['download'])){
  ob_end_clean();
- $fileName       =   "export_resultado_projecto_{$project->title}.csv";
+ $fileName       =   "resultado_projet_{$project->ref}.csv";
  $path           =    DOL_DATA_ROOT."/projet/resultado/".$fileName;
 
   $myfile = fopen($path, "w") or die("Unable to open file!") ;

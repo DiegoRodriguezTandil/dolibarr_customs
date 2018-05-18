@@ -299,8 +299,8 @@ if (! $user->rights->projet->all->lire)
 {
     $projectsListId = $project->getProjectsAuthorizedForUser($user,$mine,0);
     $project->next_prev_filter=" rowid in (".(count($projectsListId)?join(',',array_keys($projectsListId)):'0').")";
-
 }
+
 print $form->showrefnav($project, 'ref', $linkback, 1, 'ref', 'ref');
 print '</td></tr>';
 
@@ -1220,12 +1220,14 @@ print "</table>";
 /*********************************************************************************************************************************************************
 excel: insert de datos en el archivo
  */
+ 
 if(!empty($_GET['download'])){
  ob_end_clean();
- $fileName       =   "resultado_projet_{$project->ref}.csv";
+ $projectRef=str_replace("/",'-',$project->ref);
+ $fileName       =   "export_resultado_projecto_{$projectRef}.csv";
  $path           =    DOL_DATA_ROOT."/projet/resultado/".$fileName;
 
-  $myfile = fopen($path, "c+")  ;
+  $myfile = fopen($path, "w") or die("Unable to open file!") ;
   fwrite($myfile, "Documento;Código(Ref);Cliente;Divísa;Importe;Cotizable;Valor de Cotización Divisa Origen;Valor de Cotización USD;Excluido/Desligado;Referencia;Importe USD");
   fwrite($myfile, "\n");
   foreach ($arrayExport as $arr=>$arraId){

@@ -49,7 +49,7 @@ if (! empty($conf->facture->enabled))  	$langs->load("bills");
 if (! empty($conf->commande->enabled)) 	$langs->load("orders");
 if (! empty($conf->propal->enabled))   	$langs->load("propal");
 if (! empty($conf->ficheinter->enabled))	$langs->load("interventions");
-
+ob_start();
 
 $projectid=GETPOST('id');
 $ref=GETPOST('ref');
@@ -70,6 +70,9 @@ echo "
 	 }
 	</style>
 ";
+
+
+
 
 /************************************************************************
  show o hide form de consolidation
@@ -170,6 +173,9 @@ print '<script>
                             	
 	}
 </script>';
+
+
+
 /*************************************************************************/
 
 /*************************************************************************************************************
@@ -293,6 +299,7 @@ if (! $user->rights->projet->all->lire)
 {
     $projectsListId = $project->getProjectsAuthorizedForUser($user,$mine,0);
     $project->next_prev_filter=" rowid in (".(count($projectsListId)?join(',',array_keys($projectsListId)):'0').")";
+
 }
 print $form->showrefnav($project, 'ref', $linkback, 1, 'ref', 'ref');
 print '</td></tr>';
@@ -458,17 +465,10 @@ $listofreferent=array(
 */
 );
 
-$date           =   new DateTime();
-$intDate        =   $date->getTimestamp();
-$fileName       =   "excel{$intDate}.csv";
-$path           =   DOL_DOCUMENT_ROOT."export_text_format_excel/".$fileName;
-$pathUrl        =   DOL_URL_ROOT."/export_text_format_excel/".$fileName;
-
-//$path2           =   DOL_DOCUMENT_ROOT."excel{$intDate}.txt";
-
+$pathUrl           =  DOL_URL_ROOT."/projet/resultado.php?id={$projectid}&download=1";
 echo "
     <div style='float:right;margin-right: 10px;'>
-        <a class='button' href='{$pathUrl}' download target='_blank'>Exportar a Excel</a>
+        <a class='button' href='{$pathUrl}'>Exportar a Excel</a>
     </div>
     ";
 $arrayCurrencys = array();
@@ -986,11 +986,11 @@ foreach ($listofreferent as $key => $value)
                         print '<td align="center"> </td>';
                  }
 
+
                 /*********************************************************************************************************************************************************
                 ARRAY DE DATOS A SALVAR EN ARCHIVO A A EXPORTAR
                  */
                 $tupla=array();
-                //$tupla[]  =   $date;//dol_print_date($date,'day');
                 $tupla[]  =   $nameDoc;
                 $tupla[]  =   $element->client->name;
                 $tupla[]  =   $element->fk_currency;
@@ -1004,25 +1004,7 @@ foreach ($listofreferent as $key => $value)
                 $arrayExport[$title][$element->id]  = $tupla;
 
                 /*********************************************************************************************************************************************************/
-                /*********************************************************************************************************************************************************
-                excel: insert de datos en el archivo
-                 */
 
-                $myfile = fopen($path, "w") ;//or die("Unable to open file!") ;
-                fwrite($myfile, "Documento;Código(Ref);Cliente;Divísa;Importe;Cotizable;Valor de Cotización Divisa Origen;Valor de Cotización USD;Excluido/Desligado;Referencia;Importe USD");
-                fwrite($myfile, "\n");
-                foreach ($arrayExport as $arr=>$arraId){
-                    foreach ($arraId as $k=>$v){
-                        fwrite($myfile, $langs->trans($arr));
-                        fwrite($myfile, ";");
-                        $dataString=implode(";",$v)."\n";
-                        fwrite($myfile, $dataString);
-                    }
-                }
-                fclose($myfile);
-
-                /*********************************************************************************************************************************************************
-                 */
 
                 /*********************************************************************************************************************************************************/
 
@@ -1235,30 +1217,35 @@ print '<tbody>';
 print "</table>";
 
 
-
-llxFooter();
-
-$db->close();
-
 /*********************************************************************************************************************************************************
-download file text excel
- */// Get parameters
+excel: insert de datos en el archivo
+ */
+if(!empty($_GET['download'])){
+ ob_end_clean();
+ $fileName       =   "export_resultado_projecto_{$project->title}.csv";
+ $path           =    DOL_DATA_ROOT."/projet/resultado/".$fileName;
 
-$filepath = $path;
-// Process download
+  $myfile = fopen($path, "w") or die("Unable to open file!") ;
+  fwrite($myfile, "Documento;Código(Ref);Cliente;Divísa;Importe;Cotizable;Valor de Cotización Divisa Origen;Valor de Cotización USD;Excluido/Desligado;Referencia;Importe USD");
+  fwrite($myfile, "\n");
+  foreach ($arrayExport as $arr=>$arraId){
+   foreach ($arraId as $k=>$v){
+    fwrite($myfile, $langs->trans($arr));
+    fwrite($myfile, ";");
+    $dataString=implode(";",$v)."\n";
+    fwrite($myfile, $dataString);
+   }
+  }
+  fclose($myfile);
 
-if (file_exists($filepath)) {
-    header('Pragma: public'); 	// required
-    header('Expires: 0');		// no cache
-    header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
-    header('Cache-Control: private',false);
-    header('Content-Type: application/text ');
-    header("Content-Disposition: attachment; filename={$fileName}");
-    header('Content-Transfer-Encoding: binary');
-    header('Connection: close');
-    readfile($path);		// push it out
 
-    exit();
+ // file_put_contents('a.csv','a,v,b,c,d');
+ header('Content-Type: application/csv');
+ header("Content-Disposition: attachment; filename={$fileName}");
+ header('Pragma: no-cache');
+ readfile($path);
+ die();
+
 }
 
 /*********************************************************************************************************************************************************
@@ -1266,6 +1253,11 @@ excel: insert de datos en el archivo
  */
 
 
+llxFooter();
+
+$db->close();
+
+ob_end_flush();
 ?>
 
 

@@ -1225,7 +1225,7 @@ if(!empty($_GET['download'])){
  $fileName       =   "resultado_projet_{$project->ref}.csv";
  $path           =    DOL_DATA_ROOT."/projet/resultado/".$fileName;
 
-  $myfile = fopen($path, "w") or die("Unable to open file!") ;
+  $myfile = fopen($path, "c+")  ;
   fwrite($myfile, "Documento;Código(Ref);Cliente;Divísa;Importe;Cotizable;Valor de Cotización Divisa Origen;Valor de Cotización USD;Excluido/Desligado;Referencia;Importe USD");
   fwrite($myfile, "\n");
   foreach ($arrayExport as $arr=>$arraId){

@@ -574,110 +574,110 @@ foreach ($listofreferent as $key => $value)
                     //comprueba que existan tuplas,de lo contrario no se debe mostrar ni el check de priorización, ni el remarcado de la tupla 
                     if($db->num_rows($sqlDimainNames)>0){
                         $rows_exists=1;
+
+                      //si no es la entidad que domina o es priorizada por defecto entonces:
+                      if($defaultDomain==0){
+                          $entityNameConsolidationDomain=$entityFather;
+                          $domainEntidad_id ="{$entityNameConsolidationDomain}_rowid";
+                      }else{
+                          $entityNameConsolidationDomain=$entidadName;
+                          $domainEntidad_id="{$entidadName}_rowid";
+                      }
+                      $domain_id= $retSearchDomain->$domainEntidad_id;
+
+
+                      // verifica si hay una restriccion de dominio o priorizacion configurada.
+                      // Si es asi existira una tupla en la tabla   llx_consolidation_domain_entityNameConsolidationDomain
+                      $sqlsetDomain = " 
+                          SELECT case 
+                                     when count(*) >= 1  then 1 
+                                     when count(*) < 1  then 0
+                                 end as exist,
+                                 case 
+                                     when count(*) >= 1  then domain
+                                     when count(*) < 1  then 1
+                                 end as domain,
+                                 id							   							   
+                          FROM   llx_consolidation_domain_{$entityNameConsolidationDomain} 
+                          where  entidad_id = {$domain_id}
+                          group by  domain,id limit 1;";
+
+                      $sqlsetDomain 				= $db->query($sqlsetDomain);
+                      $retSqlsetDomain 			= $db->fetch_object($sqlsetDomain);
+                      $entityFatherDomainExists	= !isset($retSqlsetDomain->exist)  ?  0  : $retSqlsetDomain->exist;
+                      $entityFatherDomain			= !isset($retSqlsetDomain->domain) ?  1  : $retSqlsetDomain->domain ;
+                      $entityFatherDomainId 		= !isset($retSqlsetDomain->id) 	   ? ''  : $retSqlsetDomain->id ;
+
+                      // si no es la entidad que domina o se priorizo por defecto
+                      if($defaultDomain==0){
+                         if ( ($domain==0  && $entityFatherDomainExists==0) || ($entityFatherDomainExists==1 && $entityFatherDomain==1) and $rows_exists==1 ){
+                             $styleTr		= "style='background-color: #8C9CAB'";
+                             $esCotizable	=0;
+                         } else{
+                             $styleTr= "style=''";
+                             $esCotizable=1;
+                         }
+                      }
+
+                      // si es la entidad que domina o se priorizo por defecto
+                      if($defaultDomain==1){
+                          if ( ($domain==0 && $entityFatherDomainExists==0 ) ||  ($entityFatherDomainExists==1 && $entityFatherDomain==0)  and $rows_exists==1 ){
+                              $styleTr			= "style='background-color: #8C9CAB'";
+                              $esCotizable		= 0;
+                          } else{
+                              $styleTr			= "style=''";
+                              $esCotizable		=	1;
+
+                          }
+                      }
+                      $sqlDimainNames = "
+                          SELECT *
+                          FROM   vw_salesorder_facture_cotizacion_priorizada 
+                          where  {$entityNameConsolidationDomain}_rowid = {$domain_id};";
+                      $sqlDimainNames		= $db->query($sqlDimainNames);
+
+                      $i_aux_names=0;
+                      $continue=true;
+                      $arryNameEntity	= array();
+                      $arrayReferemces=array();
+
+                      while($sqlDimainNames && $db->num_rows($sqlDimainNames)>$i_aux_names && $continue){
+
+                          $ob  = $db->fetch_object($sqlDimainNames);
+                          $dm= $ob->domain;
+                          $ds= $ob->domain_salesorder;
+                          //domina la entidad padre
+                          if($ds==1 and $dm==1){
+                              $nameDocPriorizado= $ob->salesorder_name;
+                          }  //domina la entidad padre pero fue despriorizada
+                          else if($ds==1 and $entityFatherDomainExists==1 and $dm==0){
+                              $nameDocPriorizado= $ob->facture_name;
+                          }//domina la entidad y no uso priorizacion
+                          else if($ds==1  and $entityFatherDomainExists==0){
+                              $nameDocPriorizado= $ob->salesorder_name;
+                          }//domina la entidad hija
+                          else if($ds==0  and $entityFatherDomainExists==0){
+                              $nameDocPriorizado= $ob->facture_name;
+                          }//domina la entidad hija
+                          else if($ds==0  and $entityFatherDomainExists==1 and $dm==0 ){
+                              $nameDocPriorizado= $ob->facture_name;
+                          }//prioriza el padre
+                          else{
+                              $nameDocPriorizado= $ob->salesorder_name;
+                          }
+
+                          $arryNameEntity[]=$nameDocPriorizado;
+                          //si huvo priorizacion no cicla mas que una vez
+                          if($dm==1){
+                              $continue=false;
+                          }
+                          //si domina la etindad padre no cicla mas de una vez
+                          if($ds==1 and $entityFatherDomainExists==0){
+                              $continue=false;
+                          }
+                          $i_aux_names++;
+                      }
                     }
-                    //si no es la entidad que domina o es priorizada por defecto entonces:
-					if($defaultDomain==0){
-						$entityNameConsolidationDomain=$entityFather;
-                        $domainEntidad_id ="{$entityNameConsolidationDomain}_rowid";
-					}else{
-                        $entityNameConsolidationDomain=$entidadName;
-                        $domainEntidad_id="{$entidadName}_rowid";
-					}
-                    $domain_id= $retSearchDomain->$domainEntidad_id;
-
-
-					// verifica si hay una restriccion de dominio o priorizacion configurada.
-					// Si es asi existira una tupla en la tabla   llx_consolidation_domain_entityNameConsolidationDomain
-                    $sqlsetDomain = " 
-						SELECT case 
-								   when count(*) >= 1  then 1 
-								   when count(*) < 1  then 0
-							   end as exist,
-							   case 
-								   when count(*) >= 1  then domain
-								   when count(*) < 1  then 1
-							   end as domain,
-							   id							   							   
-						FROM   llx_consolidation_domain_{$entityNameConsolidationDomain} 
-						where  entidad_id = {$domain_id}
-						group by  domain,id limit 1;";
-
-                    $sqlsetDomain 				= $db->query($sqlsetDomain);
-                    $retSqlsetDomain 			= $db->fetch_object($sqlsetDomain);
-                    $entityFatherDomainExists	= !isset($retSqlsetDomain->exist)  ?  0  : $retSqlsetDomain->exist;
-                    $entityFatherDomain			= !isset($retSqlsetDomain->domain) ?  1  : $retSqlsetDomain->domain ;
-                    $entityFatherDomainId 		= !isset($retSqlsetDomain->id) 	   ? ''  : $retSqlsetDomain->id ;
-
-					// si no es la entidad que domina o se priorizo por defecto
-                    if($defaultDomain==0){
-                       if ( ($domain==0  && $entityFatherDomainExists==0) || ($entityFatherDomainExists==1 && $entityFatherDomain==1) and $rows_exists==1 ){
-                           $styleTr		= "style='background-color: #8C9CAB'";
-                           $esCotizable	=0;
-                       } else{
-                           $styleTr= "style=''";
-                           $esCotizable=1;
-                       }
-                    }
-
-                    // si es la entidad que domina o se priorizo por defecto
-                    if($defaultDomain==1){
-                        if ( ($domain==0 && $entityFatherDomainExists==0 ) ||  ($entityFatherDomainExists==1 && $entityFatherDomain==0)  and $rows_exists==1 ){
-                            $styleTr			= "style='background-color: #8C9CAB'";
-                            $esCotizable		= 0;
-                        } else{
-                            $styleTr			= "style=''";
-                            $esCotizable		=	1;
-
-                        }
-                    }
-                $sqlDimainNames = "
-                    SELECT *
-                    FROM   vw_salesorder_facture_cotizacion_priorizada 
-                    where  {$entityNameConsolidationDomain}_rowid = {$domain_id};";
-                $sqlDimainNames		= $db->query($sqlDimainNames);
-
-                $i_aux_names=0;
-                $continue=true;
-                $arryNameEntity	= array();
-                $arrayReferemces=array();
-
-                while($sqlDimainNames && $db->num_rows($sqlDimainNames)>$i_aux_names && $continue){
-
-                    $ob  = $db->fetch_object($sqlDimainNames);
-                    $dm= $ob->domain;
-                    $ds= $ob->domain_salesorder;
-                    //domina la entidad padre
-                    if($ds==1 and $dm==1){
-                        $nameDocPriorizado= $ob->salesorder_name;
-                    }  //domina la entidad padre pero fue despriorizada
-                    else if($ds==1 and $entityFatherDomainExists==1 and $dm==0){
-                        $nameDocPriorizado= $ob->facture_name;
-                    }//domina la entidad y no uso priorizacion
-                    else if($ds==1  and $entityFatherDomainExists==0){
-                        $nameDocPriorizado= $ob->salesorder_name;
-                    }//domina la entidad hija
-                    else if($ds==0  and $entityFatherDomainExists==0){
-                        $nameDocPriorizado= $ob->facture_name;
-                    }//domina la entidad hija
-                    else if($ds==0  and $entityFatherDomainExists==1 and $dm==0 ){
-                        $nameDocPriorizado= $ob->facture_name;
-                    }//prioriza el padre
-                    else{
-                        $nameDocPriorizado= $ob->salesorder_name;
-                    }
-
-                    $arryNameEntity[]=$nameDocPriorizado;
-                    //si huvo priorizacion no cicla mas que una vez
-                    if($dm==1){
-                        $continue=false;  
-                    }
-                    //si domina la etindad padre no cicla mas de una vez
-                    if($ds==1 and $entityFatherDomainExists==0){
-                        $continue=false;
-                    }
-                    $i_aux_names++;   
-                }
-                    
                 }
 
 

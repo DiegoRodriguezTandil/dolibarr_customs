@@ -1047,6 +1047,7 @@ foreach ($listofreferent as $key => $value)
                 $tupla[]     =   price($obj->valor_divisa_destino);
                 $tupla[]     =   is_array($arrayReferemces) && sizeof($arrayReferemces)>0? "SI": "NO";
                 $tupla[]     =   implode(",", $arrayReferemces);
+                $tupla[]     =   $value['operation']==='+' ? "Crédito": "Débito";
                 $tupla[]     =   $total_conversion;
                 $titleTupla  = (!empty($value['name']) && is_array($value)  && array_key_exists('name',$value) ) ? $value['name'] : "";
                 $arrayExport[$titleTupla][$element->id]  = $tupla;
@@ -1257,7 +1258,7 @@ if(!empty($_GET['download'])){
  $path           =    DOL_DATA_ROOT."/projet/resultado/".$fileName;
 
  $myfile = fopen($path, "w") or die("Unable to open file!") ;
- fwrite($myfile, "Documento;Código(Ref);Cliente;Divísa;Importe;Cotizable;Valor de Cotización Divisa Origen;Valor de Cotización USD;Excluido/Desligado;Referencia;Importe USD");
+ fwrite($myfile, "Documento;Código(Ref);Cliente;Divísa;Importe;Cotizable;Valor de Cotización Divisa Origen;Valor de Cotización USD;Excluido/Desligado;Referencia;Tipo de Asiento ;Importe USD");
  fwrite($myfile, "\n");
  foreach ($arrayExport as $arr=>$arraId){
   foreach ($arraId as $k=>$v){
@@ -1268,9 +1269,10 @@ if(!empty($_GET['download'])){
   }
  }
  fwrite($myfile, "\n");
- fwrite($myfile, ";;;;;;;;;Total;{$tt_ht_format}");
+ fwrite($myfile, ";;;;;;;;;;Total;{$tt_ht_format}");
  fclose($myfile);
 
+ 
  header('Content-Type: application/csv');
  header("Content-Disposition: attachment; filename={$fileName}");
  header('Pragma: no-cache');

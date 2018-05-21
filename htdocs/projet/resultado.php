@@ -61,11 +61,13 @@ if ($projectid == '' && $ref == '')
 echo "
 <style>
 	 
-	  a {
+     a {
 		font-size:1em;
 	 }
-	 
-	  table {
+	 button {
+		font-size:1em;
+	 }	 
+     table {
 		font-size:1em;
 	 }
 	</style>
@@ -405,6 +407,25 @@ echo
 				}
 			}		 	
 		});	
+		function ocultarDetalleTabla(classTableShowColums){
+		    var className ='.'+classTableShowColums;
+		    var ocultarDetalleTabla     ='.ocultarDetalleTabla-'+classTableShowColums;
+            var visualizarDetalleTabla  ='.visualizarDetalleTabla-'+classTableShowColums;
+		    $(ocultarDetalleTabla).hide();
+		    $(visualizarDetalleTabla).show();
+		    $(className).hide();
+
+        }
+        function visualizarDetalleTabla(classTableShowColums){
+		    var className ='.'+classTableShowColums;
+		    var ocultarDetalleTabla     ='.ocultarDetalleTabla-'+classTableShowColums;
+            var visualizarDetalleTabla  ='.visualizarDetalleTabla-'+classTableShowColums;		    
+		    $(ocultarDetalleTabla).show();
+		    $(visualizarDetalleTabla).hide();
+		    $(className).show();
+
+        }		
+		
 	</script>";
 
 
@@ -474,8 +495,8 @@ $listofreferent=array(
 
 $pathUrl           =  DOL_URL_ROOT."/projet/resultado.php?id={$projectid}&download=1";
 echo "
-    <div style='float:right;margin-right: 10px;'>
-        <a class='button' href='{$pathUrl}'>Exportar a Excel</a>
+    <div style='width: 100%; margin-bottom: 30px;'>
+        <a  style='float:right;margin-right: 10px; ' class='button' href='{$pathUrl}'>Exportar a Excel</a>
     </div>
     ";
 $arrayCurrencys = array();
@@ -491,7 +512,7 @@ foreach ($listofreferent as $key => $value)
 	$qualified                          =   $value['test'];
 	$importeTotales[$title]['operation']=   $operation;
 	$view_tcc=false;
-
+    $classTableShowColums=$entidadName;
    //--------------------------------------
    //propiedades de un reporte priorizado
    $dom= $_POST['domain'];
@@ -510,7 +531,14 @@ foreach ($listofreferent as $key => $value)
 	{
 
 		print '<br>';
-		print_titre($langs->trans($title));
+        echo "<div  style='width:100%;'>
+                <div style='width:50%;float: left;color:#336666;'>".$langs->trans($title)."</div> 
+                <div style='float:right;margin-bottom: 2px;'>
+                    <button class='button ocultarDetalleTabla-{$classTableShowColums}'  onclick='var tableClassName=\"{$classTableShowColums}\";ocultarDetalleTabla(tableClassName)'>Ocultar Detalle del Reporte</button>
+                    <button class='button visualizarDetalleTabla-{$classTableShowColums}'  onclick='var tableClassName=\"{$classTableShowColums}\";visualizarDetalleTabla(tableClassName)' hidden>Visualizar Detalle del Reporte</button>
+                </div>
+              </div>
+              ";
 		print '<table class="noborder" width="100%" >';
 
 		echo "<tr class='liste_titre' >";
@@ -702,7 +730,7 @@ foreach ($listofreferent as $key => $value)
                 //print $classname;
 
 				$var=!$var;
-				echo "<tr $bc[$var] {$styleTr}>";
+				echo "<tr class='{$classTableShowColums}' $bc[$var] {$styleTr}>";
 
 				// Ref
                 $nameDoc="";

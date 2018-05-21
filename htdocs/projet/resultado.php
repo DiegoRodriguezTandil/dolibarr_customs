@@ -955,7 +955,7 @@ foreach ($listofreferent as $key => $value)
 
                 }else{
                     if($searchDomain===1 and $esCotizable==0){
-                        echo "<td  align='center' ><i>Se tomará la cotización de <b>".implode(",", $arryNameEntity)."</b></i></td>";
+                        echo "<td colspan='2'  align='center' ><span><i>Se tomará la cotización de</i><span> <div><i><b>".implode(",", $arryNameEntity)."</b></i></div> </td>";
                         $arrayReferemces=$arryNameEntity;
                     }else{
                          echo "<td  align='center' > - </td>";
@@ -980,9 +980,12 @@ foreach ($listofreferent as $key => $value)
 				else{
                     $total_conversion_sin_formato=floatval(0,00);
                     $total_conversion=price(0,0,'',0,2,2);
-                    echo "<td  align='right' width='120px'>
+                    if($searchDomain===1 and $esCotizable==1){
+                     echo "<td  align='right' width='120px'>
 							-
 					  </td>";
+                    }
+
 				}
 
                 // Status

@@ -302,7 +302,23 @@ class Policy // extends CommonObject
 
         return $result;
     }
-	function getNomUrl($withpicto=0,$option=0,$max=0,$short=0,$logDescription=0)
+
+    function getNom(){
+		 $refS='';
+		 $sql = " 
+					SELECT ref from llx_salesorder where rowid={$this->fk_docid};";
+		 $sqlSalesorder      =$this->db->query($sql);
+		 $retSqlSalesorder  = $this->db->fetch_object($sqlSalesorder);
+		 $refSalesOrder = $retSqlSalesorder->ref;
+		 if(isset($refSalesOrder) ){
+		  $refS='('.$refSalesOrder.') - ';
+		 }
+		 $result= $refS.$this->ref.'('.$this->endorsement.')';
+		 return $result ;
+    }
+
+
+	function getNomUrl($withpicto=0,$option=0,$max=0,$short=0,$longDescription=0)
     {
         global $conf, $langs;
 
@@ -318,7 +334,7 @@ class Policy // extends CommonObject
         $picto='order';
         $label=$langs->trans("ShowOrder").': '.$this->ref;
         $refS='';
-        if($logDescription===1){
+        if($longDescription===1){
             $sql = " 
                 SELECT ref from llx_salesorder where rowid={$this->fk_docid};";
             $sqlSalesorder      =$this->db->query($sql);
@@ -344,7 +360,7 @@ class Policy // extends CommonObject
     {
            if ($statut==0) return "Aprovada";
            if ($statut==1) return "Cancelada";
-           
+
     }
     /**
      *  Update object into database

@@ -421,7 +421,8 @@ $listofreferent=array(
         'operation'=>'+',
 		'searchDomain'=>1,
 		'defaultDomain'=>0,
-		'entityFather'=>'salesorder'
+		'entityFather'=>'salesorder',
+        'name'=>'Factura'
 		),
 	'salesorder'=>array(
 		'title'=>"Listado de Ordenes de Venta asociadas al proyecto",
@@ -430,27 +431,33 @@ $listofreferent=array(
         'entity_table'=>'salesorder',
 		'operation'=>'+',
 		'searchDomain'=>1,
-        'defaultDomain'=>1),
+        'defaultDomain'=>1,
+        'name'=>'Orden de Venta'),
     'order_supplier'=>array(
         'title'=>"ListSupplierOrdersAssociatedProject",
         'class'=>'CommandeFournisseur',
         'entity_table'=>'commande_fournisseur',
         'test'=>$conf->fournisseur->enabled,
         'operation'=>'-',
-        'searchDomain'=>0),
+        'searchDomain'=>0,
+        'name'=>'Pedido a Proveedor'),
 	'trip'=>array(
 		'title'=>"ListTripAssociatedProject",
 		'class'=>'Deplacement',
         'entity_table'=>'deplacement',
 		'test'=>$conf->deplacement->enabled,
 		'operation'=>'-',
-        'searchDomain'=>0),
+        'searchDomain'=>0,
+        'name'=>'Gasto',
+        'show_status'=>0
+    ),
     'policy'=>array(
         'title'=>"Polizas",
         'class'=>'policy',
         'test'=>true,
         'entity_table'=>'policy',
-        'operation'=>'-'),
+        'operation'=>'-',
+        'name'=>'Póliza'),
 /*
 'policy'=>array(
 	'title'=>"Listado de pólizas asociadas al proyecto",
@@ -485,6 +492,20 @@ foreach ($listofreferent as $key => $value)
 	$importeTotales[$title]['operation']=   $operation;
 	$view_tcc=false;
 
+   //--------------------------------------
+   //propiedades de un reporte priorizado
+   $dom= $_POST['domain'];
+   $searchDomain=$value['searchDomain'];
+   if($searchDomain===1){
+    $defaultDomain=$value['defaultDomain'];
+    if($defaultDomain==0){
+     $entityFather= $value['entityFather'];
+    }
+   }else{
+    $defaultDomain=-1;
+   }
+   // --------------------------------------
+
 	if ($qualified)
 	{
 
@@ -517,9 +538,14 @@ foreach ($listofreferent as $key => $value)
         print '<td class=""  align="center" width="300">Cotización</td>';
 
         print '<td  width="180" >(USD) Importe</td>';
+        if( !array_key_exists('show_status',$value)){
+          print '<td align="center" width="200">'.$langs->trans("Status").'</td>';
+        }
 
-		print '<td align="center" width="200">'.$langs->trans("Status").'</td>';
-		print '<td align="center" width="10">Priorizar</td>';
+
+		if($defaultDomain == 1){
+          print '<td align="center" width="10">Priorizar</td>';
+        }
 		print '</tr>';
 		
 		$elementarray = $project->get_element_list($key);
@@ -545,17 +571,7 @@ foreach ($listofreferent as $key => $value)
                  *
                  */
 
-                //configuraciones del reporte
-                $dom= $_POST['domain'];
-                $searchDomain=$value['searchDomain'];
-                if($searchDomain===1){
-                    $defaultDomain=$value['defaultDomain'];
-                    if($defaultDomain==0){
-						$entityFather= $value['entityFather'];
-					}
-                }else{
-                    $defaultDomain=-1;
-                }
+
                 $esCotizable=1;
                 $retSearchDomain=0;
                 //si se permite la busqueda de que entidad domina o se priorizara
@@ -693,7 +709,7 @@ foreach ($listofreferent as $key => $value)
                 if($key=="policy"){
                     print '<td align="left" nowrap>';
                     print $element->getNomUrl(1,0,0,0,1);
-                    $nameDoc=$element->ref;
+                    $nameDoc=$element->getNom();
                     print "</td>\n";
                 } else {
                     print '<td align="left" nowrap>';
@@ -716,7 +732,6 @@ foreach ($listofreferent as $key => $value)
                 if (is_object($element->client)) print $element->client->getNomUrl(1,'',48);
 				print '</td>';
 
-		//	var_dump($element->client);die();
                 print '<td  align="center" >'.$element->fk_currency.'</td>';
 
                 // Amount
@@ -971,10 +986,13 @@ foreach ($listofreferent as $key => $value)
 				}
 
                 // Status
-                print '<td align="center">'.$element->getLibStatut(5).'</td>';
+             if( !array_key_exists('show_status',$value)){
+              print '<td align="center">'.$element->getLibStatut(5).'</td>';
+             }
 
 
-                // seleccion de priorida/dominio ante entidad hija
+
+                // seleccion de prioridad/dominio ante entidad hija
                 // si es checked entonces domina entidad padre de lo contrario la entidad hija
                 if($searchDomain===1 and  $defaultDomain==1  and $rows_exists==1){
                     if ( ($domain==0 && $entityFatherDomainExists==0 ) ||  ($entityFatherDomainExists==1 && $entityFatherDomain==0) ){
@@ -982,26 +1000,25 @@ foreach ($listofreferent as $key => $value)
                     } else{
                             print '<td align="center"><input  type="checkbox" data-pj="'.$projectid.'" data-consolidationDomain="'.$entityFatherDomainId.'" data-entity_id="'.$domain_id.'" data-domain="salesorder" name="ov" value="0" onchange="var t=$(this);checkEntity(t);" checked="1"></td>';
                     }
-                }else {
-                        print '<td align="center"> </td>';
-                 }
+                }
 
 
                 /*********************************************************************************************************************************************************
                 ARRAY DE DATOS A SALVAR EN ARCHIVO A A EXPORTAR
                  */
                 $tupla=array();
-                $tupla[]  =   $nameDoc;
-                $tupla[]  =   $element->client->name;
-                $tupla[]  =   $element->fk_currency;
-                $tupla[]  =   price($element->total_ht);
-                $tupla[]  =  ((is_array($arrayReferemces) && sizeof($arrayReferemces)>0 ) || $element->fk_currency=="USD") ? "NO": "SI";
-                $tupla[]  =   price($obj->valor_divisa_origen);
-                $tupla[]  =   price($obj->valor_divisa_destino);
-                $tupla[]  =   is_array($arrayReferemces) && sizeof($arrayReferemces)>0? "SI": "NO";
-                $tupla[]  =   implode(",", $arrayReferemces);
-                $tupla[]  =   $total_conversion;
-                $arrayExport[$title][$element->id]  = $tupla;
+                $tupla[]     =   $nameDoc;
+                $tupla[]     =   $element->client->name;
+                $tupla[]     =   $element->fk_currency;
+                $tupla[]     =   price($element->total_ht);
+                $tupla[]     =  ((is_array($arrayReferemces) && sizeof($arrayReferemces)>0 ) || $element->fk_currency=="USD") ? "NO": "SI";
+                $tupla[]     =   price($obj->valor_divisa_origen);
+                $tupla[]     =   price($obj->valor_divisa_destino);
+                $tupla[]     =   is_array($arrayReferemces) && sizeof($arrayReferemces)>0? "SI": "NO";
+                $tupla[]     =   implode(",", $arrayReferemces);
+                $tupla[]     =   $total_conversion;
+                $titleTupla  = (!empty($value['name']) && is_array($value)  && array_key_exists('name',$value) ) ? $value['name'] : "";
+                $arrayExport[$titleTupla][$element->id]  = $tupla;
 
                 /*********************************************************************************************************************************************************/
 
@@ -1058,11 +1075,11 @@ foreach ($listofreferent as $key => $value)
 				print '<td>&nbsp;</td>';
 
 				if(isset($arrayTotales['ht'])){
-                    print '<td>&nbsp;</td>';
-					print '<td align="right" title="Importe"><b><I>'.$divisa.' '.price($arrayTotales['ht']).'</I></b></td>';
+                   print '<td>&nbsp;</td>';
+                   print '<td align="right" title="Importe"><b><I>'.$divisa.' '.price($arrayTotales['ht']).'</I></b></td>';
 
 				}else{
-					print '<td>&nbsp;</td>';
+                   print '<td>&nbsp;</td>';
 				}				
 				/*
 				if(isset($arrayTotales['tcc']) ){ //&& 	$view_tcc ){
@@ -1072,20 +1089,23 @@ foreach ($listofreferent as $key => $value)
 				if(isset($arrayTotales['c'])){											
 					//print '<td align="right" title="Gasto"><b><I> '.$divisa.' '.price($arrayTotales['c'],0,'',0,2,2).'</I></b></td>';
 				}else{
-					print '<td>&nbsp;</td>';
+                   print '<td>&nbsp;</td>';
 				}					
 
                 if(isset($arrayTotales['tcccot']) AND $divisa=='USD'){
-                    print '<td>&nbsp;</td>';
-                    print '<td align="right" title="venta"><b><I> '.$divisa.' '.price($arrayTotales['tcccot'],0,'',0,2,2) .'</I></b></td>';
+                   print '<td>&nbsp;</td>';
+                   print '<td align="right" title="venta"><b><I> '.$divisa.' '.price($arrayTotales['tcccot'],0,'',0,2,2) .'</I></b></td>';
                 }else{
-                    print '<td>&nbsp;</td>';
-                    print '<td>&nbsp;</td>';
+                   print '<td>&nbsp;</td>';
+                   print '<td>&nbsp;</td>';
+                }
+                if( !array_key_exists('show_status',$value)){
+                 print '<td></td>';
                 }
 
-                print '<td></td>';
-                print '<td></td>';
-
+                if($defaultDomain == 1) {
+                  print '<td></td>';
+                }
 				print '</tr>';
 			}	$view_tcc=false;
 			print '</tr>';
@@ -1120,74 +1140,56 @@ foreach ($listofreferent as $key => $value)
 
 echo "<h4>Totales consolidados en la divisa {$moneda_consolidada}</h4>";
 print '<table class="noborder" width="100%">
-<thead  >
-	<tr class="liste_titre">
-		<th >Titulo</th>
-		<th align=center >Divisa Consolidada</th>
-		<th  align=center>Importe</th>
-		<!--<th  align=right>Costo</th>-->
-	</tr>
-</thead>
-<tbody>';
-
-
+         <thead  >
+             <tr class="liste_titre">
+                 <th >Titulo</th>
+                 <th align=center >Divisa Consolidada</th>
+                 <th  align=center>Importe</th>
+                 <!--<th  align=right>Costo</th>-->
+             </tr>
+         </thead>
+         <tbody>';
 $arr_result=array();
 foreach ($importeTotales as $title => $currencies) {
-	print '<tr>';
-	print '<td>';
-	print_titre($langs->trans($title)); ;
-	print '</td>';
-	print '<td align=center>';
-	print  USD;
-	print '</td>';
-	$sum=0;
-	$sum_c=0;
+   print '<tr>';
+    print '<td>';
+    print_titre($langs->trans($title)); ;
+    print '</td>';
+    print '<td align=center>';
+    print  USD;
+    print '</td>';
+    $sum=0;
+    $sum_c=0;
     $sum_tcccot=0;
-	$sum_c_haber=0;
-	$sum_haber=0;
-	$result_sum=0;
-	$resul_c=0;
-	
+    $sum_c_haber=0;
+    $sum_haber=0;
+    $result_sum=0;
+    $resul_c=0;
+
         if( isset($currencies) && array_key_exists('currencies', $currencies)) {
             foreach($currencies['currencies'] as $currency=>$arrayValues){
 
             /***********************************************************************************/
-				$sum_c+=$arrayValues['c'];
-				$sum+=$arrayValues['ht'];
-				$sum_tcccot+= $arrayValues['tcccot'];
+                $sum_c+=$arrayValues['c'];
+                $sum+=$arrayValues['ht'];
+                $sum_tcccot+= $arrayValues['tcccot'];
 
-            }            
+            }
         }
 
+    print '<td  align=right>';
+    print price($sum_tcccot,0,'',0,2,2);
+    print '</td>';
 
-	print '<td  align=right>';
-	print price($sum_tcccot,0,'',0,2,2);
-	print '</td>';
-	//print '<td   align=right>';
-	//print price($sum_c,0,'',0,2,2);
-	//print '</td>';
+     $arr_result[$currencies['operation']]['c']+=$sum_c;
+     $arr_result[$currencies['operation']]['ht']+=$sum_tcccot;
 
-
-					
-	$arr_result[$currencies['operation']]['c']+=$sum_c;
-	$arr_result[$currencies['operation']]['ht']+=$sum_tcccot;
-	
 }
-	print '</tr>';
-
-/*	if($arr_result['+']['c']> 0){
-			$tt_c=$arr_result['+']['c']-$arr_result['-']['c'] ;
-	}else{
-		$tt_c=$arr_result['-']['c'];
-	}
-*/
-
-
-	$tt_c=$arr_result['+']['c']-$arr_result['-']['c'] ;
-	$tt_ht=$arr_result['+']['ht']-$arr_result['-']['ht'] ;
-	print '<tr>';
-	print '</tr>';
-	print '<tr>';	
+   print '</tr>';
+   $tt_c=$arr_result['+']['c']-$arr_result['-']['c'] ;
+   $tt_ht=$arr_result['+']['ht']-$arr_result['-']['ht'] ;
+   $tt_ht_format =price($tt_ht,0,'',0,2,2);
+	print '<tr class="liste_total">';
 	print '<td>
 			<I><b>
 				Total
@@ -1200,48 +1202,44 @@ foreach ($importeTotales as $title => $currencies) {
 	print '</td>';	
 	print '<td  align=right>';
 	print 	 '<I><b>';
-			print price($tt_ht,0,'',0,2,2);
+			print $tt_ht_format;
 	print 	 '</I></b>';
 	print '</td>';
-
-	/*print 	 '<I><b>';
-			print price($tt_c,0,'',0,2,2);
-	print 	 '</I></b>';
-	print '</td>';
-	*/
-	print '</tr>';	
-
-//print '<td width="10%" align="right">'.price($total['Salesorder']-$costo['Salesorder']-$costo['Deplacement']-$costo['Policy'],0,'',0,2,2).'</td>';
-
-print '<tbody>';
+	print '</tr>';
+	print '<tbody>';
 print "</table>";
 
 
+
+
+llxFooter();
+
+$db->close();
 /*********************************************************************************************************************************************************
 excel: insert de datos en el archivo
  */
- 
+
 if(!empty($_GET['download'])){
  ob_end_clean();
  $projectRef=str_replace("/",'-',$project->ref);
  $fileName       =   "export_resultado_projecto_{$projectRef}.csv";
  $path           =    DOL_DATA_ROOT."/projet/resultado/".$fileName;
 
-  $myfile = fopen($path, "w") or die("Unable to open file!") ;
-  fwrite($myfile, "Documento;Código(Ref);Cliente;Divísa;Importe;Cotizable;Valor de Cotización Divisa Origen;Valor de Cotización USD;Excluido/Desligado;Referencia;Importe USD");
-  fwrite($myfile, "\n");
-  foreach ($arrayExport as $arr=>$arraId){
-   foreach ($arraId as $k=>$v){
-    fwrite($myfile, $langs->trans($arr));
-    fwrite($myfile, ";");
-    $dataString=implode(";",$v)."\n";
-    fwrite($myfile, $dataString);
-   }
+ $myfile = fopen($path, "w") or die("Unable to open file!") ;
+ fwrite($myfile, "Documento;Código(Ref);Cliente;Divísa;Importe;Cotizable;Valor de Cotización Divisa Origen;Valor de Cotización USD;Excluido/Desligado;Referencia;Importe USD");
+ fwrite($myfile, "\n");
+ foreach ($arrayExport as $arr=>$arraId){
+  foreach ($arraId as $k=>$v){
+   fwrite($myfile, $langs->trans($arr));
+   fwrite($myfile, ";");
+   $dataString=implode(";",$v)."\n";
+   fwrite($myfile, $dataString);
   }
-  fclose($myfile);
+ }
+ fwrite($myfile, "\n");
+ fwrite($myfile, ";;;;;;;;;Total;{$tt_ht_format}");
+ fclose($myfile);
 
-
- // file_put_contents('a.csv','a,v,b,c,d');
  header('Content-Type: application/csv');
  header("Content-Disposition: attachment; filename={$fileName}");
  header('Pragma: no-cache');
@@ -1255,9 +1253,6 @@ excel: insert de datos en el archivo
  */
 
 
-llxFooter();
-
-$db->close();
 
 ob_end_flush();
 ?>

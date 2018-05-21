@@ -534,7 +534,7 @@ foreach ($listofreferent as $key => $value)
         echo "<div  style='width:100%;'>
                 <div style='width:50%;float: left;color:#336666;'>".$langs->trans($title)."</div> 
                 <div style='float:right;margin-bottom: 2px;'>
-                    <button class='button ocultarDetalleTabla-{$classTableShowColums}'  onclick='var tableClassName=\"{$classTableShowColums}\";ocultarDetalleTabla(tableClassName)'>Ocultar Detalle del Reporte</button>
+                    <button class='button hideWhenOnload ocultarDetalleTabla-{$classTableShowColums}'  onclick='var tableClassName=\"{$classTableShowColums}\";ocultarDetalleTabla(tableClassName)'>Ocultar Detalle del Reporte</button>
                     <button class='button visualizarDetalleTabla-{$classTableShowColums}'  onclick='var tableClassName=\"{$classTableShowColums}\";visualizarDetalleTabla(tableClassName)' hidden>Visualizar Detalle del Reporte</button>
                 </div>
               </div>
@@ -1282,9 +1282,115 @@ if(!empty($_GET['download'])){
 }
 
 /*********************************************************************************************************************************************************
-excel: insert de datos en el archivo
+fin insert de datos en el archivo
  */
 
+/************************************************************************
+show o hide form de consolidation
+ */
+echo
+"<script>
+		function conversionManual(linea){
+
+		    var id_conversion_general='#conversion_general-'+linea;
+			var id_conversion_manual ='#conversion_manual-'+linea;
+		    $(id_conversion_general).hide();
+		    $(id_conversion_manual).show();
+		 	
+		}
+		function cancelarConversionManual(linea){
+			var id_conversion_general='#conversion_general-'+linea;
+			var id_conversion_manual ='#conversion_manual-'+linea;
+			var id_input_nueva_conversion='.input_nueva_conversion-'+linea;
+		    $(id_conversion_general).show();
+		    $(id_conversion_manual).hide();
+		    $(id_input_nueva_conversion).prop('required',false); 
+		    $(id_input_nueva_conversion).val('');
+		    
+		}	  
+		function resetTipoGeneral(linea){
+			var id_conversion_general='#conversion_general-'+linea;
+			var id_conversion_manual ='#conversion_manual-'+linea;
+			var id_input_nueva_conversion='.input_nueva_conversion-'+linea;	
+			var id_resetTipoGeneral ='#resetTipoGeneral-'+linea;
+			var id_form='#form-'+linea;
+		    $(id_input_nueva_conversion).val('');
+		    $(id_resetTipoGeneral).val('1');		    
+		    $(id_input_nueva_conversion).attr('required',false);  
+		 	$(id_form).submit(); 
+		}			
+		$( document ).ready(function() {
+	
+	
+			/*valida que los campos valor_unitario y valor_total de detalle pedido sean numericos pero permitan ingresar coma*/
+			$(document).on('keydown', '.input_only_number', function(e){
+				 -1!==$.inArray(e.keyCode,[46,8,9,27,13,110,190,188])||(/65|67|86|88/.test(e.keyCode)&&(e.ctrlKey===true||e.metaKey===true))&&(!0===e.ctrlKey||!0===e.metaKey)||35<=e.keyCode&&40>=e.keyCode||(e.shiftKey||48>e.keyCode||57<e.keyCode)&&(96>e.keyCode||105<e.keyCode)&&e.preventDefault()
+			});
+		
+			/*controla el ingreso de datos con formato ###.###,## para los campos valor_unitario y valor_total de detalle pedido */
+			$(document).on('keyup', '.input_only_number', function () {
+				$(this).val( numberFormat($(this).val() )  );
+			
+			});
+		
+			function numberFormat(numero){
+				// Variable que contendra el resultado final
+				var resultado = '';
+		
+				// Si el numero empieza por el valor \"-\" (numero negativo)
+				if(numero[0]=='-')
+				{
+					// Cogemos el numero eliminando los posibles puntos que tenga, y sin
+					// el signo negativo
+					nuevoNumero=numero.replace(/\./g,'').substring(1);
+		
+				}else{
+					// Cogemos el numero eliminando los posibles puntos que tenga
+					nuevoNumero=numero.replace(/\./g,'');
+				}
+				// Si tiene decimales, se los quitamos al numero
+				if(numero.indexOf(',')>=0)
+					nuevoNumero=nuevoNumero.substring(0,nuevoNumero.indexOf(','));
+		
+				// Ponemos un punto cada 3 caracteres
+				for (var j, i = nuevoNumero.length - 1, j = 0; i >= 0; i--, j++)
+		
+					resultado = nuevoNumero.charAt(i) + ((j > 0) && (j % 3 == 0)? '.': '') + resultado;
+				// Si tiene decimales, se lo añadimos al numero una vez forateado con 
+				// los separadores de miles
+				if(numero.indexOf(',')>=0)
+					resultado+=numero.substring(numero.indexOf(','));
+				if(numero[0]=='-')
+				{
+					// Devolvemos el valor añadiendo al inicio el signo negativo
+					return '-'+resultado;
+				}else{
+					return resultado;
+				}
+			}		 	
+		});	
+		function ocultarDetalleTabla(classTableShowColums){
+		    var className ='.'+classTableShowColums;
+		    var ocultarDetalleTabla     ='.ocultarDetalleTabla-'+classTableShowColums;
+            var visualizarDetalleTabla  ='.visualizarDetalleTabla-'+classTableShowColums;
+		    $(ocultarDetalleTabla).hide();
+		    $(visualizarDetalleTabla).show();
+		    $(className).hide();
+
+        }
+        function visualizarDetalleTabla(classTableShowColums){
+		    var className ='.'+classTableShowColums;
+		    var ocultarDetalleTabla     ='.ocultarDetalleTabla-'+classTableShowColums;
+            var visualizarDetalleTabla  ='.visualizarDetalleTabla-'+classTableShowColums;		    
+		    $(ocultarDetalleTabla).show();
+		    $(visualizarDetalleTabla).hide();
+		    $(className).show();
+
+        }		
+		$('.hideWhenOnload').click();
+	</script>";
+/************************************************************************
+ */
 
 
 ob_end_flush();

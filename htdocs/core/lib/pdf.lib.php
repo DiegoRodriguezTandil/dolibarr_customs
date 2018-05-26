@@ -855,7 +855,7 @@ function pdf_writelinedesc(&$pdf,$object,$i,$outputlangs,$w,$h,$posx,$posy,$hide
             
                 //$line_number = str_pad($object->lines[$i]->line_ref, 3, "0", STR_PAD_LEFT);
                 $line_number = $object->lines[$i]->line_ref;
-                $pdf->writeHTMLCell($w, $h, $posx, $posy, $outputlangs->convToOutputCharset($line_number), 0, 1,$fill);
+                $pdf->writeHTMLCell($w, $h, $posx, $posy, $outputlangs->convToOutputCharset($line_number), 0, 0,$fill);
                 
                 $labelproductservice=trim(pdf_getlinedesc($object,$i,$outputlangs,$hideref,$hidedesc,$issupplierline));
 		// Description

@@ -217,14 +217,14 @@ echo "
                                     where llx_salesorder.rowid={$object->id};";
                                 $sqlSC  = $db->query($sqlSalesorderCurrency);
                                 $sc     = $db->fetch_object($sqlSC); 
-                                $stringOptionSelectOv="<option value='saab'>".$sc->code_iso."</option>";
+                                $stringOptionSelectOv="<option value='".$sc->code_iso."'>".$sc->code_iso."</option>";
                                 $stringOptionSelectOv.=$stringOptionSelectCurrencies;
                                 $stringOptionSelectCurrencies=$stringOptionSelectOv;
                             }
                             
                                 if(!empty($object->policy->fk_currency) or !isset($object->policy->fk_currency)){   
                                 // la moneda de la ov                               
-                                $stringOptionSelectOv="<option value='saab'>".$object->policy->fk_currency."</option>";
+                                $stringOptionSelectOv="<option value='".$sc->code_iso."'>".$object->policy->fk_currency."</option>";
                                 $stringOptionSelectOv.=$stringOptionSelectCurrencies;
                                 $stringOptionSelectCurrencies=$stringOptionSelectOv;
                             }

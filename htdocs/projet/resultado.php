@@ -1012,6 +1012,10 @@ foreach ($listofreferent as $key => $value)
                      echo "<td  align='right' width='120px'>
 							-
 					  </td>";
+                    }elseif ($esCotizable===1){
+                        echo "<td  align='right' width='120px'>
+							-
+					  </td>";
                     }
 
 				}
@@ -1019,6 +1023,7 @@ foreach ($listofreferent as $key => $value)
                 // Status
              if( !array_key_exists('show_status',$value)){
               print '<td align="center">'.$element->getLibStatut(5).'</td>';
+              
              }
 
 

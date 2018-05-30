@@ -356,11 +356,12 @@ class Policy // extends CommonObject
         return $result;
     }
     
-    function getLibStatut($mode)
+    function getLibStatut($statut)
     {
-           if ($statut==0) return "Aprovada";
-           if ($statut==1) return "Cancelada";
-
+        $status=$this->status;
+        if ($status ==0) return "Aprobada";
+        if ( $status ==1) return "Cancelada";
+    
     }
     /**
      *  Update object into database
@@ -487,6 +488,10 @@ class Policy // extends CommonObject
 			return 1;
 		}
     }
+    
+    
+    
+    
 	function update_assurance_soc($socid, $notrigger=0)
     {
     	global $conf, $langs;

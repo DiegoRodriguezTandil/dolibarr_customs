@@ -238,12 +238,12 @@ class Policy // extends CommonObject
 	
     	dol_syslog(get_class($this)."::fetch_by_doc sql=".$sql, LOG_DEBUG);
         $resql=$this->db->query($sql);
+
         if ($resql)
         {
             if ($this->db->num_rows($resql))
             {
                 $obj = $this->db->fetch_object($resql);
-
                 $this->id    = $obj->rowid;
                 $this->fk_docid = $obj->fk_docid;
                 $this->fk_doctype = $obj->fk_doctype;
@@ -627,7 +627,7 @@ class Policy // extends CommonObject
         $sql = "UPDATE ".MAIN_DB_PREFIX."policy SET";
         $sql.= " price=".price2num($price);
         $sql.= " WHERE rowid=".$this->id;
-			
+        
 		$this->db->begin();
 
 		dol_syslog(get_class($this)."::update sql=".$sql, LOG_DEBUG);
@@ -636,7 +636,7 @@ class Policy // extends CommonObject
 
 		if (! $error)
 		{
-			$this->price=$price;
+			$this->cost=$price;
 			if (! $notrigger)
 			{
 	            // Uncomment this and change MYOBJECT to your own tag if you

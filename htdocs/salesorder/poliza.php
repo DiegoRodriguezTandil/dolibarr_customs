@@ -38,7 +38,7 @@ $ref=GETPOST('ref','alpha');
 $socid=GETPOST('socid','int');
 $action=GETPOST('action','alpha');
 $request_currency_val=GETPOST('currency_val');
-
+$price=GETPOST('price');
 // Security check
 $socid=0;
 if ($user->societe_id) $socid=$user->societe_id;
@@ -67,7 +67,6 @@ if(!$object->policy->fetch_by_doc(GETPOST('id'),'SO'))
     $object->policy->fetch_by_doc(GETPOST('id'),'SO');
 }
 
-
 if ($action == 'setpolicy_number' && $user->rights->propale->creer)
 {
 	$result=$object->policy->update_ref_number(dol_html_entity_decode(GETPOST('policy_number'), ENT_QUOTES));
@@ -88,7 +87,9 @@ else if ($action == 'setexpiration_date' && $user->rights->propale->creer)
 }
 else if ($action == 'setprice' && $user->rights->propale->creer)
 {
-	$result=$object->policy->update_price(GETPOST('price'));
+    $price_format_dot	= empty($price)   ? 0 : str_replace(".", "", $price);
+    $final_price		= empty($price)   ? 0 : str_replace(",", ".",$price_format_dot);
+	$result=$object->policy->update_price($final_price);
 	if ($result < 0) dol_print_error($db,$object->error);
 }
 else if ($action == 'setstatus' && $user->rights->propale->creer)

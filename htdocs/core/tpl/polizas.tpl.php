@@ -35,7 +35,69 @@ elseif ($module == 'order_supplier')    { $permission=$user->rights->fournisseur
 
 if (! empty($conf->global->FCKEDITOR_ENABLE_SOCIETE)) $typeofdata='ckeditor:dolibarr_notes:100%:200::1:12:100';
 else $typeofdata='textarea:1:50';
+
+echo "
+<script>
+
+	$( document ).ready(function() {
+	
+	
+			/*valida que los campos valor_unitario y valor_total de detalle pedido sean numericos pero permitan ingresar coma*/
+			$(document).on('keydown', '#price', function(e){
+				 -1!==$.inArray(e.keyCode,[46,8,9,27,13,110,190,188])||(/65|67|86|88/.test(e.keyCode)&&(e.ctrlKey===true||e.metaKey===true))&&(!0===e.ctrlKey||!0===e.metaKey)||35<=e.keyCode&&40>=e.keyCode||(e.shiftKey||48>e.keyCode||57<e.keyCode)&&(96>e.keyCode||105<e.keyCode)&&e.preventDefault()
+			});
+		
+			/*controla el ingreso de datos con formato ###.###,## para los campos valor_unitario y valor_total de detalle pedido */
+			$(document).on('keyup', '#price', function () {
+				$(this).val( numberFormat($(this).val() )  );
+			
+			});
+		
+			function numberFormat(numero){
+				// Variable que contendra el resultado final
+				var resultado = '';
+		
+				// Si el numero empieza por el valor \"-\" (numero negativo)
+				if(numero[0]=='-')
+				{
+					// Cogemos el numero eliminando los posibles puntos que tenga, y sin
+					// el signo negativo
+					nuevoNumero=numero.replace(/\./g,'').substring(1);
+		
+				}else{
+					// Cogemos el numero eliminando los posibles puntos que tenga
+					nuevoNumero=numero.replace(/\./g,'');
+				}
+				// Si tiene decimales, se los quitamos al numero
+				if(numero.indexOf(',')>=0)
+					nuevoNumero=nuevoNumero.substring(0,nuevoNumero.indexOf(','));
+		
+				// Ponemos un punto cada 3 caracteres
+				for (var j, i = nuevoNumero.length - 1, j = 0; i >= 0; i--, j++)
+		
+					resultado = nuevoNumero.charAt(i) + ((j > 0) && (j % 3 == 0)? '.': '') + resultado;
+				// Si tiene decimales, se lo añadimos al numero una vez forateado con
+				// los separadores de miles
+				if(numero.indexOf(',')>=0)
+					resultado+=numero.substring(numero.indexOf(','));
+				if(numero[0]=='-')
+				{
+					// Devolvemos el valor añadiendo al inicio el signo negativo
+					return '-'+resultado;
+				}else{
+					return resultado;
+				}
+			}
+		});
+
+</script>
+";
+
+
 ?>
+
+
+
 
 <!-- BEGIN PHP TEMPLATE NOTES -->
 <div class="table-border">
@@ -83,8 +145,17 @@ else $typeofdata='textarea:1:50';
 		?></div>
 	</div>
 	<div class="table-border-row">
-		<div class="table-key-border-col"<?php echo ' style="width: '.$colwidth.'%"'; ?>><?php echo $form->editfieldkey("Price", $price, price($object->policy->price), $object, $permission, 'numeric:10', $moreparam); ?></div>
-		<div class="table-val-border-col"><?php echo $form->editfieldval("Price", $price, price($object->policy->price), $object, $permission, 'numeric:10', '', null, null, $moreparam); ?></div>
+          <div class="table-key-border-col"<?php echo ' style="width: '.$colwidth.'%"'; ?>>
+                <?php
+                        echo $form->editfieldkey("Price", $price,$object->policy->price, $object, $permission, null, $moreparam);
+                ?>
+           </div>
+		<div class="table-val-border-col">
+                <?php
+                        $vf=number_format($object->policy->cost, 2, ',', '.');
+                        echo $form->editfieldval("Price", $price, $vf, $object, $permission, 'numeric:10', '', null, null, $moreparam);
+                ?>
+        </div>
 	</div>
 	<div class="table-border-row">
 		<div class="table-key-border-col"<?php echo ' style="width: '.$colwidth.'%"'; ?>><table class="nobordernopadding" width="100%"><tr><td nowrap="nowrap">Cancelada ?</td><td align="right">

@@ -875,146 +875,6 @@ ALTER TABLE `llx_consolidation_facture`
 -- *************************************************************************************************************/
 -- *******************************************************************************************************************
 
-/*
- create view vw_salesorder_facture_cotizacion as
- select
-        case
-                when salesorder.same_currency =0 or domain_salesorder =1  then 1
-                else  0
-                end domain_salesorder,
-        case
-                when salesorder.same_currency =1 or domain_salesorder =1  then 1
-                else  0
-         end domain_facture
-        ,salesorder.salesorder_rowid
-        ,salesorder.same_currency
-        ,salesorder.moneda_salesorder
-        ,salesorder.fk_projet
-        ,salesorder.salesorder_name
-        ,llx_facture.fk_currency
-
-        ,llx_facture.rowid as facture_rowid
-        ,llx_facture.facnumber as facture_name,
-        case
-          when salesorder.same_currency =0 or domain_salesorder =1  then salesorder_name
-          when salesorder.same_currency =1 and domain_salesorder =1  then salesorder_name
-          when salesorder.same_currency =1 and domain_salesorder =0  then llx_facture.facnumber
-        end name_domain
-from
-    (
-		select
-		  llx_salesorder.rowid as salesorder_rowid,
-      CASE
-        WHEN sum(llx_facture.total_ttc) < llx_salesorder.total_ttc THEN 1
-        ELSE 0
-		  END as domain_salesorder,
-      CASE
-        WHEN sum(llx_facture.total_ttc) > llx_salesorder.total_ttc THEN 1
-        ELSE 0
-      END as domain_facture,
-      CASE
-        WHEN llx_facture.fk_currency=llx_salesorder.fk_currency THEN 1
-        ELSE 0
-      END as same_currency,
-      llx_salesorder.fk_currency as moneda_salesorder,
-      llx_salesorder.fk_projet,
-      llx_salesorder.ref as salesorder_name
-		from llx_salesorder
-		join llx_element_element on(llx_element_element.fk_source=llx_salesorder.rowid
-		and llx_element_element.sourcetype="salesorder" and llx_element_element.targettype="facture"
-		 )
-		join  llx_facture on(llx_facture.rowid=llx_element_element.fk_target)
-		group by llx_facture.fk_projet,llx_salesorder.total_ttc,llx_salesorder.rowid,llx_salesorder.fk_currency,llx_facture.fk_currency,llx_salesorder.ref
-	) salesorder
-	join llx_element_element on
-		(
-			llx_element_element.fk_source=salesorder.salesorder_rowid
-			and llx_element_element.sourcetype="salesorder" and llx_element_element.targettype="facture"
-		)
-	join llx_facture on(llx_facture.rowid=llx_element_element.fk_target);
-	 -- where salesorder.fk_projet=358;
-*/
-
-create view vw_salesorder_facture_cotizacion as
- select
-        case
-                when salesorder.same_currency =0	then 1
-                when domain_salesorder =1 		  	then 1
-                else  0
-                end domain_salesorder,
-        case
-                when salesorder.same_currency =1 && domain_salesorder =0  then 1
-                else  0
-         end domain_facture
-        ,salesorder.salesorder_rowid
-        ,salesorder.same_currency
-        ,salesorder.moneda_salesorder
-        ,salesorder.fk_projet
-        ,salesorder.salesorder_name
-        ,llx_facture.fk_currency
-        ,llx_facture.rowid as facture_rowid
-        ,llx_facture.facnumber as facture_name
-from
-    (
-		select
-		  llx_salesorder.rowid as salesorder_rowid,
-      CASE
-        WHEN sum(llx_facture.total_ttc) < llx_salesorder.total_ttc THEN 1
-        ELSE 0
-		  END as domain_salesorder,
-      CASE
-        WHEN sum(llx_facture.total_ttc) > llx_salesorder.total_ttc THEN 1
-        ELSE 0
-      END as domain_facture,
-      CASE
-        WHEN llx_facture.fk_currency=llx_salesorder.fk_currency THEN 1
-        ELSE 0
-      END as same_currency,
-      llx_salesorder.fk_currency as moneda_salesorder,
-      llx_salesorder.fk_projet,
-      llx_salesorder.ref as salesorder_name
-		from llx_salesorder
-		join llx_element_element on(llx_element_element.fk_source=llx_salesorder.rowid
-		and llx_element_element.sourcetype="salesorder" and llx_element_element.targettype="facture"
-		 )
-		join  llx_facture on(llx_facture.rowid=llx_element_element.fk_target)
-		group by llx_facture.fk_projet,llx_salesorder.total_ttc,llx_salesorder.rowid,llx_salesorder.fk_currency,llx_facture.fk_currency,llx_salesorder.ref
-	) salesorder
-	join llx_element_element on
-		(
-			llx_element_element.fk_source=salesorder.salesorder_rowid
-			and llx_element_element.sourcetype="salesorder" and llx_element_element.targettype="facture"
-		)
-	join llx_facture on(llx_facture.rowid=llx_element_element.fk_target);
-
-
-
-create view vw_salesorder_facture_cotizacion_priorizada as
-select
-	vw_sf.*
-    ,domain as domain1
-	,case
-		when domain is null then 0
-		else domain
-	end domain
-	,ds.entidad_id
-	,ds.fecha_ingreso
-	,ds.id
-	,
-	case
-	  when (domain_salesorder =1)  &&  (domain=0) 			then facture_name
-       when (domain_salesorder =1)  &&  (domain=1) 			then salesorder_name
-	  when (domain_salesorder =1)  &&  (domain is null) 	then salesorder_name
-	  when (domain_salesorder =0)  &&  (domain is not null && domain=1) then  salesorder_name
-	  when (domain_salesorder =0) then facture_name
-      else salesorder_name
-	end name_domain
-from 	vw_salesorder_facture_cotizacion vw_sf
-left join 	llx_consolidation_domain_salesorder ds  on(ds.entidad_id= vw_sf.salesorder_rowid );
-
-
-
- 
  -- *******************************************************************************************************************
  --  Tabla llx_consolidation_domain_salesorder
 
@@ -1043,35 +903,6 @@ ALTER TABLE `llx_consolidation_domain_salesorder`
 -- Fin tabla llx_consolidation_domain_salesorder
 -- *************************************************************************************************************/
 -- *******************************************************************************************************************
-create view vw_salesorder_facture_cotizacion_priorizada as
-select 
-	vw_sf.*	
-    ,domain as domain1
-	,case
-		when domain is null then 0
-		else domain
-	end domain
-	,ds.entidad_id
-	,ds.fecha_ingreso
-	,ds.id
-	,
-	case
-	  when (domain_salesorder =1)  &&  (domain=0) 			then facture_name
-       when (domain_salesorder =1)  &&  (domain=1) 			then salesorder_name
-	  when (domain_salesorder =1)  &&  (domain is null) 	then salesorder_name
-	  when (domain_salesorder =0)  &&  (domain is not null && domain=1) then  salesorder_name 
-	  when (domain_salesorder =0) then facture_name
-      else salesorder_name
-	end name_domain
-from 	vw_salesorder_facture_cotizacion vw_sf 
-left join 	llx_consolidation_domain_salesorder ds  on(ds.entidad_id= vw_sf.salesorder_rowid );
-
-
-
-create view vw_salesorder_facture_cotizacion_priorizada as ( select 	vw_sf.* ,domain as domain1 , case	when domain is null then 0	else domain	end  domain	,ds.entidad_id	,ds.fecha_ingreso	,ds.id	,	(case 	  when (domain_salesorder =1)  &&  (domain=0) 			then facture_name       when (domain_salesorder =1)  &&  (domain=1) 			then salesorder_name	  when (domain_salesorder =1)  &&  (domain is null) 	then salesorder_name	  when (domain_salesorder =0)  &&  (domain is not null && domain=1) then  salesorder_name	  when (domain_salesorder =0) then facture_name      else salesorder_name	end) as name_domain from 	vw_salesorder_facture_cotizacion vw_sf left join 	llx_consolidation_domain_salesorder ds  on(ds.entidad_id= vw_sf.salesorder_rowid ));
-
-
-
 
 -- *******************************************************************************************************************
  --  Tabla llx_consolidation_policy
@@ -1106,11 +937,452 @@ ALTER TABLE `llx_consolidation_policy`
   ADD CONSTRAINT `llx_consolidation_policy_llx_c_currencies-divisa_origen` FOREIGN KEY (`divisa_origen`) REFERENCES `llx_c_currencies` (`code_iso`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   ADD CONSTRAINT `llx_consolidation_policy_llx_c_currencies-divisa_destino` FOREIGN KEY (`divisa_destino`) REFERENCES `llx_c_currencies` (`code_iso`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   ADD CONSTRAINT `llx_consolidation_policy_llx_policy-policy_id` FOREIGN KEY (`policy_id`) REFERENCES `llx_policy` (`rowid`) ON DELETE NO ACTION ON UPDATE NO ACTION;
-
+ alter table llx_policy add fk_currency varchar(3) default "USD";
 -- Fin tabla llx_consolidation_policy
 -- *************************************************************************************************************/
 -- *******************************************************************************************************************
 
 
+/**
 
-alter table llx_policy add fk_currency varchar(3) default "USD";
+
+-- view suma las facturas de un proyecto
+-- drop view vw_sum_fatcure_by_project;    - v
+create view vw_sum_fatcure_by_salesorder as
+select
+	llx_element_element.fk_source as salesorder_rowid,
+	sum(llx_facture.total_ttc) as total_sum_facture
+from  llx_element_element
+join  llx_facture on(llx_facture.rowid=llx_element_element.fk_target)
+where llx_element_element.sourcetype="salesorder"
+and   llx_element_element.targettype="facture"
+group by llx_element_element.fk_source;
+-- ---------------------------------
+
+ -- obtine si domina la ov o si domina la factura agrupando por la pk de ov
+ -- drop view vw_domain_entity_between_salesorder_and_facture;
+  /*create view vw_domain_entity_between_salesorder_and_facture as
+select
+			vw_sum_fatcure_by_salesorder.salesorder_rowid ,
+			1 as  domain_salesorder,
+			0 as  domain_facture
+from 		llx_salesorder
+left join  	vw_sum_fatcure_by_salesorder on(llx_salesorder.rowid=vw_sum_fatcure_by_salesorder.salesorder_rowid)
+where 		vw_sum_fatcure_by_salesorder.total_sum_facture < llx_salesorder.total_ttc
+union
+select
+			vw_sum_fatcure_by_salesorder.salesorder_rowid ,
+			0 as  domain_salesorder,
+			1 as  domain_facture
+from 		llx_salesorder
+left join  	vw_sum_fatcure_by_salesorder on(llx_salesorder.rowid=vw_sum_fatcure_by_salesorder.salesorder_rowid)
+where 		vw_sum_fatcure_by_salesorder.total_sum_facture > llx_salesorder.total_ttc;
+
+
+
+  create view vw_domain_entity_between_salesorder_and_facture as select 			vw_sum_fatcure_by_salesorder.salesorder_rowid , 			1 as  domain_salesorder, 			0 as  domain_facture from 		llx_salesorder left join  	vw_sum_fatcure_by_salesorder on(llx_salesorder.rowid=vw_sum_fatcure_by_salesorder.salesorder_rowid) where 		vw_sum_fatcure_by_salesorder.total_sum_facture < llx_salesorder.total_ttc union select			vw_sum_fatcure_by_salesorder.salesorder_rowid ,			0 as  domain_salesorder,			1 as  domain_facture from 		llx_salesorder left join  	vw_sum_fatcure_by_salesorder on(llx_salesorder.rowid=vw_sum_fatcure_by_salesorder.salesorder_rowid) where 		vw_sum_fatcure_by_salesorder.total_sum_facture > llx_salesorder.total_ttc;
+*/
+
+-- --------------------------------------------------------------------
+ -- verifica si tienen misma moneda laov y la fatura, factura agrupando por la pk de ov
+create view vw_same_currency_between_salesorder_and_facture as
+select
+		llx_salesorder.rowid as salesorder_rowid ,
+		1 as  same_currency
+from 	llx_salesorder
+join 	llx_element_element
+on		(
+			llx_element_element.fk_source=llx_salesorder.rowid
+		and
+			llx_element_element.sourcetype="salesorder" and llx_element_element.targettype="facture"
+		 )
+join  	llx_facture on(llx_facture.rowid=llx_element_element.fk_target)
+where 	llx_facture.fk_currency=llx_salesorder.fk_currency
+union
+select
+		llx_salesorder.rowid as salesorder_rowid ,
+		0 as  same_currency
+from 	llx_salesorder
+join 	llx_element_element
+on		(
+			llx_element_element.fk_source=llx_salesorder.rowid
+			and
+			llx_element_element.sourcetype="salesorder" and llx_element_element.targettype="facture"
+		)
+join  	llx_facture on(llx_facture.rowid=llx_element_element.fk_target)
+where 	llx_facture.fk_currency<>llx_salesorder.fk_currency;
+
+
+
+
+ /****************************************************************************************************************/
+/*
+select
+	llx_salesorder.rowid as salesorder_rowid,
+	 vwed.domain_salesorder,
+     vwed.domain_facture,
+     vwsc.same_currency,
+	 llx_salesorder.fk_currency as moneda_salesorder,
+	 llx_salesorder.fk_projet,
+     llx_salesorder.ref as salesorder_name
+from llx_salesorder
+join vw_domain_entity_between_salesorder_and_facture vwed on (llx_salesorder.rowid=vwed.salesorder_rowid)
+join vw_same_currency_between_salesorder_and_facture vwsc on (llx_salesorder.rowid=vwsc.salesorder_rowid);
+*/
+
+
+ /****************************************************************************************************************/
+
+create view vw_domain_entity_between_salesorder_and_facture as
+select
+			vw_sum_fatcure_by_salesorder.salesorder_rowid ,
+			1 as  domain_salesorder,
+			0 as  domain_facture
+from 		llx_salesorder
+left join  	vw_sum_fatcure_by_salesorder on(llx_salesorder.rowid=vw_sum_fatcure_by_salesorder.salesorder_rowid)
+join 		vw_same_currency_between_salesorder_and_facture vwsc on(llx_salesorder.rowid=vwsc.salesorder_rowid)
+where 		((llx_salesorder.total_ttc > vw_sum_fatcure_by_salesorder.total_sum_facture  and vwsc.same_currency=1)
+or
+			 (vw_sum_fatcure_by_salesorder.total_sum_facture > llx_salesorder.total_ttc and vwsc.same_currency=0))
+union
+select
+			vw_sum_fatcure_by_salesorder.salesorder_rowid ,
+			0 as  domain_salesorder,
+			1 as  domain_facture
+from 		llx_salesorder
+left join  	vw_sum_fatcure_by_salesorder on(llx_salesorder.rowid=vw_sum_fatcure_by_salesorder.salesorder_rowid)
+join 		vw_same_currency_between_salesorder_and_facture vwsc on(llx_salesorder.rowid=vwsc.salesorder_rowid)
+where 		(vw_sum_fatcure_by_salesorder.total_sum_facture > llx_salesorder.total_ttc and vwsc.same_currency=1) ;
+
+ /****************************************************************************************************************/
+
+create view vw_salesorder_domain as
+	select
+		llx_salesorder.rowid as salesorder_rowid,
+		 vwed.domain_salesorder,
+		 vwed.domain_facture,
+		 vwsc.same_currency,
+		 llx_salesorder.fk_currency as moneda_salesorder,
+		 llx_salesorder.fk_projet,
+		 llx_salesorder.ref as salesorder_name
+	from llx_salesorder
+	join vw_domain_entity_between_salesorder_and_facture vwed on (llx_salesorder.rowid=vwed.salesorder_rowid)
+	join vw_same_currency_between_salesorder_and_facture vwsc on (llx_salesorder.rowid=vwsc.salesorder_rowid);
+
+
+ /****************************************************************************************************************/
+ create view vw_salesorder_facture_cotizacion as
+ select
+         salesorder.domain_salesorder
+         ,salesorder.domain_facture
+        ,salesorder.salesorder_rowid
+        ,salesorder.same_currency
+        ,salesorder.moneda_salesorder
+        ,salesorder.fk_projet
+        ,salesorder.salesorder_name
+        ,llx_facture.fk_currency
+        ,llx_facture.rowid as facture_rowid
+        ,llx_facture.facnumber as facture_name
+from
+    vw_salesorder_domain as salesorder
+	join llx_element_element on
+		(
+			llx_element_element.fk_source=salesorder.salesorder_rowid
+			and llx_element_element.sourcetype="salesorder" and llx_element_element.targettype="facture"
+		)
+	join llx_facture on(llx_facture.rowid=llx_element_element.fk_target);
+
+/************************************************************************************************************/
+
+ create view vw_salesorder_facture_cotizacion_priorizada as
+select
+	 vw_sf.*
+    ,domain as domain1
+	,ifnull(domain,0)as  domain
+	,ds.entidad_id
+	,ds.fecha_ingreso
+	,ds.id
+
+from 	vw_salesorder_facture_cotizacion vw_sf
+left join 	llx_consolidation_domain_salesorder ds  on(ds.entidad_id= vw_sf.salesorder_rowid );
+
+
+
+
+
+
+
+
+
+/*
+ drop view vw_name_domain;
+create view vw_name_domain as
+select
+			vw_sf.salesorder_rowid,
+			vw_sf.salesorder_name  name_domain
+
+from 		vw_salesorder_facture_cotizacion vw_sf
+left join 	llx_consolidation_domain_salesorder ds  on(ds.entidad_id= vw_sf.salesorder_rowid )
+where 	    vw_sf.domain_salesorder =1
+-- group by  	vw_sf.salesorder_rowid,facture_name
+union
+select
+			vw_sf.salesorder_rowid,
+			vw_sf.facture_name  name_domain
+from 		vw_salesorder_facture_cotizacion vw_sf
+left join 	llx_consolidation_domain_salesorder ds  on(ds.entidad_id= vw_sf.salesorder_rowid )
+where 	   	vw_sf.domain_salesorder=0
+-- group by  	vw_sf.salesorder_rowid,facture_name ;
+ ;
+
+*/
+
+
+
+
+--  drop view vw_domain_entity_between_salesorder_and_facture;
+ -- create view vw_domain_entity_between_salesorder_and_facture as
+/*
+select
+			vw_sum_fatcure_by_salesorder.salesorder_rowid ,
+			1 as  domain_salesorder,
+			0 as  domain_facture
+from 		llx_salesorder
+left join  	vw_sum_fatcure_by_salesorder on(llx_salesorder.rowid=vw_sum_fatcure_by_salesorder.salesorder_rowid)
+join 		vw_same_currency_between_salesorder_and_facture vwsc on(llx_salesorder.rowid=vwsc.salesorder_rowid)
+where 		(((((llx_salesorder.total_ttc > vw_sum_fatcure_by_salesorder.total_sum_facture  and vwsc.same_currency=1)
+or
+			 (vw_sum_fatcure_by_salesorder.total_sum_facture > llx_salesorder.total_ttc and vwsc.same_currency=0))
+and  not
+exists (
+	select  1
+    from 	llx_consolidation_domain_salesorder
+    where  	entidad_id=llx_salesorder.rowid
+    and 	domain=1
+))
+)
+or exists (
+	select  1
+    from 	llx_consolidation_domain_salesorder
+    where  	entidad_id=llx_salesorder.rowid
+    and 	domain=1
+))
+ -- and llx_salesorder.rowid=387;
+   union
+select
+			vw_sum_fatcure_by_salesorder.salesorder_rowid ,
+			0 as  domain_salesorder,
+			1 as  domain_facture
+from 		llx_salesorder
+left join  	vw_sum_fatcure_by_salesorder on(llx_salesorder.rowid=vw_sum_fatcure_by_salesorder.salesorder_rowid)
+join 		vw_same_currency_between_salesorder_and_facture vwsc on(llx_salesorder.rowid=vwsc.salesorder_rowid)
+where 		((vw_sum_fatcure_by_salesorder.total_sum_facture > llx_salesorder.total_ttc and vwsc.same_currency=1)
+and not
+exists (
+	select  1
+    from 	llx_consolidation_domain_salesorder
+    where  	entidad_id=llx_salesorder.rowid
+    and domain=1
+
+));
+-- and llx_salesorder.rowid=387;
+*/
+
+
+
+
+
+-- drop view vw_salesorder_facture_cotizacion_priorizada ;
+
+*/
+
+
+
+
+
+
+
+/************************************************************************************************************/
+/*DEFINITIVO*/
+
+create view vw_sum_fatcure_by_salesorder as
+select
+	llx_element_element.fk_source as salesorder_rowid,
+	sum(llx_facture.total_ttc) as total_sum_facture
+from  llx_element_element
+join  llx_facture on(llx_facture.rowid=llx_element_element.fk_target)
+where llx_element_element.sourcetype="salesorder"
+and   llx_element_element.targettype="facture"
+group by llx_element_element.fk_source;
+
+
+/************************************************************************************************************/
+
+ drop view diff_cant_currencies_between_facture_salesorder;
+ create view diff_cant_currencies_between_facture_salesorder2 as
+select  s1.rowid as salesorder_rowid,1 as diff
+from llx_salesorder s1
+where exists(
+select
+      1
+from
+    llx_salesorder
+     join llx_element_element on( llx_element_element.fk_source=llx_salesorder.rowid and llx_element_element.sourcetype="salesorder" and llx_element_element.targettype="facture")
+    join llx_facture on(llx_facture.rowid=llx_element_element.fk_target)
+    where llx_facture.fk_currency<>llx_salesorder.fk_currency
+	and   llx_salesorder.rowid=s1.rowid
+group by llx_salesorder.rowid
+)
+union
+select s1.rowid as salesorder_rowid,0 as diff
+from llx_salesorder s1
+where not exists(
+select
+      1
+from
+    llx_salesorder
+     join llx_element_element on( llx_element_element.fk_source=llx_salesorder.rowid and llx_element_element.sourcetype="salesorder" and llx_element_element.targettype="facture")
+    join llx_facture on(llx_facture.rowid=llx_element_element.fk_target)
+    where llx_facture.fk_currency<>llx_salesorder.fk_currency
+	and   llx_salesorder.rowid=s1.rowid
+group by llx_salesorder.rowid
+);
+
+
+create view vw_same_currency_between_salesorder_and_facture as
+select
+salesorder_rowid ,
+1 as  same_currency
+from diff_cant_currencies_between_facture_salesorder
+where diff=0
+union
+select
+salesorder_rowid ,
+0 as  same_currency
+from diff_cant_currencies_between_facture_salesorder
+where diff=1;
+
+
+/************************************************************************************************************/
+
+/************************************************************************************************************/
+create view vw_domain_entity_between_salesorder_and_facture as
+select
+			vw_sum_fatcure_by_salesorder.salesorder_rowid ,
+			1 as  domain_salesorder,
+			0 as  domain_facture
+from 		llx_salesorder
+left join  	vw_sum_fatcure_by_salesorder on(llx_salesorder.rowid=vw_sum_fatcure_by_salesorder.salesorder_rowid)
+join 		vw_same_currency_between_salesorder_and_facture vwsc on(llx_salesorder.rowid=vwsc.salesorder_rowid)
+where
+	  (
+      (llx_salesorder.total_ttc >= vw_sum_fatcure_by_salesorder.total_sum_facture  and vwsc.same_currency=1)
+        or
+      (vwsc.same_currency=0)
+    )
+union
+select
+			vw_sum_fatcure_by_salesorder.salesorder_rowid ,
+			0 as  domain_salesorder,
+			1 as  domain_facture
+from 		llx_salesorder
+left join  	vw_sum_fatcure_by_salesorder on(llx_salesorder.rowid=vw_sum_fatcure_by_salesorder.salesorder_rowid)
+join 		vw_same_currency_between_salesorder_and_facture vwsc on(llx_salesorder.rowid=vwsc.salesorder_rowid)
+where 		(vw_sum_fatcure_by_salesorder.total_sum_facture > llx_salesorder.total_ttc and vwsc.same_currency=1);
+
+/************************************************************************************************************/
+create view vw_salesorder_domain as
+	select
+		llx_salesorder.rowid as salesorder_rowid,
+		 vwed.domain_salesorder,
+		 vwed.domain_facture,
+		 vwsc.same_currency,
+		 llx_salesorder.fk_currency as moneda_salesorder,
+		 llx_salesorder.fk_projet,
+		 llx_salesorder.ref as salesorder_name
+	from llx_salesorder
+	join vw_domain_entity_between_salesorder_and_facture vwed on (llx_salesorder.rowid=vwed.salesorder_rowid)
+	join vw_same_currency_between_salesorder_and_facture vwsc on (llx_salesorder.rowid=vwsc.salesorder_rowid);
+
+-- create view vw_salesorder_domain as select llx_salesorder.rowid as salesorder_rowid,vwed.domain_salesorder,vwed.domain_facture,vwsc.same_currency,llx_salesorder.fk_currency as moneda_salesorder,llx_salesorder.fk_projet, llx_salesorder.ref as salesorder_name from llx_salesorder join vw_domain_entity_between_salesorder_and_facture vwed on (llx_salesorder.rowid=vwed.salesorder_rowid) join vw_same_currency_between_salesorder_and_facture vwsc on (llx_salesorder.rowid=vwsc.salesorder_rowid);
+
+
+/************************************************************************************************************/
+create view vw_salesorder_facture_cotizacion as
+ select
+         salesorder.domain_salesorder
+         ,salesorder.domain_facture
+        ,salesorder.salesorder_rowid
+        ,salesorder.same_currency
+        ,salesorder.moneda_salesorder
+        ,salesorder.fk_projet
+        ,salesorder.salesorder_name
+        ,llx_facture.fk_currency
+        ,llx_facture.rowid as facture_rowid
+        ,llx_facture.facnumber as facture_name
+from
+    vw_salesorder_domain as salesorder
+	join llx_element_element on
+		(
+			llx_element_element.fk_source=salesorder.salesorder_rowid
+			and llx_element_element.sourcetype="salesorder" and llx_element_element.targettype="facture"
+		)
+	join llx_facture on(llx_facture.rowid=llx_element_element.fk_target);
+
+-- select  *
+-- from     vw_salesorder_domain where salesorder.salesorder_rowid=1047 ;
+
+-- select * from llx_element_element where llx_element_element.fk_source=1047 and llx_element_element.sourcetype="salesorder" and llx_element_element.targettype="facture"	;
+
+
+
+
+
+ -- create view vw_salesorder_facture_cotizacion as  select salesorder.domain_salesorder,salesorder.domain_facture,salesorder.salesorder_rowid,salesorder.same_currency,salesorder.moneda_salesorder,salesorder.fk_projet,salesorder.salesorder_name,llx_facture.fk_currency,llx_facture.rowid as facture_rowid,llx_facture.facnumber as facture_name from vw_salesorder_domain as salesorder join llx_element_element on(llx_element_element.fk_source=salesorder.salesorder_rowid and llx_element_element.sourcetype="salesorder" and llx_element_element.targettype="facture")join llx_facture on(llx_facture.rowid=llx_element_element.fk_target)
+/************************************************************************************************************/
+create view vw_salesorder_facture_cotizacion_priorizada as
+select
+	 vw_sf.*
+    ,domain as domain1
+	,ifnull(domain,0)as  domain
+	,ds.entidad_id
+	,ds.fecha_ingreso
+	,ds.id
+
+from 	vw_salesorder_facture_cotizacion vw_sf
+left join 	llx_consolidation_domain_salesorder ds  on(ds.entidad_id= vw_sf.salesorder_rowid );
+
+/*
+CREATE
+    ALGORITHM = UNDEFINED
+    DEFINER = `root`@`%`
+    SQL SECURITY DEFINER
+VIEW `vw_salesorder_facture_cotizacion_priorizada` AS
+    SELECT
+        `vw_sf`.`domain_salesorder` AS `domain_salesorder`,
+        `vw_sf`.`domain_facture` AS `domain_facture`,
+        `vw_sf`.`salesorder_rowid` AS `salesorder_rowid`,
+        `vw_sf`.`same_currency` AS `same_currency`,
+        `vw_sf`.`moneda_salesorder` AS `moneda_salesorder`,
+        `vw_sf`.`fk_projet` AS `fk_projet`,
+        `vw_sf`.`salesorder_name` AS `salesorder_name`,
+        `vw_sf`.`fk_currency` AS `fk_currency`,
+        `vw_sf`.`facture_rowid` AS `facture_rowid`,
+        `vw_sf`.`facture_name` AS `facture_name`,
+        `ds`.`domain` AS `domain1`,
+        IFNULL(`ds`.`domain`, 0) AS `domain`,
+        `ds`.`entidad_id` AS `entidad_id`,
+        `ds`.`fecha_ingreso` AS `fecha_ingreso`,
+        `ds`.`id` AS `id`
+    FROM
+        (`dolibar`.`vw_salesorder_facture_cotizacion` `vw_sf`
+        LEFT JOIN `dolibar`.`llx_consolidation_domain_salesorder` `ds` ON ((`ds`.`entidad_id` = `vw_sf`.`salesorder_rowid`)))
+*/
+-- create view vw_salesorder_facture_cotizacion_priorizada as select vw_sf.*,domain as domain1,ifnull(domain,0)as  domain,ds.entidad_id,ds.fecha_ingreso,ds.id from vw_salesorder_facture_cotizacion vw_sf left join llx_consolidation_domain_salesorder ds on(ds.entidad_id= vw_sf.salesorder_rowid );
+/************************************************************************************************************/
+
+
+
+
+
+

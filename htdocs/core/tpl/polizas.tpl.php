@@ -192,59 +192,59 @@ echo "
 		?></td></tr></table></div>
 		<div class="table-val-border-col">
 		<?php
-                 
+   
 			if ($action == 'editsCurrency')
-			{                       
-                            //todas las monedas
-                            $sqlAllCurrencies = " 
-                                SELECT  code_iso from llx_c_currencies;";
-                            $sqlAllc    = $db->query($sqlAllCurrencies);
-                             
-                            $stringOptionSelectCurrencies="";
-                            if($sqlAllc==true){                                 
-                                for ($i=0;$i<=$db->num_rows($sqlSalesorder);$i++){                                
-                                    $row=$db->fetch_object($sqlSalesorder);                                  
-                                   $stringOptionSelectCurrencies.="<option value='".$row->code_iso."'>".$row->code_iso."</option>";
-                                }                                      
-                            }
-
-                            if(empty($object->policy->fk_currency) or !isset($object->policy->fk_currency)){   
-                                // la moneda de la ov
-                                $sqlSalesorderCurrency = " 
-                                     SELECT code_iso 
-                                    from llx_c_currencies 
-                                    join llx_salesorder on(llx_c_currencies.code_iso=llx_salesorder.fk_currency)
-                                    where llx_salesorder.rowid={$object->id};";
-                                $sqlSC  = $db->query($sqlSalesorderCurrency);
-                                $sc     = $db->fetch_object($sqlSC); 
-                                $stringOptionSelectOv="<option value='".$sc->code_iso."'>".$sc->code_iso."</option>";
-                                $stringOptionSelectOv.=$stringOptionSelectCurrencies;
-                                $stringOptionSelectCurrencies=$stringOptionSelectOv;
-                            }
-                            
-                                if(!empty($object->policy->fk_currency) or !isset($object->policy->fk_currency)){   
-                                // la moneda de la ov                               
-                                $stringOptionSelectOv="<option value='".$sc->code_iso."'>".$object->policy->fk_currency."</option>";
-                                $stringOptionSelectOv.=$stringOptionSelectCurrencies;
-                                $stringOptionSelectCurrencies=$stringOptionSelectOv;
-                            }
-                          
-				print '<form method="post" action="'.$_SERVER['PHP_SELF'].'?action=setCurrency&amp;id='.$object->id.'" name="formcurrency">';
-				print '<input type="hidden" name="action" value="setCurrency">';
-				print '<input type="hidden" name="token" value="'.$_SESSION['newtoken'].'">';
-				print '<table class="nobordernopadding" cellpadding="0" cellspacing="0">';
-				print '<tr><td>';
-				echo 
-                                      " <select class='flat' name='currency_val'>".
-                                         $stringOptionSelectCurrencies
-                                       ."</select> ";                                
-				print '</td>';
-				print '<td align="left"><input type="submit" class="button" value="'.$langs->trans("Modify").'"></td>';
-				print '</tr></table></form>';
-                            
+			{
+                //todas las monedas
+                
+                $sqlAllCurrencies = "SELECT code_iso, label, unicode";
+                $sqlAllCurrencies.= " FROM ".MAIN_DB_PREFIX."c_currencies";
+                $sqlAllCurrencies.= " WHERE active = 1";
+                $sqlAllCurrencies.= " ORDER BY code_iso ASC";
+                $sqlAllc    = $db->query($sqlAllCurrencies);
+                $stringOptionSelectCurrencies="";
+                if($sqlAllc==true){
+                    for ($i=0;$i<=$db->num_rows($sqlSalesorder);$i++){
+                        $row=$db->fetch_object($sqlSalesorder);
+                        $stringOptionSelectCurrencies.="<option value='".$row->code_iso."'>".$row->label." ".$row->code_iso."".$row->unicode."</option>";
+                    }
+                }
+                
+                
+                
+                if(!empty($object->policy->fk_currency) or !isset($object->policy->fk_currency)){
+                    // la moneda de la ov
+                    $stringOptionSelectOv="<option value='".$sc->code_iso."'>".$object->policy->fk_currency."</option>";
+                    $stringOptionSelectOv.=$stringOptionSelectCurrencies;
+                    $stringOptionSelectCurrencies=$stringOptionSelectOv;
+                }
+                
+                print '<form method="post" action="'.$_SERVER['PHP_SELF'].'?action=setCurrency&amp;id='.$object->id.'" name="formcurrency">';
+                print '<input type="hidden" name="action" value="setCurrency">';
+                print '<input type="hidden" name="token" value="'.$_SESSION['newtoken'].'">';
+                print '<table class="nobordernopadding" cellpadding="0" cellspacing="0">';
+                print '<tr>
+                         <td>';
+                if(!empty($object->policy->fk_currency) or !isset($object->policy->fk_currency)){
+                    $form->select_currency($object->policy->fk_currency,'currency_val');
+                }else{
+                    // la moneda de la ov
+                    $form->select_currency("USD",'currency_val');
+                }
+                print   '</td>';
+                print   '<td align="left"><input type="submit" class="button" value="'.$langs->trans("Modify").'"></td>';
+                print '</tr></table></form>';
+    
 			}else {
-                                print $object->policy->fk_currency;
-                        } 
+                if(!empty($object->policy->fk_currency) or !isset($object->policy->fk_currency)){
+               
+                   echo $form->input_val_currency($object->policy->fk_currency,'currency_val');
+                }else{
+                    // la moneda de la ov
+                   echo  $form->input_val_currency("USD",'currency_val');
+                }
+            }
+           
 			
 		?></div>
 	</div>

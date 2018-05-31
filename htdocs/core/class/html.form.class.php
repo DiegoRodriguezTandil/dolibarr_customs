@@ -3150,7 +3150,7 @@ class Form
      *  @param  string	$htmlname    name of HTML select list
      * 	@return	void
      */
-    function input_val_currency($selected='',$htmlname='currency_id')
+    function get_val_currency($selected='',$htmlname='currency_id')
     {
         global $conf,$langs,$user;
         

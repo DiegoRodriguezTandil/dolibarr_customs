@@ -238,10 +238,10 @@ echo "
 			}else {
                 if(!empty($object->policy->fk_currency) or !isset($object->policy->fk_currency)){
                
-                   echo $form->input_val_currency($object->policy->fk_currency,'currency_val');
+                   echo $form->get_val_currency($object->policy->fk_currency,'currency_val');
                 }else{
                     // la moneda de la ov
-                   echo  $form->input_val_currency("USD",'currency_val');
+                   echo  $form->get_val_currency("USD",'currency_val');
                 }
             }
            

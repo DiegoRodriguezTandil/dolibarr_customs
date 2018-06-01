@@ -464,7 +464,56 @@ abstract class CommonObject
         }
     }
 	//FIN FEDE
-
+    
+    function liste_deplacements_projet($doctype, $docid ,$statut=-1,$list=0, $projectId)
+    {
+        global $langs;
+        
+        $tab=array();
+        
+        //$sql = "SELECT rowid, type, fk_soc, fk_currency, total_ht, dated, note_public ";    // This field contains id of llx_socpeople or id of llx_user
+        //$sql.= "from ".MAIN_DB_PREFIX."deplacement where fk_doctype='".$doctype."' and fk_docid=".$docid;
+        //$sql.=" union ";
+        $sql="SELECT rowid, type, fk_soc, fk_currency, total_ht, dated, note_public FROM dolibar.llx_deplacement where fk_projet={$projectId}";
+        dol_syslog(get_class($this)."::liste_deplacement sql=".$sql);
+        $resql=$this->db->query($sql);
+        if ($resql)
+        {
+            $num=$this->db->num_rows($resql);
+            $i=0;
+            while ($i < $num)
+            {
+                $obj = $this->db->fetch_object($resql);
+                
+                if (! $list)
+                {
+                    $transkey="TypeContact_".$obj->element."_".$obj->source."_".$obj->code;
+                    $libelle_type=($langs->trans($transkey)!=$transkey ? $langs->trans($transkey) : $obj->libelle);
+                    $tab[$i]=array('fk_currency'=>$obj->fk_currency,'dated'=>$obj->dated,'type'=>$obj->type,'total_ht'=>$obj->total_ht,
+                     'fk_soc'=>$obj->fk_soc,'rowid'=>$obj->rowid,'note_public'=>$obj->note_public);
+                }
+                else
+                {
+                    $tab[$i]=$obj->id;
+                }
+                
+                $i++;
+            }
+            
+            return $tab;
+        }
+        else
+        {
+            $this->error=$this->db->error();
+            dol_print_error($this->db);
+            return -1;
+        }
+    }
+    
+    
+    
+    
+    
     /**
      * 		Update status of a contact linked to object
      *

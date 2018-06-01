@@ -57,7 +57,7 @@ function project_prepare_head($object)
         $head[$h][2] = 'element';
         $h++;
     }
-
+   
 	//FEDE
 	    $head[$h][0] = DOL_URL_ROOT.'/projet/resultado.php?id='.$object->id;
         $head[$h][1] = $langs->trans("Resultado");
@@ -68,6 +68,8 @@ function project_prepare_head($object)
     // Entries must be declared in modules descriptor with line
     // $this->tabs = array('entity:+tabname:Title:@mymodule:/mymodule/mypage.php?id=__ID__');   to add new tab
     // $this->tabs = array('entity:-tabname);   												to remove a tab
+    
+    
     complete_head_from_modules($conf,$langs,$object,$head,$h,'project');
 
     $head[$h][0] = DOL_URL_ROOT.'/projet/document.php?id='.$object->id;
@@ -101,6 +103,11 @@ function project_prepare_head($object)
     $head[$h][1] = $langs->trans("Gantt");
    	$head[$h][2] = 'gantt';
    	$h++;
+   	
+    $head[$h][0] = DOL_URL_ROOT.'/projet/gastosGenerales.php?id='.$object->id;
+    $head[$h][1] = $langs->trans("Gastos de Proyecto");
+    $head[$h][2] = 'gastosGenerales';
+    $h++;
 
     complete_head_from_modules($conf,$langs,$object,$head,$h,'project','remove');
 
@@ -695,7 +702,7 @@ function print_projecttasks_array($db, $socid, $projectsListId, $mytasks=0)
 
     $sortfield='';
     $sortorder='';
-
+//var_dump($projectsListId);die();
     print '<table class="noborder" width="100%">';
     print '<tr class="liste_titre">';
     print_liste_field_titre($langs->trans("Project"),"index.php","","","","",$sortfield,$sortorder);
@@ -716,7 +723,7 @@ function print_projecttasks_array($db, $socid, $projectsListId, $mytasks=0)
         $sql.= " LEFT JOIN ".MAIN_DB_PREFIX."projet_task as t ON p.rowid = t.fk_projet";
     }
     $sql.= " WHERE p.entity = ".$conf->entity;
-    $sql.= " AND p.rowid IN (".$projectsListId.")";
+    //$sql.= " AND p.rowid IN (".$projectsListId.")";
     if ($socid) $sql.= "  AND (p.fk_soc IS NULL OR p.fk_soc = 0 OR p.fk_soc = ".$socid.")";
     if ($mytasks)
     {

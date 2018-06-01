@@ -1383,6 +1383,4 @@ VIEW `vw_salesorder_facture_cotizacion_priorizada` AS
 
 
 
-
-
-
+insert into llx_c_type_fees(code,libelle,active)values('TF_PROJECT','Project Expenses',1);

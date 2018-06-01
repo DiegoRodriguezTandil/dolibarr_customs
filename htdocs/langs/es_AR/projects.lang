@@ -106,3 +106,5 @@ TypeContact_project_task_external_CONTRIBUTOR=Participante
 # Documents models
 DocumentModelBaleine=Modelo de informe de proyecto completo (logo...)
 Project Expenses=Gastos de Proyecto
+TF_ADUANA = Aduana
+TF_PROJECT = Gasto de Proyecto

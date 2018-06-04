@@ -474,7 +474,7 @@ abstract class CommonObject
         //$sql = "SELECT rowid, type, fk_soc, fk_currency, total_ht, dated, note_public ";    // This field contains id of llx_socpeople or id of llx_user
         //$sql.= "from ".MAIN_DB_PREFIX."deplacement where fk_doctype='".$doctype."' and fk_docid=".$docid;
         //$sql.=" union ";
-        $sql="SELECT rowid, type, fk_soc, fk_currency, total_ht, dated, note_public FROM dolibar.llx_deplacement where fk_projet={$projectId}";
+        $sql="SELECT rowid, type, fk_soc, fk_currency, total_ht, dated, note_public FROM llx_deplacement where fk_projet={$projectId}";
         dol_syslog(get_class($this)."::liste_deplacement sql=".$sql);
         $resql=$this->db->query($sql);
         if ($resql)

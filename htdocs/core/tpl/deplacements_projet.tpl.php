@@ -303,7 +303,7 @@
                 <td align="left">
                     <?php
                         if( is_array($tab[$i]) && array_key_exists('note_public',$tab[$i]) && isset($tab[$i]['note_public']) ){
-                            echo substr($tab[$i]['note_public'], 0, 75). "...";
+                            echo substr($tab[$i]['note_public'], 0, 55). "...";
                         }else{
                             echo "-";
                         }

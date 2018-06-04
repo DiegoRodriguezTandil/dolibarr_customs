@@ -287,6 +287,7 @@
         $i = 0;
         while ($i < $num) {
             $var = !$var;
+            if(is_array($tab[$i]) && isset($tab[$i])){
             $soc->fetch($tab[$i]['fk_soc']);
            // var_dump($tab[$i]);
             ?>
@@ -299,7 +300,16 @@
                     <?php
                         if ($tab[$i]['fk_soc']) echo $soc->getNomUrl(1);
                     ?>
-                <td align="left"><?php echo $tab[$i]['note_public']; ?></td>
+                <td align="left">
+                    <?php
+                        if( is_array($tab[$i]) && array_key_exists('note_public',$tab[$i]) && isset($tab[$i]['note_public']) ){
+                            echo substr($tab[$i]['note_public'], 0, 65);
+                        }else{
+                            echo "-";
+                        }
+                      
+                    ?>
+                </td>
                 <td><?php echo $tab[$i]['fk_currency']; ?></td>
                 <td align="left"><?php echo price($tab[$i]['total_ht']); ?></td>
                 <td align="center" nowrap="nowrap" colspan="2">
@@ -309,8 +319,11 @@
                 </td>
             </tr>
             
-            <?php $i++; ?>
-        <?php  } ?>
+            <?php
+                }
+                $i++;
+            ?>
+    <?php } ?>
 
 </table>
 <!-- END PHP TEMPLATE CONTACTS -->

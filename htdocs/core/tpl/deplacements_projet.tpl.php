@@ -315,7 +315,11 @@
                 <td align="center" nowrap="nowrap" colspan="2">
                     <?php if ($permission) { ?>
                         &nbsp;<a href="<?php echo $_SERVER["PHP_SELF"].'?id='.$object->id.'&amp;action=deletedeplacement&amp;lineid='.$tab[$i]['rowid']; ?>"><?php echo img_delete(); ?></a>
-                    <?php } ?>
+                    <?php }
+                        if ($permission) {
+                            echo "<a href='".DOL_URL_ROOT."/compta/deplacement/fiche.php?action=edit&id=".$tab[$i]['rowid']."'>".img_edit()."</a>";
+                       }
+                    ?>
                 </td>
             </tr>
             

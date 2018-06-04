@@ -749,11 +749,17 @@ foreach ($listofreferent as $key => $value)
                     print $element->getNomUrl(1,0,0,0,1);
                     $nameDoc=$element->getNom();
                     print "</td>\n";
-                } else {
+                } else if($key=="TF_PROJECT"){
                     print '<td align="left" nowrap>';
-                    print $element->getNomUrl(1);
+                    print $element->getNomUrl(1,1);
                     $nameDoc=$element->ref;
                     print "</td>\n";
+                }
+                else {
+                print '<td align="left" nowrap>';
+                print $element->getNomUrl(1);
+                $nameDoc=$element->ref;
+                print "</td>\n";
                 }
                 
 

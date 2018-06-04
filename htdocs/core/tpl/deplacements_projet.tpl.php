@@ -354,6 +354,7 @@
                                        </i>
                                     </b>
                                     <a  class='butAction' href='".DOL_URL_ROOT."/projet/gastosGenerales.php?id=".$object->id."&action=deletedeplacementCozation&lineid=".$tab[$i]['rowid']."'> Elimnar<a>
+                                    <a  class='butAction' href='".DOL_URL_ROOT."/projet/gastosGenerales.php?id=".$object->id."'> Cancelar<a>
                                 </span>
                             </td>
                         </tr>

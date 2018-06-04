@@ -206,7 +206,7 @@
         print '</td></tr>';
         
         // Km
-        print '<tr><td class="fieldrequired">'.$langs->trans("FeesKilometersOrAmout").'</td><td><input name="km" size="10" value="' . GETPOST("km") . '"></td></tr>';
+        print '<tr><td class="fieldrequired">'.$langs->trans("Km").'</td><td><input name="km" size="10" value="' . GETPOST("km") . '"></td></tr>';
         
         //FEDE Importe
         print '<tr><td class="fieldrequired">'.$langs->trans("Importe").'</td><td>';
@@ -292,7 +292,7 @@
             ?>
             
             <tr <?php echo $bc[$var]; ?> valign="top">
-                <td><?php echo '<a href="'.DOL_URL_ROOT.'/compta/deplacement/fiche.php?id='.     $tab[$i]['rowid'].'">'.$tab[$i]['rowid'].'</a>';?></td>
+                <td><?php echo '<a href="'.DOL_URL_ROOT.'/compta/deplacement/fiche.php?id='.      $tab[$i]['rowid'].'">'.$tab[$i]['rowid'].'</a>';?></td>
                 <td><?php echo dol_print_date($db->jdate($tab[$i]['dated']),'day'); ?></td>
                 <td><?php echo $langs->trans($tab[$i]['type']); ?></td>
                 <td>

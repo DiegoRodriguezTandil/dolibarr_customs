@@ -32,6 +32,8 @@ if (! empty($conf->projet->enabled))
     require_once DOL_DOCUMENT_ROOT.'/core/lib/project.lib.php';
     require_once DOL_DOCUMENT_ROOT.'/projet/class/project.class.php';
 }
+    
+    
 
 $langs->load("trips");
 
@@ -52,7 +54,6 @@ $object = new Deplacement($db);
 include_once DOL_DOCUMENT_ROOT.'/core/class/hookmanager.class.php';
 $hookmanager=new HookManager($db);
 $hookmanager->initHooks(array('tripsandexpensescard'));
-
 
 /*
  * Actions
@@ -124,11 +125,16 @@ else if ($action == 'add' && $user->rights->deplacement->creer)
     if (! GETPOST('cancel','alpha'))
     {
         $error=0;
-
+        $importe_format_dot=0;
+        $final_importe=0;
+        $importe_crudo= GETPOST('total_ht');
+        $importe_format_dot	= empty($importe_crudo)   ? 0 : str_replace(".", "", $importe_crudo);
+        $final_importe		= empty($importe_crudo)   ? 0 : str_replace(",", ".",$importe_format_dot);
         $object->date			= dol_mktime(12, 0, 0, GETPOST('remonth','int'), GETPOST('reday','int'), GETPOST('reyear','int'));
         $object->km				= GETPOST('km','int');
 		//FEDE
-		$object->total_ht		= GETPOST('total_ht','double');
+        var_dump($final_importe);
+		$object->total_ht		= $final_importe;
 		$object->fk_currency	= GETPOST('fk_currency','alpha');
 		//FIN FEDE
         $object->type			= GETPOST('type','alpha');
@@ -187,10 +193,14 @@ else if ($action == 'update' && $user->rights->deplacement->creer)
     if (! GETPOST('cancel','alpha'))
     {
         $result = $object->fetch($id);
-
+        $importe_format_dot=0;
+        $final_importe=0;
+        $importe_crudo= GETPOST('total_ht');
+        $importe_format_dot	= empty($importe_crudo)   ? 0 : str_replace(".", "", $importe_crudo);
+        $final_importe		= empty($importe_crudo)   ? 0 : str_replace(",", ".",$importe_format_dot);
         $object->date			= dol_mktime(12, 0, 0, GETPOST('remonth','int'), GETPOST('reday','int'), GETPOST('reyear','int'));
         $object->km				= GETPOST('km','int');
-		$object->total_ht		= GETPOST('total_ht','double');
+		$object->total_ht		= $final_importe;
 		$object->fk_currency	= GETPOST('fk_currency','alpha');
         $object->type			= GETPOST('type','alpha');
         $object->socid			= GETPOST('socid','int');
@@ -404,7 +414,7 @@ else if ($id)
 					
 			//FEDE Importe
             print '<tr><td class="fieldrequired">'.$langs->trans("Importe").'</td><td>';
-            print '<input name="total_ht" class="flat" size="10" value="'.price($object->total_ht).'">';
+            print '<input name="total_ht" class="_importe flat " size="10" value="'.price($object->total_ht).'">';
 			print $form->select_currency($object->fk_currency,'fk_currency');
             print '</td></tr>';
 
@@ -607,6 +617,61 @@ else if ($id)
         dol_print_error($db);
     }
 }
+    
+    echo "
+<script>
+	$(document).ready(function() {
+		
+			/*valida que los campos valor_unitario y valor_total de detalle pedido sean numericos pero permitan ingresar coma*/
+			$(document).on('keydown', '._importe', function(e){
+				 -1!==$.inArray(e.keyCode,[46,8,9,27,13,110,190,188])||(/65|67|86|88/.test(e.keyCode)&&(e.ctrlKey===true||e.metaKey===true))&&(!0===e.ctrlKey||!0===e.metaKey)||35<=e.keyCode&&40>=e.keyCode||(e.shiftKey||48>e.keyCode||57<e.keyCode)&&(96>e.keyCode||105<e.keyCode)&&e.preventDefault()
+			});
+		
+			/*controla el ingreso de datos con formato ###.###,## para los campos valor_unitario y valor_total de detalle pedido */
+			$(document).on('keyup', '._importe', function () {
+				$(this).val( numberFormat($(this).val() )  );
+			
+			});
+		
+			function numberFormat(numero){
+				// Variable que contendra el resultado final
+				var resultado = '';
+		
+				// Si el numero empieza por el valor \"-\" (numero negativo)
+				if(numero[0]=='-')
+				{
+					// Cogemos el numero eliminando los posibles puntos que tenga, y sin
+					// el signo negativo
+					nuevoNumero=numero.replace(/\./g,'').substring(1);
+		
+				}else{
+					// Cogemos el numero eliminando los posibles puntos que tenga
+					nuevoNumero=numero.replace(/\./g,'');
+				}
+				// Si tiene decimales, se los quitamos al numero
+				if(numero.indexOf(',')>=0)
+					nuevoNumero=nuevoNumero.substring(0,nuevoNumero.indexOf(','));
+		
+				// Ponemos un punto cada 3 caracteres
+				for (var j, i = nuevoNumero.length - 1, j = 0; i >= 0; i--, j++)
+		
+					resultado = nuevoNumero.charAt(i) + ((j > 0) && (j % 3 == 0)? '.': '') + resultado;
+				// Si tiene decimales, se lo añadimos al numero una vez forateado con
+				// los separadores de miles
+				if(numero.indexOf(',')>=0)
+					resultado+=numero.substring(numero.indexOf(','));
+				if(numero[0]=='-')
+				{
+					// Devolvemos el valor añadiendo al inicio el signo negativo
+					return '-'+resultado;
+				}else{
+					return resultado;
+				}
+			}
+		});
+
+</script>
+";
 
 $db->close();
 

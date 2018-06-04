@@ -459,8 +459,8 @@ abstract class CommonObject
         $sql.= " WHERE rowid =".$rowid;
  
         dol_syslog(get_class($this)."::delete_deplacement sql=".$sql);
- 
-        if ($this->db->query($sql) && $this->db->query($sql)->num_rows >0 ){
+
+        if ($this->db->query($sql) && $this->db->num_rows($sql) >0 ){
             $ret=0;
         }else{
             $ret=1;

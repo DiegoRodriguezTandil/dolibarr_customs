@@ -133,7 +133,6 @@ else if ($action == 'add' && $user->rights->deplacement->creer)
         $object->date			= dol_mktime(12, 0, 0, GETPOST('remonth','int'), GETPOST('reday','int'), GETPOST('reyear','int'));
         $object->km				= GETPOST('km','int');
 		//FEDE
-        var_dump($final_importe);
 		$object->total_ht		= $final_importe;
 		$object->fk_currency	= GETPOST('fk_currency','alpha');
 		//FIN FEDE
@@ -200,16 +199,16 @@ else if ($action == 'update' && $user->rights->deplacement->creer)
         $final_importe		= empty($importe_crudo)   ? 0 : str_replace(",", ".",$importe_format_dot);
         $object->date			= dol_mktime(12, 0, 0, GETPOST('remonth','int'), GETPOST('reday','int'), GETPOST('reyear','int'));
         $object->km				= GETPOST('km','int');
-		$object->total_ht		= $final_importe;
-		$object->fk_currency	= GETPOST('fk_currency','alpha');
+        $object->total_ht		= $final_importe;
+        $object->fk_currency	= GETPOST('fk_currency','alpha');
         $object->type			= GETPOST('type','alpha');
         $object->socid			= GETPOST('socid','int');
         $object->fk_user		= GETPOST('fk_user','int');
         $object->note_private	= GETPOST('note_private','alpha');
         $object->note_public	= GETPOST('note_public','alpha');
-
+        
         $result = $object->update($user);
-
+        
         if ($result > 0)
         {
             header("Location: " . $_SERVER["PHP_SELF"] . "?id=" . $id);

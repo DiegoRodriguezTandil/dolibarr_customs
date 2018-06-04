@@ -66,7 +66,7 @@ echo "
 	 }
 	 button {
 		font-size:1em;
-	 }	 
+	 }
      table {
 		font-size:1em;
 	 }
@@ -86,7 +86,7 @@ print '<script>
 				$("#conf_consolidation").css("margin-top","15px");
 			}else{
 					$("#conf_consolidation").css("display", "none");
-					$("#conf_consolidation").css("margin-top","15px");	
+					$("#conf_consolidation").css("margin-top","15px");
 				}
 			$valor_moneda_conversion= $(".seleccion_de_divisa").val();
 
@@ -98,7 +98,7 @@ print '<script>
 							$( this ).val(1);
 						});
 					}
-			}); 
+			});
 		}
 
 		function moneda_seleccionada(){
@@ -117,10 +117,10 @@ print '<script>
 							$( this ).val(1);
 						});
 					}
-			}); 
+			});
 			
 			
-		}	
+		}
 
 	
 		
@@ -136,16 +136,16 @@ print '<script>
 		{
 		    domain=1;
 		   console.log("cecked");
-		} 
+		}
 		
 
-        
-/*        
-        var id_project = 178; 
+  
+/*
+        var id_project = 178;
         var domain="salesorder";
         var id_domain=208;
         var consolidationDomain_id=1;
-*/        
+*/
 		function url_redirect(options){
 			 var $form = $("<form />");
 			 
@@ -154,11 +154,11 @@ print '<script>
 			 
 			 for (var data in options.data)
 			 $form.append(\'<input type="hidden" name="\'+data+\'" value="\'+options.data[data]+\'" />\');
-			  
+			 
 			 $("body").append($form);
 			 $form.submit();
 		}
-		 
+		
 		$(function(){
 			/*jquery statements */
 			url_redirect({url: "'.DOL_URL_ROOT.'/projet/resultado.php?id="+id_project,
@@ -171,8 +171,8 @@ print '<script>
 			  		}
 			 });
 		});
-				
-                            	
+		
+  
 	}
 </script>';
 
@@ -342,21 +342,21 @@ echo
 			var id_input_nueva_conversion='.input_nueva_conversion-'+linea;
 		    $(id_conversion_general).show();
 		    $(id_conversion_manual).hide();
-		    $(id_input_nueva_conversion).prop('required',false); 
+		    $(id_input_nueva_conversion).prop('required',false);
 		    $(id_input_nueva_conversion).val('');
 		    
-		}	  
+		}
 		function resetTipoGeneral(linea){
 			var id_conversion_general='#conversion_general-'+linea;
 			var id_conversion_manual ='#conversion_manual-'+linea;
-			var id_input_nueva_conversion='.input_nueva_conversion-'+linea;	
+			var id_input_nueva_conversion='.input_nueva_conversion-'+linea;
 			var id_resetTipoGeneral ='#resetTipoGeneral-'+linea;
 			var id_form='#form-'+linea;
 		    $(id_input_nueva_conversion).val('');
-		    $(id_resetTipoGeneral).val('1');		    
-		    $(id_input_nueva_conversion).attr('required',false);  
-		 	$(id_form).submit(); 
-		}			
+		    $(id_resetTipoGeneral).val('1');
+		    $(id_input_nueva_conversion).attr('required',false);
+		 	$(id_form).submit();
+		}
 		$( document ).ready(function() {
 	
 	
@@ -394,7 +394,7 @@ echo
 				for (var j, i = nuevoNumero.length - 1, j = 0; i >= 0; i--, j++)
 		
 					resultado = nuevoNumero.charAt(i) + ((j > 0) && (j % 3 == 0)? '.': '') + resultado;
-				// Si tiene decimales, se lo añadimos al numero una vez forateado con 
+				// Si tiene decimales, se lo añadimos al numero una vez forateado con
 				// los separadores de miles
 				if(numero.indexOf(',')>=0)
 					resultado+=numero.substring(numero.indexOf(','));
@@ -405,8 +405,8 @@ echo
 				}else{
 					return resultado;
 				}
-			}		 	
-		});	
+			}
+		});
 		function ocultarDetalleTabla(classTableShowColums){
 		    var className ='.'+classTableShowColums;
 		    var ocultarDetalleTabla     ='.ocultarDetalleTabla-'+classTableShowColums;
@@ -419,12 +419,12 @@ echo
         function visualizarDetalleTabla(classTableShowColums){
 		    var className ='.'+classTableShowColums;
 		    var ocultarDetalleTabla     ='.ocultarDetalleTabla-'+classTableShowColums;
-            var visualizarDetalleTabla  ='.visualizarDetalleTabla-'+classTableShowColums;		    
+            var visualizarDetalleTabla  ='.visualizarDetalleTabla-'+classTableShowColums;
 		    $(ocultarDetalleTabla).show();
 		    $(visualizarDetalleTabla).hide();
 		    $(className).show();
 
-        }		
+        }
 		
 	</script>";
 
@@ -472,6 +472,16 @@ $listofreferent=array(
         'name'=>'Gasto',
         'show_status'=>0
     ),
+     'TF_PROJECT'=>array(
+      'title'=>"TF_PROJECT",
+      'class'=>'Deplacement',
+      'entity_table'=>'deplacement',
+      'test'=>$conf->deplacement->enabled,
+      'operation'=>'-',
+      'searchDomain'=>0,
+      'name'=>'Gastos de Proyecto',
+      'show_status'=>0
+     ),
     'policy'=>array(
         'title'=>"Polizas",
         'class'=>'policy',
@@ -532,7 +542,7 @@ foreach ($listofreferent as $key => $value)
 
 		print '<br>';
         echo "<div  style='width:100%;'>
-                <div style='width:50%;float: left;color:#336666;'>".$langs->trans($title)."</div> 
+                <div style='width:50%;float: left;color:#336666;'>".$langs->trans($title)."</div>
                 <div style='float:right;margin-bottom: 2px;'>
                     <button class='button hideWhenOnload ocultarDetalleTabla-{$classTableShowColums}'  onclick='var tableClassName=\"{$classTableShowColums}\";ocultarDetalleTabla(tableClassName)'>Ocultar Detalle del Reporte</button>
                     <button class='button visualizarDetalleTabla-{$classTableShowColums}'  onclick='var tableClassName=\"{$classTableShowColums}\";visualizarDetalleTabla(tableClassName)' hidden>Visualizar Detalle del Reporte</button>
@@ -605,9 +615,9 @@ foreach ($listofreferent as $key => $value)
                 //si se permite la busqueda de que entidad domina o se priorizara
                 if($searchDomain){
                     $rows_exists=0;
-                    $sqlSearchDomain = " 
+                    $sqlSearchDomain = "
                         SELECT *
-                        FROM   vw_salesorder_facture_cotizacion 
+                        FROM   vw_salesorder_facture_cotizacion
                         where  {$entidadName}_rowid = {$element->id} limit 1;";
                     $domainEntidad="domain_".$entidadName;
                     $sqlSearchDomain = $db->query($sqlSearchDomain);
@@ -630,17 +640,17 @@ foreach ($listofreferent as $key => $value)
 
                     // verifica si hay una restriccion de dominio o priorizacion configurada.
                     // Si es asi existira una tupla en la tabla   llx_consolidation_domain_entityNameConsolidationDomain
-                    $sqlsetDomain = " 
-                       SELECT case 
-                                  when count(*) >= 1  then 1 
+                    $sqlsetDomain = "
+                       SELECT case
+                                  when count(*) >= 1  then 1
                                   when count(*) < 1  then 0
                               end as exist,
-                              case 
+                              case
                                   when count(*) >= 1  then domain
                                   when count(*) < 1  then 1
                               end as domain,
-                              id							   							   
-                       FROM   llx_consolidation_domain_{$entityNameConsolidationDomain} 
+                              id
+                       FROM   llx_consolidation_domain_{$entityNameConsolidationDomain}
                        where  entidad_id = {$domain_id}
                        group by  domain,id limit 1;";
 
@@ -674,7 +684,7 @@ foreach ($listofreferent as $key => $value)
                     }
                     $sqlDimainNames = "
                        SELECT *
-                       FROM   vw_salesorder_facture_cotizacion_priorizada 
+                       FROM   vw_salesorder_facture_cotizacion_priorizada
                        where  {$entityNameConsolidationDomain}_rowid = {$domain_id};";
                     $sqlDimainNames = $db->query($sqlDimainNames);
 
@@ -745,7 +755,7 @@ foreach ($listofreferent as $key => $value)
                     $nameDoc=$element->ref;
                     print "</td>\n";
                 }
-                                
+                
 
 				// Date
 				$date=$element->date;
@@ -770,15 +780,15 @@ foreach ($listofreferent as $key => $value)
                 //Solo si es diferente de usd y es cotizable si visualizara el form
                 if($element->fk_currency!='USD' &&  $esCotizable==1){
                 	//query de la entidad a realizar cotizacion
-               		 $sqlQueryEntidad = " 
+               		 $sqlQueryEntidad = "
 						SELECT 	cs.id
 								,cs.fecha_ingreso
 								,cs.divisa_origen
 								,cs.divisa_destino
 								,cs.valor_divisa_origen
-								,cs.valor_divisa_destino 
+								,cs.valor_divisa_destino
 								,tipo
-						FROM   llx_consolidation_".$entidadName." cs 
+						FROM   llx_consolidation_".$entidadName." cs
 						left join llx_".$entidadName."   on (cs.".$entidadName."_id=llx_".$entidadName.".rowid)
 						where llx_".$entidadName.".rowid={$element->id} ;
 					";
@@ -792,16 +802,16 @@ foreach ($listofreferent as $key => $value)
 							$fecha=dol_print_date($date,'day');
 							$fecha_ingreso	= DateTime::createFromFormat('d/m/Y',$fecha)
 							->format('Y-m-d');
-							$sqlQuery = " 
+							$sqlQuery = "
 								SELECT  id
 										,fecha_ingreso
 										,divisa_origen
 										,divisa_destino
 										,valor_divisa_origen
-										,valor_divisa_destino 
+										,valor_divisa_destino
 										,'General' as tipo
 								FROM " . MAIN_DB_PREFIX . "consolidation_day
-								WHERE fecha_ingreso='{$fecha_ingreso}' 
+								WHERE fecha_ingreso='{$fecha_ingreso}'
 								AND divisa_origen='{$element->fk_currency}'
 								ORDER BY fecha_ingreso DESC LIMIT 1";
 							$resqlConsolidationDay = $db->query($sqlQuery);
@@ -816,19 +826,19 @@ foreach ($listofreferent as $key => $value)
 												,divisa_origen
 												,divisa_destino
 												,valor_divisa_origen
-												,valor_divisa_destino 
+												,valor_divisa_destino
 												,'General' as tipo
 										FROM llx_consolidation_day
-										where exists 
+										where exists
 											(
 												SELECT idMin, idMax FROM
-												 	(												
-														SELECT  max(fecha_ingreso) as fMin,id as idMin	 
+												 	(
+														SELECT  max(fecha_ingreso) as fMin,id as idMin
 														FROM llx_consolidation_day
 														where fecha_ingreso  < '{$fecha_ingreso}'
 													) AS fmin,
 													(
-														SELECT  min(fecha_ingreso) as fMax,id as idMax	 
+														SELECT  min(fecha_ingreso) as fMax,id as idMax
 														FROM llx_consolidation_day
 														where fecha_ingreso  > '{$fecha_ingreso}'
 													) as fmax
@@ -871,48 +881,48 @@ foreach ($listofreferent as $key => $value)
 									<b>
 										{$obj->divisa_origen}
 									</b>
-									".price($obj->valor_divisa_origen ,0,'',0,2,2)." / 
+									".price($obj->valor_divisa_origen ,0,'',0,2,2)." /
 									<b>
 										{$obj->divisa_destino}
-									</b> 
+									</b>
 										".price($obj->valor_divisa_destino ,0,'',0,2,2)."
 									<br>
 								</span>
 								<a id='boton_conversion-{$linea}' onclick='conversionManual({$linea})'><i>Modificar Cotización<i></a>
 							 </div>";
 							echo
-							"<div hidden id='conversion_manual-{$linea}'>                        					
-								<form method='POST' id='form-{$linea}' action=".DOL_URL_ROOT."/projet/resultado.php?id={$projectid}  > 							
+							"<div hidden id='conversion_manual-{$linea}'>
+								<form method='POST' id='form-{$linea}' action=".DOL_URL_ROOT."/projet/resultado.php?id={$projectid}  >
 									<div style='width: 100%;padding-top:2px; margin-bottom: 2px; height: 20px; '>
-										<div style='width:15%;float: left; '>												 
-												<b>Fecha</b> 												 
+										<div style='width:15%;float: left; '>
+												<b>Fecha</b>
 										</div>
-										<div style='width: 80%; float: left;'>											
+										<div style='width: 80%; float: left;'>
 											<b>";
 												echo $form->select_date(($date_start?$date_start:''), ('fecha_ingreso-'.$linea))."</b>
 										</div>
-									</div>	
+									</div>
 									<div style='width: 100%;padding-top:2px; margin-bottom: 2px; height: 20px; '>
-										<div style='width:15%;float: left; '>												 
-												<b>Tipo</b> 												 
+										<div style='width:15%;float: left; '>
+												<b>Tipo</b>
 										</div>
-										<div style='width: 80%; float: left;'>											
+										<div style='width: 80%; float: left;'>
 											<b>";
 												echo $obj->tipo."</b>
 										</div>
 									</div>
 									<b>
 										{$obj->divisa_origen}
-									</b> 
+									</b>
 									<input name='valor_divisa_origen' class='input_nueva_conversion-{$linea} input_only_number' style='width:50px;margin-left:10px;'   required> /
 									<b>
 										{$obj->divisa_destino}
 										
-									</b> 
+									</b>
 										<input name='valor_divisa_destino' class='input_nueva_conversion-{$linea} input_only_number'  style='width:50px;'   required>
 										<input name='divisa_origen' class='input_nueva_conversion-{$linea}'  type='hidden' value='{$element->fk_currency}' >
 										<input name='entidad_id'  class='input_nueva_conversion-{$linea}'  type='hidden' value='{$element->id}' >
-										<input name='linea' id='linea-{$linea}' value='{$linea}'  type='hidden' >											
+										<input name='linea' id='linea-{$linea}' value='{$linea}'  type='hidden' >
 										";
 									echo $id_de_consolidacion_manual===true ? "
 										<input name='id_consolidation'  class=''  type='hidden' value='{$obj->id}' >" :  "";
@@ -920,16 +930,16 @@ foreach ($listofreferent as $key => $value)
 										<input name='resetTipo' id='resetTipoGeneral-{$linea}' value='0'  type='hidden' >
 										
 										<input name='entidad' id='resetTipoGeneral-{$linea}' value='{$entidadName}'  type='hidden' >
-											
+										
 									
 									<br>
 									<div style='margin-top: 5px; margin-left:1px;'>
 											<input class=\"button\" value=\"Aceptar\" name=\"addline\" type=\"submit\">
 											<input   onclick='cancelarConversionManual({$linea})' class='button' value='Cancelar' name='addline' type='button'>
 											<input  onclick='resetTipoGeneral({$linea})' class='button' value='General' name='addline' type='button'>
-									</div> 
+									</div>
 								</form>
-							 </div> 							
+							 </div>
 						</td>";
                         $no_exite_cotizacion=false;
 					}else{
@@ -945,11 +955,11 @@ foreach ($listofreferent as $key => $value)
 										<i>
 									</a>
 								</div>
-								<div hidden id='conversion_manual-{$linea}' >								
+								<div hidden id='conversion_manual-{$linea}' >
 									<form method='POST' action=".DOL_URL_ROOT."/projet/resultado.php?id={$projectid}>
 										<div style='width: 100%;padding-top:2px; margin-bottom: 2px; height: 20px; '>
-											<div style='width:15%;float: left; '>												 
-													<b>Fecha</b> 												 
+											<div style='width:15%;float: left; '>
+													<b>Fecha</b>
 											</div>
 											<div style='width: 80%; float: left;'>";
 											echo
@@ -966,18 +976,18 @@ foreach ($listofreferent as $key => $value)
 											</b>
 												<input name='valor_divisa_destino' class='input_nueva_conversion-{$linea}'  style='width:50px;'  type='NUMBER' step='any' required>
 												<input name='divisa_origen' class='input_nueva_conversion-{$linea}'  type='hidden' value='{$element->fk_currency}' >
-												<input name='entidad_id'  class='input_nueva_conversion-{$linea}'  type='hidden' value='{$element->id}' >																																
+												<input name='entidad_id'  class='input_nueva_conversion-{$linea}'  type='hidden' value='{$element->id}' >
 												<input name='entidad' id='resetTipoGeneral-{$linea}' value='{$entidadName}'  type='hidden' >
-												<input name='linea' id='linea-{$linea}' value='{$linea}'  type='hidden' >						
+												<input name='linea' id='linea-{$linea}' value='{$linea}'  type='hidden' >
 											<br>
 											
 										</div>
 										<div style='margin-top: 5px; margin-left:1px;'>
 												<input class='button' value='Aceptar' name='addline' type='submit'>
 												<input   onclick='cancelarConversionManual({$linea})' class='button' value='Cancelar' name='addline' type='button'>
-										</div> 
+										</div>
 									</form>
-								</div>  
+								</div>
 							</td>";
 					}
 
@@ -996,13 +1006,13 @@ foreach ($listofreferent as $key => $value)
                     $total_conversion_sin_formato=$total_conversion/$obj->valor_divisa_origen;
                     $total_conversion=price($total_conversion_sin_formato,0,'',0,2,2);
                     echo "<td  align='right' width='120px'>
-						USD {$total_conversion} 
+						USD {$total_conversion}
 					  </td>";
 				}else if ($element->fk_currency==='USD' &&  $esCotizable==1){
                     $total_conversion_sin_formato=floatval($element->total_ht);
                     $total_conversion=price($element->total_ht,0,'',0,2,2);
                     echo "<td  align='right' width='120px'>
-							USD {$total_conversion} 
+							USD {$total_conversion}
 					  </td>";
 				}
 				else{
@@ -1064,7 +1074,7 @@ foreach ($listofreferent as $key => $value)
 
                 print '</tr>';
 				/******************************************************************************************************************
-				  Array currencys 
+				  Array currencys
 				*/
 				if(!array_key_exists($element->fk_currency,$arrayCurrencys)){
 					$arrayCurrencys[$element->fk_currency]['ht']=$element->total_ht;
@@ -1117,17 +1127,17 @@ foreach ($listofreferent as $key => $value)
 
 				}else{
                    print '<td>&nbsp;</td>';
-				}				
+				}
 				/*
 				if(isset($arrayTotales['tcc']) ){ //&& 	$view_tcc ){
 					print '<td align="right" title="venta"><b><I> '.$divisa.' '.price($arrayTotales['tcc']).'</I></b></td>';
 				}
 				*/
-				if(isset($arrayTotales['c'])){											
+				if(isset($arrayTotales['c'])){
 					//print '<td align="right" title="Gasto"><b><I> '.$divisa.' '.price($arrayTotales['c'],0,'',0,2,2).'</I></b></td>';
 				}else{
                    print '<td>&nbsp;</td>';
-				}					
+				}
 
                 if(isset($arrayTotales['tcccot']) AND $divisa=='USD'){
                    print '<td>&nbsp;</td>';
@@ -1151,7 +1161,7 @@ foreach ($listofreferent as $key => $value)
 			/*************************************************************************************/
 			/*
 			if (empty($value['disableamount']))	print '<td align="right"  width="100">'.$langs->trans("Total").' : '.price($total_ht).'</td>';
-					
+			
 			print '<td></td>';
 			
 			if (empty($value['disableamount']))
@@ -1235,8 +1245,8 @@ foreach ($importeTotales as $title => $currencies) {
 	print '<td  align=center>';
 		print 	 '<I><b>';
 			echo 'USD';
-		print 	 '<I><b>';			
-	print '</td>';	
+		print 	 '<I><b>';
+	print '</td>';
 	print '<td  align=right>';
 	print 	 '<I><b>';
 			print $tt_ht_format;
@@ -1309,21 +1319,21 @@ echo
 			var id_input_nueva_conversion='.input_nueva_conversion-'+linea;
 		    $(id_conversion_general).show();
 		    $(id_conversion_manual).hide();
-		    $(id_input_nueva_conversion).prop('required',false); 
+		    $(id_input_nueva_conversion).prop('required',false);
 		    $(id_input_nueva_conversion).val('');
 		    
-		}	  
+		}
 		function resetTipoGeneral(linea){
 			var id_conversion_general='#conversion_general-'+linea;
 			var id_conversion_manual ='#conversion_manual-'+linea;
-			var id_input_nueva_conversion='.input_nueva_conversion-'+linea;	
+			var id_input_nueva_conversion='.input_nueva_conversion-'+linea;
 			var id_resetTipoGeneral ='#resetTipoGeneral-'+linea;
 			var id_form='#form-'+linea;
 		    $(id_input_nueva_conversion).val('');
-		    $(id_resetTipoGeneral).val('1');		    
-		    $(id_input_nueva_conversion).attr('required',false);  
-		 	$(id_form).submit(); 
-		}			
+		    $(id_resetTipoGeneral).val('1');
+		    $(id_input_nueva_conversion).attr('required',false);
+		 	$(id_form).submit();
+		}
 		$( document ).ready(function() {
 	
 	
@@ -1361,7 +1371,7 @@ echo
 				for (var j, i = nuevoNumero.length - 1, j = 0; i >= 0; i--, j++)
 		
 					resultado = nuevoNumero.charAt(i) + ((j > 0) && (j % 3 == 0)? '.': '') + resultado;
-				// Si tiene decimales, se lo añadimos al numero una vez forateado con 
+				// Si tiene decimales, se lo añadimos al numero una vez forateado con
 				// los separadores de miles
 				if(numero.indexOf(',')>=0)
 					resultado+=numero.substring(numero.indexOf(','));
@@ -1372,8 +1382,8 @@ echo
 				}else{
 					return resultado;
 				}
-			}		 	
-		});	
+			}
+		});
 		function ocultarDetalleTabla(classTableShowColums){
 		    var className ='.'+classTableShowColums;
 		    var ocultarDetalleTabla     ='.ocultarDetalleTabla-'+classTableShowColums;
@@ -1386,12 +1396,12 @@ echo
         function visualizarDetalleTabla(classTableShowColums){
 		    var className ='.'+classTableShowColums;
 		    var ocultarDetalleTabla     ='.ocultarDetalleTabla-'+classTableShowColums;
-            var visualizarDetalleTabla  ='.visualizarDetalleTabla-'+classTableShowColums;		    
+            var visualizarDetalleTabla  ='.visualizarDetalleTabla-'+classTableShowColums;
 		    $(ocultarDetalleTabla).show();
 		    $(visualizarDetalleTabla).hide();
 		    $(className).show();
 
-        }		
+        }
 		$('.hideWhenOnload').click();
 	</script>";
 /************************************************************************

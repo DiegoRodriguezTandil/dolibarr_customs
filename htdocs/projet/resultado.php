@@ -522,7 +522,7 @@ foreach ($listofreferent as $key => $value)
 	$qualified                          =   $value['test'];
 	$importeTotales[$title]['operation']=   $operation;
 	$view_tcc=false;
-    $classTableShowColums=$entidadName;
+    $classTableShowColums=$key;
    //--------------------------------------
    //propiedades de un reporte priorizado
    $dom= $_POST['domain'];

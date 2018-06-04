@@ -80,6 +80,46 @@
 				}
 			}
 		});
+	
+	
+				function numberFormat($this){
+				// Variable que contendra el resultado final
+				var resultado = '';
+		
+				// Si el numero empieza por el valor \"-\" (numero negativo)
+				if(numero[0]=='-')
+				{
+					// Cogemos el numero eliminando los posibles puntos que tenga, y sin
+					// el signo negativo
+					nuevoNumero=numero.replace(/\./g,'').substring(1);
+		
+				}else{
+					// Cogemos el numero eliminando los posibles puntos que tenga
+					nuevoNumero=numero.replace(/\./g,'');
+				}
+				// Si tiene decimales, se los quitamos al numero
+				if(numero.indexOf(',')>=0)
+					nuevoNumero=nuevoNumero.substring(0,nuevoNumero.indexOf(','));
+		
+				// Ponemos un punto cada 3 caracteres
+				for (var j, i = nuevoNumero.length - 1, j = 0; i >= 0; i--, j++)
+		
+					resultado = nuevoNumero.charAt(i) + ((j > 0) && (j % 3 == 0)? '.': '') + resultado;
+				// Si tiene decimales, se lo añadimos al numero una vez forateado con
+				// los separadores de miles
+				if(numero.indexOf(',')>=0)
+					resultado+=numero.substring(numero.indexOf(','));
+				if(numero[0]=='-')
+				{
+					// Devolvemos el valor añadiendo al inicio el signo negativo
+					return '-'+resultado;
+				}else{
+					return resultado;
+				}
+			}
+		});
+	
+	
 
 </script>
 ";
@@ -261,7 +301,19 @@
         print $langs->trans("Registrar Gasto").'</a>';
         print "\n</div>\n<BR>";
     }
-?>
+    
+    
+  /*  if($allowDelete ===0 ) {
+        echo "
+            <h3>
+              <i style='color: red'>
+                 No se puede eliminar el gasto ".$id_not_allow_Delete.". Tiene asociada una cotización.
+              </i>
+            </h3>";
+    }
+    */
+    ?>
+
 
 <!-- BEGIN PHP TEMPLATE CONTACTS -->
 <table class="noborder allwidth">
@@ -283,17 +335,35 @@
         
         $tab = $object->liste_deplacements_projet($document_code,$object->id,-1,null,$id_project);
         $num=count($tab);
-       // var_dump($tab);
         $i = 0;
         while ($i < $num) {
             $var = !$var;
             if(is_array($tab[$i]) && isset($tab[$i])){
             $soc->fetch($tab[$i]['fk_soc']);
-           // var_dump($tab[$i]);
             ?>
-            
-            <tr <?php echo $bc[$var]; ?> valign="top">
-                <td><?php echo '<a href="'.DOL_URL_ROOT.'/compta/deplacement/fiche.php?id='.      $tab[$i]['rowid'].'">'.$tab[$i]['rowid'].'</a>';?></td>
+
+                <?php
+                    if($allowDelete ===0 && $id_not_allow_Delete===$tab[$i]['rowid']) {
+                        echo "
+                        <tr style='background-color:#A9A9A9;margin:0;padding: 0;'>
+                            <td colspan='8'>
+                                <span>
+                                    <b>
+                                       <i style='color: black'>
+                                         Esta seguro que desea elimnar el gasto ". $tab[$i]['rowid']." El cual tiene asocada una cotización?.
+                                       </i>
+                                    </b>
+                                    <a  class='butAction' href='".DOL_URL_ROOT."/projet/gastosGenerales.php?id=".$object->id."&action=deletedeplacementCozation&lineid=".$tab[$i]['rowid']."'> Elimnar<a>
+                                </span>
+                            </td>
+                        </tr>
+                        <tr style='background-color:#A9A9A9' valign='top'>";
+                    }else{
+                        echo "<tr".$bc[$var]." valign='top'>";
+                    }    ?>
+             
+                
+                <td  ><?php echo '<a href="'.DOL_URL_ROOT.'/compta/deplacement/fiche.php?id='.      $tab[$i]['rowid'].'">'.$tab[$i]['rowid'].'</a>';?></td>
                 <td><?php echo dol_print_date($db->jdate($tab[$i]['dated']),'day'); ?></td>
                 <td><?php echo $langs->trans($tab[$i]['type']); ?></td>
                 <td>
@@ -307,7 +377,6 @@
                         }else{
                             echo "-";
                         }
-                      
                     ?>
                 </td>
                 <td><?php echo $tab[$i]['fk_currency']; ?></td>
@@ -317,7 +386,7 @@
                         &nbsp;<a href="<?php echo $_SERVER["PHP_SELF"].'?id='.$object->id.'&amp;action=deletedeplacement&amp;lineid='.$tab[$i]['rowid']; ?>"><?php echo img_delete(); ?></a>
                     <?php }
                         if ($permission) {
-                            echo "<a href='".DOL_URL_ROOT."/compta/deplacement/fiche.php?action=edit&id=".$tab[$i]['rowid']."'>".img_edit()."</a>";
+                            echo "<a target='black' href='".DOL_URL_ROOT."/compta/deplacement/fiche.php?action=edit&id=".$tab[$i]['rowid']."'>".img_edit()."</a>";
                        }
                     ?>
                 </td>

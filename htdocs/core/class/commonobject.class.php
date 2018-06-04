@@ -420,6 +420,57 @@ abstract class CommonObject
             return -1;
         }
     }
+    
+    function delete_cotization($rowid)
+    {
+        global $user,$langs,$conf;
+        
+        $error=0;
+        
+        $sql = "DELETE FROM ".MAIN_DB_PREFIX."consolidation_deplacement";
+        $sql.= " WHERE deplacement_id =".$rowid;
+        
+        dol_syslog(get_class($this)."::delete_deplacement sql=".$sql);
+        if ($this->db->query($sql))
+        {
+            return 1;
+        }
+        else
+        {
+            $this->error=$this->db->lasterror();
+            dol_syslog(get_class($this)."::delete_deplacement error=".$this->error, LOG_ERR);
+            return -1;
+        }
+    }
+
+    
+    /*
+     * ret si es cero no se permite borrar, si es 1 se permite borrar
+     * */
+    public function allow_delete_deplacement($rowid)
+    {
+        global $user,$langs,$conf;
+    
+        $error=0;
+        
+        $ret=0;
+        $sql = "SELECT * FROM ".MAIN_DB_PREFIX."deplacement dp";
+        $sql.=" JOIN ".MAIN_DB_PREFIX."consolidation_deplacement cdp ON (cdp.deplacement_id=dp.rowid)";
+        $sql.= " WHERE rowid =".$rowid;
+ 
+        dol_syslog(get_class($this)."::delete_deplacement sql=".$sql);
+ 
+        if ($this->db->query($sql) && $this->db->query($sql)->num_rows >0 ){
+            $ret=0;
+        }else{
+            $ret=1;
+        }
+        
+        return $ret;
+        
+    }
+    
+    
 	function liste_deplacements($doctype, $docid ,$statut=-1,$list=0)
     {
         global $langs;

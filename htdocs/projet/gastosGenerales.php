@@ -89,22 +89,32 @@
             dol_print_error($db);
         }
     }
-
+    else if ($action == 'deletedeplacementCozation' && $user->rights->salesorder->creer)
+    {
+        $object->fetch($id);
+        $allow=0;
+        $lineid=$_GET["lineid"];
+        $allow=$object->allow_delete_deplacement($lineid);
+        if($allow==0){
+           if($object->delete_cotization($lineid)){
+               $result = $object->delete_deplacement($lineid);
+           }
+        }
+    }
 // Efface un contact
     else if ($action == 'deletedeplacement' && $user->rights->salesorder->creer)
     {
         $object->fetch($id);
-        $result = $object->delete_deplacement($_GET["lineid"]);
+        $lineid=$_GET["lineid"];
+        $allowDelete=$object->allow_delete_deplacement($lineid);
+        if($allowDelete==1){
+            $result = $object->delete_deplacement($lineid);
+        }else{
+            $id_not_allow_Delete=$lineid;
+        }
         
-        if ($result >= 0)
-        {
-            header("Location: ".$_SERVER['PHP_SELF']."?id=".$object->id);
-            exit;
-        }
-        else {
-            dol_print_error($db);
-        }
     }
+    
     
     else if ($action == 'setaddress' && $user->rights->salesorder->creer)
     {
@@ -124,7 +134,6 @@
     $formother = new FormOther($db);
     $contactstatic=new Deplacement($db);
     $userstatic=new User($db);
-    
     
     /* *************************************************************************** */
     /*                                                                             */
@@ -152,6 +161,7 @@
             /*
              *   Facture synthese pour rappel
              */
+            
             print '<table class="border" width="100%">';
             
             $linkback = '<a href="'.DOL_URL_ROOT.'/commande/liste.php'.(! empty($socid)?'?socid='.$socid:'').'">'.$langs->trans("BackToList").'</a>';
@@ -193,6 +203,7 @@
         print "</table>
             </div>
         <br>";
+  
             
             // Contacts lines (modules that overwrite templates must declare this into descriptor)
             $dirtpls=array_merge($conf->modules_parts['tpl'],array('/core/tpl'));
@@ -211,6 +222,7 @@
         }
     }
     llxFooter();
+    
     
     $db->close();
 

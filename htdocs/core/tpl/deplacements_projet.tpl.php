@@ -267,6 +267,7 @@
 <table class="noborder allwidth">
     
     <tr class="liste_titre">
+        <td><?php echo $langs->trans("Ref"); ?></td>
         <td><?php echo $langs->trans("Fecha"); ?></td>
         <td><?php echo $langs->trans("Tipo"); ?></td>
         <td><?php echo $langs->trans("Empresa"); ?></td>
@@ -291,6 +292,7 @@
             ?>
             
             <tr <?php echo $bc[$var]; ?> valign="top">
+                <td><?php echo '<a href="'.DOL_URL_ROOT.'/compta/deplacement/fiche.php?id='.     $tab[$i]['rowid'].'">'.$tab[$i]['rowid'].'</a>';?></td>
                 <td><?php echo dol_print_date($db->jdate($tab[$i]['dated']),'day'); ?></td>
                 <td><?php echo $langs->trans($tab[$i]['type']); ?></td>
                 <td>

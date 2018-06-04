@@ -399,7 +399,7 @@ class Deplacement extends CommonObject
 	 *	@param		int		$withpicto		0=Pas de picto, 1=Inclut le picto dans le lien, 2=Picto seul
 	 *	@return		string					Chaine avec URL
 	 */
-	function getNomUrl($withpicto=0)
+	function getNomUrl($withpicto=0,$not_img=0)
 	{
 		global $langs;
 
@@ -412,7 +412,7 @@ class Deplacement extends CommonObject
 
 		$label=$langs->trans("Show").': '.$this->ref;
 
-		if ($withpicto) $result.=($lien.img_object($label,$picto).$lienfin);
+		if ($withpicto && $not_img==0) $result.=($lien.img_object($label,$picto).$lienfin);
 		if ($withpicto && $withpicto != 2) $result.=' ';
 		if ($withpicto != 2) $result.=$lien.$this->ref.$lienfin;
 		return $result;

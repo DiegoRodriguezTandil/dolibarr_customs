@@ -26,6 +26,64 @@
         require DOL_DOCUMENT_ROOT.'/core/class/html.formcompany.class.php';
     }
     
+    
+    echo "
+<script>
+
+	$( document ).ready(function() {
+	
+	
+			/*valida que los campos valor_unitario y valor_total de detalle pedido sean numericos pero permitan ingresar coma*/
+			$(document).on('keydown', '.importe', function(e){
+				 -1!==$.inArray(e.keyCode,[46,8,9,27,13,110,190,188])||(/65|67|86|88/.test(e.keyCode)&&(e.ctrlKey===true||e.metaKey===true))&&(!0===e.ctrlKey||!0===e.metaKey)||35<=e.keyCode&&40>=e.keyCode||(e.shiftKey||48>e.keyCode||57<e.keyCode)&&(96>e.keyCode||105<e.keyCode)&&e.preventDefault()
+			});
+		
+			/*controla el ingreso de datos con formato ###.###,## para los campos valor_unitario y valor_total de detalle pedido */
+			$(document).on('keyup', '.importe', function () {
+				$(this).val( numberFormat($(this).val() )  );
+			
+			});
+		
+			function numberFormat(numero){
+				// Variable que contendra el resultado final
+				var resultado = '';
+		
+				// Si el numero empieza por el valor \"-\" (numero negativo)
+				if(numero[0]=='-')
+				{
+					// Cogemos el numero eliminando los posibles puntos que tenga, y sin
+					// el signo negativo
+					nuevoNumero=numero.replace(/\./g,'').substring(1);
+		
+				}else{
+					// Cogemos el numero eliminando los posibles puntos que tenga
+					nuevoNumero=numero.replace(/\./g,'');
+				}
+				// Si tiene decimales, se los quitamos al numero
+				if(numero.indexOf(',')>=0)
+					nuevoNumero=nuevoNumero.substring(0,nuevoNumero.indexOf(','));
+		
+				// Ponemos un punto cada 3 caracteres
+				for (var j, i = nuevoNumero.length - 1, j = 0; i >= 0; i--, j++)
+		
+					resultado = nuevoNumero.charAt(i) + ((j > 0) && (j % 3 == 0)? '.': '') + resultado;
+				// Si tiene decimales, se lo añadimos al numero una vez forateado con
+				// los separadores de miles
+				if(numero.indexOf(',')>=0)
+					resultado+=numero.substring(numero.indexOf(','));
+				if(numero[0]=='-')
+				{
+					// Devolvemos el valor añadiendo al inicio el signo negativo
+					return '-'+resultado;
+				}else{
+					return resultado;
+				}
+			}
+		});
+
+</script>
+";
+    
     $module = $object->element;
     
     // Special cases
@@ -53,11 +111,14 @@
         if (! GETPOST('cancel','alpha'))
         {
             $error=0;
+            $importe_crudo= GETPOST('total_ht');
+            $importe_format_dot	= empty($importe_crudo)   ? 0 : str_replace(".", "", $importe_crudo);
+            $final_importe		= empty($importe_crudo)   ? 0 : str_replace(",", ".",$importe_format_dot);
             
             $gasto->date			= dol_mktime(12, 0, 0, GETPOST('remonth','int'), GETPOST('reday','int'), GETPOST('reyear','int'));
             $gasto->km				= GETPOST('km','int');
             //FEDE
-            $gasto->total_ht		= GETPOST('total_ht','double');
+            $gasto->total_ht		= $final_importe;
             $gasto->fk_currency		= GETPOST('fk_currency','alpha');
             //FIN FEDE
             $gasto->type			= GETPOST('type','alpha');
@@ -149,7 +210,7 @@
         
         //FEDE Importe
         print '<tr><td class="fieldrequired">'.$langs->trans("Importe").'</td><td>';
-        print '<input name="total_ht" class="flat" size="10" value="'.price($gasto->total_ht).'">';
+        print '<input class="importe" name="total_ht" class="flat" size="10" value="'.price($gasto->total_ht).'">';
         print $form->select_currency($object->fk_currency,'fk_currency');
         print '</td></tr>';
         

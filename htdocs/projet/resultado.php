@@ -425,6 +425,8 @@ echo
 		    $(className).show();
 
         }
+        
+        
 		
 	</script>";
 
@@ -860,18 +862,23 @@ foreach ($listofreferent as $key => $value)
 								}
 							}
 					}
-
+									
+					
                     $date = new DateTime();
                     $fecha_ingreso_format_db= date_format($date, 'Y-m-d');
                     $fecha_ingreso_format_view = date_format($date, 'd/m/Y');
                     $tipo_de_cotizacion="";
-
+                    
                     if( $resqlFinal  && $db->num_rows($resqlFinal)>0){
-
+                        $isErronea=false;
                         //Si existe cotizacion ya sea en consolidation_day o en la tabla de cotizacion de la entidad a cotizar
-
                         $no_exite_cotizacion=false;
                         $obj = $db->fetch_object($resqlFinal);
+                        if($id_de_consolidacion_manual===true) {
+                            if ($obj->divisa_origen <> $element->fk_currency) {
+                                $isErronea=true;
+                            }
+                        }
                         $tipo_de_cotizacion=$obj->tipo;
                         $valor_divisa_origen=$obj->valor_divisa_origen;
                         $valor_divisa_destino=$obj->valor_divisa_destino;
@@ -879,8 +886,11 @@ foreach ($listofreferent as $key => $value)
                         $fecha_ingreso_format_view	= DateTime::createFromFormat('Y-m-d',$obj->fecha_ingreso)->format('d/m/Y');
                         echo"
 						<td  style='font-size:80%; padding-left:10px;' align='left' width='200px' >
-							 
-							 <div id='conversion_general-{$linea}'>
+							 <div id='conversion_general-{$linea}'>";
+                                if($isErronea){
+                                   echo "<b><span style=' font-size: 1.3em; ;color:red;'>Esta cotización es erronea.</span></b><br>";
+                                }
+                             echo "
 							 <span>Cotización al dia <b>{$fecha_ingreso_format_view}</b><span><br>
 								<span>Tipo: {$obj->tipo}</span><br>
 								<span>
@@ -998,6 +1008,11 @@ foreach ($listofreferent as $key => $value)
 					}
 
                 }else{
+                    if($element->fk_currency==='USD'){
+                        $sqlDelete="delete FROM ".MAIN_DB_PREFIX."consolidation_".$entidadName." where ".$entidadName."_id=$element->id ";
+                        $db->query($sqlDelete);
+                    }
+                    
                     if($searchDomain===1 and $esCotizable==0){
                         echo "<td colspan='2'  align='center' ><span><i>Se tomará la cotización de</i><span> <div><i><b>".implode(",", $arryNameEntity)."</b></i></div> </td>";
                         $arrayReferemces=$arryNameEntity;
@@ -1007,14 +1022,14 @@ foreach ($listofreferent as $key => $value)
                     $obj='';
                 }
 
-				if(!empty($element->total_ht) and !empty($obj->valor_divisa_destino) and $element->fk_currency<>$obj->divisa_destino and $no_exite_cotizacion===false){
+				if(!empty($element->total_ht) and !empty($obj->valor_divisa_destino) and $element->fk_currency<>$obj->divisa_destino and $no_exite_cotizacion===false  && $isErronea===false ){
                     $total_conversion=$element->total_ht * $obj->valor_divisa_destino;
                     $total_conversion_sin_formato=$total_conversion/$obj->valor_divisa_origen;
                     $total_conversion=price($total_conversion_sin_formato,0,'',0,2,2);
                     echo "<td  align='right' width='120px'>
 						USD {$total_conversion}
 					  </td>";
-				}else if ($element->fk_currency==='USD' &&  $esCotizable==1){
+				}else if ($element->fk_currency==='USD' &&  $esCotizable==1  && $isErronea===false){
                     $total_conversion_sin_formato=floatval($element->total_ht);
                     $total_conversion=price($element->total_ht,0,'',0,2,2);
                     echo "<td  align='right' width='120px'>

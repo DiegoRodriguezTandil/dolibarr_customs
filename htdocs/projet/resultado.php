@@ -841,18 +841,18 @@ foreach ($listofreferent as $key => $value)
 											(
 												SELECT *
 												FROM
-													(
-														SELECT  min(fecha_ingreso) as fMax
-														FROM llx_consolidation_day
-														where fecha_ingreso  > '{$fecha_ingreso}'
-														AND divisa_origen='{$element->fk_currency}'
-													) as fmax,
 												 	(
 														SELECT  max(fecha_ingreso) as fMin
 														FROM llx_consolidation_day
 														where fecha_ingreso  < '{$fecha_ingreso}'
 														AND divisa_origen='{$element->fk_currency}'
-													) AS fmin
+													) AS fmin,
+													(
+														SELECT  min(fecha_ingreso) as fMax
+														FROM llx_consolidation_day
+														where fecha_ingreso  > '{$fecha_ingreso}'
+														AND divisa_origen='{$element->fk_currency}'
+													) as fmax
 												where (llx_consolidation_day.fecha_ingreso=fmin.fMin
 												or   llx_consolidation_day.fecha_ingreso=fmax.fMax)
 												AND divisa_origen='{$element->fk_currency}'

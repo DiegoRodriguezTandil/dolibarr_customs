@@ -839,22 +839,25 @@ foreach ($listofreferent as $key => $value)
 										FROM llx_consolidation_day
 										where exists
 											(
-												SELECT idMin, idMax FROM
+												SELECT *
+												FROM
 												 	(
-														SELECT  max(fecha_ingreso) as fMin,id as idMin
+														SELECT  max(fecha_ingreso) as fMin
 														FROM llx_consolidation_day
 														where fecha_ingreso  < '{$fecha_ingreso}'
+														AND divisa_origen='{$element->fk_currency}'
 													) AS fmin,
 													(
-														SELECT  min(fecha_ingreso) as fMax,id as idMax
+														SELECT  min(fecha_ingreso) as fMax
 														FROM llx_consolidation_day
 														where fecha_ingreso  > '{$fecha_ingreso}'
+														AND divisa_origen='{$element->fk_currency}'
 													) as fmax
 												where (llx_consolidation_day.fecha_ingreso=fmin.fMin
 												or   llx_consolidation_day.fecha_ingreso=fmax.fMax)
 												AND divisa_origen='{$element->fk_currency}'
 											
-										);
+										      );
 									";
                                 $resqlFechaMinMax = $db->query($sqlQueryFechaMinMax);
                                 if($resqlFechaMinMax  && $db->num_rows($resqlFechaMinMax)){

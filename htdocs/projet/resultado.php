@@ -888,7 +888,7 @@ foreach ($listofreferent as $key => $value)
 						<td  style='font-size:80%; padding-left:10px;' align='left' width='200px' >
 							 <div id='conversion_general-{$linea}'>";
                                 if($isErronea){
-                                   echo "<b><span style=' font-size: 1.3em; ;color:red;'>Esta cotización es erronea.</span></b><br>";
+                                   echo "<b><span style=' font-size: 1.3em; ;color:red;'>Esta cotización es errónea.</span></b><br>";
                                 }
                              echo "
 							 <span>Cotización al dia <b>{$fecha_ingreso_format_view}</b><span><br>

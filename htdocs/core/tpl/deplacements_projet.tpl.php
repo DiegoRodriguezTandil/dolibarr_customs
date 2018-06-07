@@ -231,7 +231,7 @@
         
         print "<tr>";
         print '<td width="25%" class="fieldrequired">'.$langs->trans("Type").'</td><td>';
-        print $form->select_type_fees(GETPOST('type','int'),'type',1);
+        print $form->select_type_fees_projet(GETPOST('type','int'),'type',1);
         print '</td></tr>';
         
         print "<tr>";

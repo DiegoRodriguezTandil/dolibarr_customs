@@ -592,6 +592,7 @@ class Form
 
         $sql = "SELECT c.code, c.libelle as label";
         $sql.= " FROM ".MAIN_DB_PREFIX."c_type_fees as c";
+        $sql.= " WHERE  active=1 and only_projet=0";
         $sql.= " ORDER BY lower(c.libelle) ASC";
 
         dol_syslog(get_class($this).'::load_cache_types_fees sql='.$sql, LOG_DEBUG);
@@ -618,7 +619,50 @@ class Form
             return -1;
         }
     }
-
+    
+    /**
+     *	Load into cache cache_types_fees, array of types of fees
+     *
+     *	@return     int             Nb of lines loaded, 0 if already loaded, <0 if ko
+     *	TODO move in DAO class
+     */
+    function load_cache_types_fees_projet()
+    {
+        global $langs;
+        
+        $langs->load("trips");
+        
+        if (count($this->cache_types_fees)) return 0;    // Cache already load
+        
+        $sql = "SELECT c.code, c.libelle as label";
+        $sql.= " FROM ".MAIN_DB_PREFIX."c_type_fees as c";
+        $sql.= " WHERE  active=1";
+        $sql.= " ORDER BY lower(c.libelle) ASC";
+        
+        dol_syslog(get_class($this).'::load_cache_types_fees sql='.$sql, LOG_DEBUG);
+        $resql=$this->db->query($sql);
+        if ($resql)
+        {
+            $num = $this->db->num_rows($resql);
+            $i = 0;
+            
+            while ($i < $num)
+            {
+                $obj = $this->db->fetch_object($resql);
+                
+                // Si traduction existe, on l'utilise, sinon on prend le libelle par defaut
+                $label=($obj->code != $langs->trans($obj->code) ? $langs->trans($obj->code) : $langs->trans($obj->label));
+                $this->cache_types_fees[$obj->code] = $label;
+                $i++;
+            }
+            return $num;
+        }
+        else
+        {
+            dol_print_error($this->db);
+            return -1;
+        }
+    }
     /**
      *	Return list of types of notes
      *
@@ -632,7 +676,6 @@ class Form
         global $user, $langs;
 
         dol_syslog(get_class($this)."::select_type_fees ".$selected.", ".$htmlname, LOG_DEBUG);
-
         $this->load_cache_types_fees();
 
         print '<select class="flat" name="'.$htmlname.'">';
@@ -655,7 +698,43 @@ class Form
         print '</select>';
         if ($user->admin) print info_admin($langs->trans("YouCanChangeValuesForThisListFromDictionnarySetup"),1);
     }
-
+    
+    
+    /**
+     *	Return list of types of notes
+     *
+     *	@param	string		$selected		Preselected type
+     *	@param  string		$htmlname		Name of field in form
+     * 	@param	int			$showempty		Add an empty field
+     * 	@return	void
+     */
+    function select_type_fees_projet($selected='',$htmlname='type',$showempty=0)
+    {
+        global $user, $langs;
+        
+        dol_syslog(get_class($this)."::select_type_fees ".$selected.", ".$htmlname, LOG_DEBUG);
+        $this->load_cache_types_fees_projet();
+        
+        print '<select class="flat" name="'.$htmlname.'">';
+        if ($showempty)
+        {
+            print '<option value="-1"';
+            if ($selected == -1) print ' selected="selected"';
+            print '>&nbsp;</option>';
+        }
+        
+        foreach($this->cache_types_fees as $key => $value)
+        {
+            print '<option value="'.$key.'"';
+            if ($key == $selected) print ' selected="selected"';
+            print '>';
+            print $value;
+            print '</option>';
+        }
+        
+        print '</select>';
+        if ($user->admin) print info_admin($langs->trans("YouCanChangeValuesForThisListFromDictionnarySetup"),1);
+    }
     /**
      *  Output html form to select a third party
      *

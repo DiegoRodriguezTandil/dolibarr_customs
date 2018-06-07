@@ -1383,4 +1383,43 @@ VIEW `vw_salesorder_facture_cotizacion_priorizada` AS
 
 
 
-insert into llx_c_type_fees(code,libelle,active)values('TF_PROJECT','Project Expenses',1);
+/*
+   $sqlQueryFechaMinMax =
+                                    "
+										SELECT  id
+												,fecha_ingreso
+												,divisa_origen
+												,divisa_destino
+												,valor_divisa_origen
+												,valor_divisa_destino
+												,'General' as tipo
+										FROM llx_consolidation_day
+										where exists
+											(
+												SELECT *
+												FROM
+												 	(
+														SELECT  max(fecha_ingreso) as fMin
+														FROM llx_consolidation_day
+														where fecha_ingreso  < '{$fecha_ingreso}'
+														AND divisa_origen='{$element->fk_currency}'
+													) AS fmin,
+													(
+														SELECT  min(fecha_ingreso) as fMax
+														FROM llx_consolidation_day
+														where fecha_ingreso  > '{$fecha_ingreso}'
+														AND divisa_origen='{$element->fk_currency}'
+													) as fmax
+												where (llx_consolidation_day.fecha_ingreso=fmin.fMin
+												or   llx_consolidation_day.fecha_ingreso=fmax.fMax)
+												AND divisa_origen='{$element->fk_currency}'
+
+										);
+									";
+*/
+
+
+
+delete from llx_c_type_fees where id=5;
+alter table llx_c_type_fees add only_projet int(1) default 0;
+insert into llx_c_type_fees(code,libelle,active,only_projet)values('TF_PROJECT','Project Expenses',1,1);

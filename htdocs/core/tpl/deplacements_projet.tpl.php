@@ -349,7 +349,7 @@
                                 <span>
                                     <b>
                                        <i style='color: black'>
-                                         Esta seguro que desea elimnar el gasto ". $tab[$i]['rowid'].", al cual se le ha realizado una cotización?.
+                                         Está seguro que desea eliminar el gasto ". $tab[$i]['rowid'].", al cual se le ha realizado una cotización?.
                                        </i>
                                     </b>
                                     <a  class='butAction' href='".DOL_URL_ROOT."/projet/gastosGenerales.php?id=".$object->id."&action=deletedeplacementCozation&lineid=".$tab[$i]['rowid']."'> Elimnar<a>

@@ -29,14 +29,13 @@ ALTER TABLE `llx_consolidation_day`
   ADD CONSTRAINT `consolidation_day_c_currencies-divisa_destino` FOREIGN KEY (`divisa_destino`) REFERENCES `llx_c_currencies` (`code_iso`) ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 
-/**
-** Fin tabla llx_consolidation_day
- *************************************************************************************************************/
+--  --------------------------------------------------------------------------------------------------------------------
+--   Fin tabla llx_consolidation_day
+--  --------------------------------------------------------------------------------------------------------------------
 
-
-/*******************************************************************************************************************
-  Tabla llx_consolidation_salesorder
- */
+--  --------------------------------------------------------------------------------------------------------------------
+--   Tabla llx_consolidation_salesorder
+--  --------------------------------------------------------------------------------------------------------------------
 -- tabla requerida para salvar la cotizacion manual de cada ov
 
 CREATE TABLE `llx_consolidation_salesorder` (
@@ -67,12 +66,11 @@ ALTER TABLE `llx_consolidation_salesorder`
   ADD CONSTRAINT `llx_consolidation_salesorder_llx_c_currencies-divisa_destino` FOREIGN KEY (`divisa_destino`) REFERENCES `llx_c_currencies` (`code_iso`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   ADD CONSTRAINT `llx_consolidation_salesorder_llx_salesorder-salesorder_id` FOREIGN KEY (`salesorder_id`) REFERENCES `llx_salesorder` (`rowid`) ON DELETE NO ACTION ON UPDATE NO ACTION;
 
-/**
-** Fin tabla llx_consolidation_day
- *************************************************************************************************************/
-/*******************************************************************************************************************
-  Tabla llx_consolidation_deplacement
- */
+--  --------------------------------------------------------------------------------------------------------------------
+--   Fin tabla llx_consolidation_day
+--  --------------------------------------------------------------------------------------------------------------------
+--   Tabla llx_consolidation_deplacement
+--  --------------------------------------------------------------------------------------------------------------------
 -- tabla requerida para salvar la cotizacion manual de cada gasto
 
 CREATE TABLE `llx_consolidation_deplacement` (
@@ -103,13 +101,11 @@ ALTER TABLE `llx_consolidation_deplacement`
   ADD CONSTRAINT `llx_consolidation_deplacement_llx_c_currencies-divisa_destino` FOREIGN KEY (`divisa_destino`) REFERENCES `llx_c_currencies` (`code_iso`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   ADD CONSTRAINT `llx_consolidation_deplacement_llx_salesorder-deplacement_id` FOREIGN KEY (`deplacement_id`) REFERENCES `llx_deplacement` (`rowid`) ON DELETE NO ACTION ON UPDATE NO ACTION;
 
-/**
-** Fin tabla llx_consolidation_deplacement
- *************************************************************************************************************/
-
-/*******************************************************************************************************************
-  Tabla llx_consolidation_commande_fournisseur
- */
+--  --------------------------------------------------------------------------------------------------------------------
+--   Fin tabla llx_consolidation_deplacement
+--  --------------------------------------------------------------------------------------------------------------------
+--   Tabla llx_consolidation_commande_fournisseur
+--  --------------------------------------------------------------------------------------------------------------------
 -- tabla requerida para salvar la cotizacion manual de cada gasto
 
 CREATE TABLE `llx_consolidation_commande_fournisseur` (
@@ -140,9 +136,9 @@ ALTER TABLE `llx_consolidation_commande_fournisseur`
   ADD CONSTRAINT `llx_consolidation_commande_f_llx_c_currencies-divisa_destino` FOREIGN KEY (`divisa_destino`) REFERENCES `llx_c_currencies` (`code_iso`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   ADD CONSTRAINT `llx_consolidation_commande_f_llx_commande_f-commande_f_id` FOREIGN KEY (`commande_fournisseur_id`) REFERENCES `llx_commande_fournisseur` (`rowid`) ON DELETE NO ACTION ON UPDATE NO ACTION;
 
-/**
-** Fin tabla llx_consolidation_commande_fournisseur
- *************************************************************************************************************/
+--  --------------------------------------------------------------------------------------------------------------------
+--  Fin tabla llx_consolidation_commande_fournisseur
+--  --------------------------------------------------------------------------------------------------------------------
 
 
  -- TRIGGER UPDATE upd_llx_salesorderdet_line_ref
@@ -243,11 +239,8 @@ CREATE  TRIGGER upd_llx_salesorderdet_line_ref
     SET NEW.line_ref = LPAD(val_final,3,'0');
   END IF;
 END ;;
-/*
-  fin update
-*/
 
-
+ --  --------------------------------------------------------------------------------------------------------------------
 
  DELIMITER ;;
  CREATE  TRIGGER ins_llx_salesorderdet_line_ref
@@ -263,7 +256,6 @@ END ;;
    SET i_var = count_line;
    SET i_var =  LPAD(i_var,3,'0');
    SET val_final=i_var;
-
 
 
    -- corrobora que el valor de i_var no exista
@@ -312,9 +304,9 @@ END ;;
 
 
 
- -- -------------------------------------
- -- ------------ propal
- -- ------------------------------------
+ --  -------------------------------------
+ --  ------------   propal
+ --  ------------------------------------
 
  -- TRIGGER UPDATE upd_llx_propaldet_line_ref
  DELIMITER ;;
@@ -414,12 +406,8 @@ END ;;
      SET NEW.line_ref = LPAD(val_final,3,'0');
    END IF;
  END ;;
- /*
-   fin update
- */
 
-
-
+ --   --------------------------------------------------------------------------------------------------------------------
 
  DELIMITER ;;
  CREATE  TRIGGER ins_llx_propaldet_line_ref
@@ -483,16 +471,16 @@ END ;;
  END ;;
 
 
- -- -------------------------------------
- -- ------------
- -- ------------------------------------
+ --  -------------------------------------
+ --  ------------
+ --  ------------------------------------
 
 
- -- -------------------------------------
- -- ------------ llx_commandedet
- -- ------------------------------------
+ --  -------------------------------------
+ --  ------------ llx_commandedet
+ --  ------------------------------------
 
- -- TRIGGER UPDATE upd_llx_commandedet_line_ref
+ --  TRIGGER UPDATE upd_llx_commandedet_line_ref
  DELIMITER ;;
  CREATE  TRIGGER upd_llx_commandedet_line_ref
    BEFORE update ON `llx_commandedet`
@@ -510,7 +498,7 @@ END ;;
      SET i_var = count_line;
      SET i_var =  LPAD(i_var,3,'0');
      SET val_final=i_var;
-     -- corrobora que el valor de i_var no exista para las lineas diferentes a la que se modifica
+     --  corrobora que el valor de i_var no exista para las lineas diferentes a la que se modifica
      SET consulta = (
        SELECT
          CASE
@@ -527,7 +515,7 @@ END ;;
          ) as salesorder
      );
      IF (consulta=0) THEN
-       -- corrobora que la linea a modificar no tenga el valor de i_var
+       --  corrobora que la linea a modificar no tenga el valor de i_var
        SET consulta = (
          SELECT
            CASE
@@ -562,7 +550,7 @@ END ;;
            ) as salesorder
        );
        IF (consulta=0) THEN
-         -- corrobora que la linea no tenga el valor
+         --  corrobora que la linea no tenga el valor
          SET consulta = (
            SELECT
              CASE
@@ -590,9 +578,9 @@ END ;;
      SET NEW.line_ref = LPAD(val_final,3,'0');
    END IF;
  END ;;
- /*
-   fin update
- */
+ --   --------------------------------------------------------------------------------------------------------------------
+ --    fin update
+ --   --------------------------------------------------------------------------------------------------------------------
 
 
 
@@ -659,16 +647,16 @@ END ;;
  END ;;
 
 
- -- -------------------------------------
- -- ------------
- -- ------------------------------------
+ --  -------------------------------------
+ --  ------------
+ --  ------------------------------------
 
 
- -- -------------------------------------
- -- ------------ llx_commande_fournisseurdet
- -- ------------------------------------
+ --  -------------------------------------
+ --  ------------ llx_commande_fournisseurdet
+ --  ------------------------------------
 
- -- TRIGGER UPDATE upd_llx_commande_fournisseurdet_line_ref
+ --  TRIGGER UPDATE upd_llx_commande_fournisseurdet_line_ref
  DELIMITER ;;
  CREATE  TRIGGER upd_llx_llx_commande_fournisseurdet_line_ref
    BEFORE update ON `llx_commande_fournisseurdet`
@@ -686,7 +674,7 @@ END ;;
      SET i_var = count_line;
      SET i_var =  LPAD(i_var,3,'0');
      SET val_final=i_var;
-     -- corrobora que el valor de i_var no exista para las lineas diferentes a la que se modifica
+     --  corrobora que el valor de i_var no exista para las lineas diferentes a la que se modifica
      SET consulta = (
        SELECT
          CASE
@@ -703,7 +691,7 @@ END ;;
          ) as salesorder
      );
      IF (consulta=0) THEN
-       -- corrobora que la linea a modificar no tenga el valor de i_var
+       --  corrobora que la linea a modificar no tenga el valor de i_var
        SET consulta = (
          SELECT
            CASE
@@ -766,11 +754,7 @@ END ;;
      SET NEW.line_ref = LPAD(val_final,3,'0');
    END IF;
  END ;;
- /*
-   fin update
- */
-
-
+ --   --------------------------------------------------------------------------------------------------------------------
 
 
  DELIMITER ;;
@@ -834,14 +818,14 @@ END ;;
 
  END ;;
 
- -- -------------------------------------
- -- ------------
- -- ------------------------------------
+ --  -------------------------------------
+ --  ------------
+ --  ------------------------------------
 
- -- *******************************************************************************************************************
- --  Tabla llx_consolidation_facture
+--   --------------------------------------------------------------------------------------------------------------------
+--   Tabla llx_consolidation_facture
 
--- tabla requerida para salvar la cotizacion manual de cada factura
+--  tabla requerida para salvar la cotizacion manual de cada factura
 
 CREATE TABLE `llx_consolidation_facture` (
   `id` int(11) NOT NULL COMMENT 'Identificador de llx_consolidation_feature',
@@ -855,13 +839,13 @@ CREATE TABLE `llx_consolidation_facture` (
  ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='Registra las divisas de conversión para ordenes de venta';
 
 --
--- Indices de la tabla `llx_consolidation_facture`
+--  Indices de la tabla `llx_consolidation_facture`
 --
 ALTER TABLE `llx_consolidation_facture`
   ADD PRIMARY KEY (`id`);
 
 --
--- AUTO_INCREMENT de la tabla `llx_consolidation_facture`
+--  AUTO_INCREMENT de la tabla `llx_consolidation_facture`
 --
 ALTER TABLE `llx_consolidation_facture`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'Identificador de llx_consolidation_feature', AUTO_INCREMENT=1;
@@ -871,14 +855,11 @@ ALTER TABLE `llx_consolidation_facture`
   ADD CONSTRAINT `llx_consolidation_facture_llx_c_currencies-divisa_destino` FOREIGN KEY (`divisa_destino`) REFERENCES `llx_c_currencies` (`code_iso`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   ADD CONSTRAINT `llx_consolidation_facture_llx_facture-facture_id` FOREIGN KEY (`facture_id`) REFERENCES `llx_facture` (`rowid`) ON DELETE NO ACTION ON UPDATE NO ACTION;
 
--- Fin tabla llx_consolidation_facture
--- *************************************************************************************************************/
--- *******************************************************************************************************************
+--  Fin tabla llx_consolidation_facture
+--   --------------------------------------------------------------------------------------------------------------------
 
- -- *******************************************************************************************************************
- --  Tabla llx_consolidation_domain_salesorder
-
--- tabla requerida para indicar si si se prioriza la entidad padre (ejemplo salesorder y no facture)
+--  Tabla llx_consolidation_domain_salesorder
+--  tabla requerida para indicar si si se prioriza la entidad padre (ejemplo salesorder y no facture)
 
 CREATE TABLE `llx_consolidation_domain_salesorder` (
   `id` int(11) NOT NULL COMMENT 'Identificador de llx_consolidation_domain_salesorder',
@@ -888,26 +869,24 @@ CREATE TABLE `llx_consolidation_domain_salesorder` (
  ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='Registra las divisas de conversión para ordenes de venta';
 
 --
--- Indices de la tabla `llx_consolidation_domain_salesorder`
+--  Indices de la tabla `llx_consolidation_domain_salesorder`
 --
 ALTER TABLE `llx_consolidation_domain_salesorder`
   ADD PRIMARY KEY (`id`);
 
 --
--- AUTO_INCREMENT de la tabla `llx_consolidation_domain_salesorder`
+--  AUTO_INCREMENT de la tabla `llx_consolidation_domain_salesorder`
 --
 ALTER TABLE `llx_consolidation_domain_salesorder`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'Identificador de llx_consolidation_domain_salesorder', AUTO_INCREMENT=1;
 
 
--- Fin tabla llx_consolidation_domain_salesorder
--- *************************************************************************************************************/
--- *******************************************************************************************************************
+--  Fin tabla llx_consolidation_domain_salesorder
+--  --------------------------------------------------------------------------------------------------------------------
+--  --------------------------------------------------------------------------------------------------------------------
+--  Tabla llx_consolidation_policy
 
--- *******************************************************************************************************************
- --  Tabla llx_consolidation_policy
-
--- tabla requerida para salvar la cotizacion manual de cada poliza
+--  tabla requerida para salvar la cotizacion manual de cada poliza
 
 CREATE TABLE `llx_consolidation_policy` (
   `id` int(11) NOT NULL COMMENT 'Identificador de llx_consolidation_feature',
@@ -922,13 +901,13 @@ CREATE TABLE `llx_consolidation_policy` (
  ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='Registra las divisas de conversión para ordenes de venta';
 
 --
--- Indices de la tabla `llx_consolidation_policy`
+--  Indices de la tabla `llx_consolidation_policy`
 --
 ALTER TABLE `llx_consolidation_policy`
   ADD PRIMARY KEY (`id`);
 
 --
--- AUTO_INCREMENT de la tabla `llx_consolidation_policy`
+--  AUTO_INCREMENT de la tabla `llx_consolidation_policy`
 --
 ALTER TABLE `llx_consolidation_policy`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'Identificador de llx_consolidation_policy', AUTO_INCREMENT=1;
@@ -938,272 +917,10 @@ ALTER TABLE `llx_consolidation_policy`
   ADD CONSTRAINT `llx_consolidation_policy_llx_c_currencies-divisa_destino` FOREIGN KEY (`divisa_destino`) REFERENCES `llx_c_currencies` (`code_iso`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   ADD CONSTRAINT `llx_consolidation_policy_llx_policy-policy_id` FOREIGN KEY (`policy_id`) REFERENCES `llx_policy` (`rowid`) ON DELETE NO ACTION ON UPDATE NO ACTION;
  alter table llx_policy add fk_currency varchar(3) default "USD";
--- Fin tabla llx_consolidation_policy
--- *************************************************************************************************************/
--- *******************************************************************************************************************
+--  Fin tabla llx_consolidation_policy
+-- --------------------------------------------------------------------------------------------------------------------
+-- --------------------------------------------------------------------------------------------------------------------
 
-
-/**
-
-
--- view suma las facturas de un proyecto
--- drop view vw_sum_fatcure_by_project;    - v
-create view vw_sum_fatcure_by_salesorder as
-select
-	llx_element_element.fk_source as salesorder_rowid,
-	sum(llx_facture.total_ttc) as total_sum_facture
-from  llx_element_element
-join  llx_facture on(llx_facture.rowid=llx_element_element.fk_target)
-where llx_element_element.sourcetype="salesorder"
-and   llx_element_element.targettype="facture"
-group by llx_element_element.fk_source;
--- ---------------------------------
-
- -- obtine si domina la ov o si domina la factura agrupando por la pk de ov
- -- drop view vw_domain_entity_between_salesorder_and_facture;
-  /*create view vw_domain_entity_between_salesorder_and_facture as
-select
-			vw_sum_fatcure_by_salesorder.salesorder_rowid ,
-			1 as  domain_salesorder,
-			0 as  domain_facture
-from 		llx_salesorder
-left join  	vw_sum_fatcure_by_salesorder on(llx_salesorder.rowid=vw_sum_fatcure_by_salesorder.salesorder_rowid)
-where 		vw_sum_fatcure_by_salesorder.total_sum_facture < llx_salesorder.total_ttc
-union
-select
-			vw_sum_fatcure_by_salesorder.salesorder_rowid ,
-			0 as  domain_salesorder,
-			1 as  domain_facture
-from 		llx_salesorder
-left join  	vw_sum_fatcure_by_salesorder on(llx_salesorder.rowid=vw_sum_fatcure_by_salesorder.salesorder_rowid)
-where 		vw_sum_fatcure_by_salesorder.total_sum_facture > llx_salesorder.total_ttc;
-
-
-
-  create view vw_domain_entity_between_salesorder_and_facture as select 			vw_sum_fatcure_by_salesorder.salesorder_rowid , 			1 as  domain_salesorder, 			0 as  domain_facture from 		llx_salesorder left join  	vw_sum_fatcure_by_salesorder on(llx_salesorder.rowid=vw_sum_fatcure_by_salesorder.salesorder_rowid) where 		vw_sum_fatcure_by_salesorder.total_sum_facture < llx_salesorder.total_ttc union select			vw_sum_fatcure_by_salesorder.salesorder_rowid ,			0 as  domain_salesorder,			1 as  domain_facture from 		llx_salesorder left join  	vw_sum_fatcure_by_salesorder on(llx_salesorder.rowid=vw_sum_fatcure_by_salesorder.salesorder_rowid) where 		vw_sum_fatcure_by_salesorder.total_sum_facture > llx_salesorder.total_ttc;
-*/
-
--- --------------------------------------------------------------------
- -- verifica si tienen misma moneda laov y la fatura, factura agrupando por la pk de ov
-create view vw_same_currency_between_salesorder_and_facture as
-select
-		llx_salesorder.rowid as salesorder_rowid ,
-		1 as  same_currency
-from 	llx_salesorder
-join 	llx_element_element
-on		(
-			llx_element_element.fk_source=llx_salesorder.rowid
-		and
-			llx_element_element.sourcetype="salesorder" and llx_element_element.targettype="facture"
-		 )
-join  	llx_facture on(llx_facture.rowid=llx_element_element.fk_target)
-where 	llx_facture.fk_currency=llx_salesorder.fk_currency
-union
-select
-		llx_salesorder.rowid as salesorder_rowid ,
-		0 as  same_currency
-from 	llx_salesorder
-join 	llx_element_element
-on		(
-			llx_element_element.fk_source=llx_salesorder.rowid
-			and
-			llx_element_element.sourcetype="salesorder" and llx_element_element.targettype="facture"
-		)
-join  	llx_facture on(llx_facture.rowid=llx_element_element.fk_target)
-where 	llx_facture.fk_currency<>llx_salesorder.fk_currency;
-
-
-
-
- /****************************************************************************************************************/
-/*
-select
-	llx_salesorder.rowid as salesorder_rowid,
-	 vwed.domain_salesorder,
-     vwed.domain_facture,
-     vwsc.same_currency,
-	 llx_salesorder.fk_currency as moneda_salesorder,
-	 llx_salesorder.fk_projet,
-     llx_salesorder.ref as salesorder_name
-from llx_salesorder
-join vw_domain_entity_between_salesorder_and_facture vwed on (llx_salesorder.rowid=vwed.salesorder_rowid)
-join vw_same_currency_between_salesorder_and_facture vwsc on (llx_salesorder.rowid=vwsc.salesorder_rowid);
-*/
-
-
- /****************************************************************************************************************/
-
-create view vw_domain_entity_between_salesorder_and_facture as
-select
-			vw_sum_fatcure_by_salesorder.salesorder_rowid ,
-			1 as  domain_salesorder,
-			0 as  domain_facture
-from 		llx_salesorder
-left join  	vw_sum_fatcure_by_salesorder on(llx_salesorder.rowid=vw_sum_fatcure_by_salesorder.salesorder_rowid)
-join 		vw_same_currency_between_salesorder_and_facture vwsc on(llx_salesorder.rowid=vwsc.salesorder_rowid)
-where 		((llx_salesorder.total_ttc > vw_sum_fatcure_by_salesorder.total_sum_facture  and vwsc.same_currency=1)
-or
-			 (vw_sum_fatcure_by_salesorder.total_sum_facture > llx_salesorder.total_ttc and vwsc.same_currency=0))
-union
-select
-			vw_sum_fatcure_by_salesorder.salesorder_rowid ,
-			0 as  domain_salesorder,
-			1 as  domain_facture
-from 		llx_salesorder
-left join  	vw_sum_fatcure_by_salesorder on(llx_salesorder.rowid=vw_sum_fatcure_by_salesorder.salesorder_rowid)
-join 		vw_same_currency_between_salesorder_and_facture vwsc on(llx_salesorder.rowid=vwsc.salesorder_rowid)
-where 		(vw_sum_fatcure_by_salesorder.total_sum_facture > llx_salesorder.total_ttc and vwsc.same_currency=1) ;
-
- /****************************************************************************************************************/
-
-create view vw_salesorder_domain as
-	select
-		llx_salesorder.rowid as salesorder_rowid,
-		 vwed.domain_salesorder,
-		 vwed.domain_facture,
-		 vwsc.same_currency,
-		 llx_salesorder.fk_currency as moneda_salesorder,
-		 llx_salesorder.fk_projet,
-		 llx_salesorder.ref as salesorder_name
-	from llx_salesorder
-	join vw_domain_entity_between_salesorder_and_facture vwed on (llx_salesorder.rowid=vwed.salesorder_rowid)
-	join vw_same_currency_between_salesorder_and_facture vwsc on (llx_salesorder.rowid=vwsc.salesorder_rowid);
-
-
- /****************************************************************************************************************/
- create view vw_salesorder_facture_cotizacion as
- select
-         salesorder.domain_salesorder
-         ,salesorder.domain_facture
-        ,salesorder.salesorder_rowid
-        ,salesorder.same_currency
-        ,salesorder.moneda_salesorder
-        ,salesorder.fk_projet
-        ,salesorder.salesorder_name
-        ,llx_facture.fk_currency
-        ,llx_facture.rowid as facture_rowid
-        ,llx_facture.facnumber as facture_name
-from
-    vw_salesorder_domain as salesorder
-	join llx_element_element on
-		(
-			llx_element_element.fk_source=salesorder.salesorder_rowid
-			and llx_element_element.sourcetype="salesorder" and llx_element_element.targettype="facture"
-		)
-	join llx_facture on(llx_facture.rowid=llx_element_element.fk_target);
-
-/************************************************************************************************************/
-
- create view vw_salesorder_facture_cotizacion_priorizada as
-select
-	 vw_sf.*
-    ,domain as domain1
-	,ifnull(domain,0)as  domain
-	,ds.entidad_id
-	,ds.fecha_ingreso
-	,ds.id
-
-from 	vw_salesorder_facture_cotizacion vw_sf
-left join 	llx_consolidation_domain_salesorder ds  on(ds.entidad_id= vw_sf.salesorder_rowid );
-
-
-
-
-
-
-
-
-
-/*
- drop view vw_name_domain;
-create view vw_name_domain as
-select
-			vw_sf.salesorder_rowid,
-			vw_sf.salesorder_name  name_domain
-
-from 		vw_salesorder_facture_cotizacion vw_sf
-left join 	llx_consolidation_domain_salesorder ds  on(ds.entidad_id= vw_sf.salesorder_rowid )
-where 	    vw_sf.domain_salesorder =1
--- group by  	vw_sf.salesorder_rowid,facture_name
-union
-select
-			vw_sf.salesorder_rowid,
-			vw_sf.facture_name  name_domain
-from 		vw_salesorder_facture_cotizacion vw_sf
-left join 	llx_consolidation_domain_salesorder ds  on(ds.entidad_id= vw_sf.salesorder_rowid )
-where 	   	vw_sf.domain_salesorder=0
--- group by  	vw_sf.salesorder_rowid,facture_name ;
- ;
-
-*/
-
-
-
-
---  drop view vw_domain_entity_between_salesorder_and_facture;
- -- create view vw_domain_entity_between_salesorder_and_facture as
-/*
-select
-			vw_sum_fatcure_by_salesorder.salesorder_rowid ,
-			1 as  domain_salesorder,
-			0 as  domain_facture
-from 		llx_salesorder
-left join  	vw_sum_fatcure_by_salesorder on(llx_salesorder.rowid=vw_sum_fatcure_by_salesorder.salesorder_rowid)
-join 		vw_same_currency_between_salesorder_and_facture vwsc on(llx_salesorder.rowid=vwsc.salesorder_rowid)
-where 		(((((llx_salesorder.total_ttc > vw_sum_fatcure_by_salesorder.total_sum_facture  and vwsc.same_currency=1)
-or
-			 (vw_sum_fatcure_by_salesorder.total_sum_facture > llx_salesorder.total_ttc and vwsc.same_currency=0))
-and  not
-exists (
-	select  1
-    from 	llx_consolidation_domain_salesorder
-    where  	entidad_id=llx_salesorder.rowid
-    and 	domain=1
-))
-)
-or exists (
-	select  1
-    from 	llx_consolidation_domain_salesorder
-    where  	entidad_id=llx_salesorder.rowid
-    and 	domain=1
-))
- -- and llx_salesorder.rowid=387;
-   union
-select
-			vw_sum_fatcure_by_salesorder.salesorder_rowid ,
-			0 as  domain_salesorder,
-			1 as  domain_facture
-from 		llx_salesorder
-left join  	vw_sum_fatcure_by_salesorder on(llx_salesorder.rowid=vw_sum_fatcure_by_salesorder.salesorder_rowid)
-join 		vw_same_currency_between_salesorder_and_facture vwsc on(llx_salesorder.rowid=vwsc.salesorder_rowid)
-where 		((vw_sum_fatcure_by_salesorder.total_sum_facture > llx_salesorder.total_ttc and vwsc.same_currency=1)
-and not
-exists (
-	select  1
-    from 	llx_consolidation_domain_salesorder
-    where  	entidad_id=llx_salesorder.rowid
-    and domain=1
-
-));
--- and llx_salesorder.rowid=387;
-*/
-
-
-
-
-
--- drop view vw_salesorder_facture_cotizacion_priorizada ;
-
-*/
-
-
-
-
-
-
-
-/************************************************************************************************************/
-/*DEFINITIVO*/
 
 create view vw_sum_fatcure_by_salesorder as
 select
@@ -1216,7 +933,7 @@ and   llx_element_element.targettype="facture"
 group by llx_element_element.fk_source;
 
 
-/************************************************************************************************************/
+--  --------------------------------------------------------------------------------------------------------------------
 
  drop view diff_cant_currencies_between_facture_salesorder;
  create view diff_cant_currencies_between_facture_salesorder2 as
@@ -1262,10 +979,9 @@ salesorder_rowid ,
 from diff_cant_currencies_between_facture_salesorder
 where diff=1;
 
+--  --------------------------------------------------------------------------------------------------------------------
+--  --------------------------------------------------------------------------------------------------------------------
 
-/************************************************************************************************************/
-
-/************************************************************************************************************/
 create view vw_domain_entity_between_salesorder_and_facture as
 select
 			vw_sum_fatcure_by_salesorder.salesorder_rowid ,
@@ -1290,7 +1006,10 @@ left join  	vw_sum_fatcure_by_salesorder on(llx_salesorder.rowid=vw_sum_fatcure_
 join 		vw_same_currency_between_salesorder_and_facture vwsc on(llx_salesorder.rowid=vwsc.salesorder_rowid)
 where 		(vw_sum_fatcure_by_salesorder.total_sum_facture > llx_salesorder.total_ttc and vwsc.same_currency=1);
 
-/************************************************************************************************************/
+--  --------------------------------------------------------------------------------------------------------------------
+--  --------------------------------------------------------------------------------------------------------------------
+
+
 create view vw_salesorder_domain as
 	select
 		llx_salesorder.rowid as salesorder_rowid,
@@ -1304,10 +1023,10 @@ create view vw_salesorder_domain as
 	join vw_domain_entity_between_salesorder_and_facture vwed on (llx_salesorder.rowid=vwed.salesorder_rowid)
 	join vw_same_currency_between_salesorder_and_facture vwsc on (llx_salesorder.rowid=vwsc.salesorder_rowid);
 
--- create view vw_salesorder_domain as select llx_salesorder.rowid as salesorder_rowid,vwed.domain_salesorder,vwed.domain_facture,vwsc.same_currency,llx_salesorder.fk_currency as moneda_salesorder,llx_salesorder.fk_projet, llx_salesorder.ref as salesorder_name from llx_salesorder join vw_domain_entity_between_salesorder_and_facture vwed on (llx_salesorder.rowid=vwed.salesorder_rowid) join vw_same_currency_between_salesorder_and_facture vwsc on (llx_salesorder.rowid=vwsc.salesorder_rowid);
+--  create view vw_salesorder_domain as select llx_salesorder.rowid as salesorder_rowid,vwed.domain_salesorder,vwed.domain_facture,vwsc.same_currency,llx_salesorder.fk_currency as moneda_salesorder,llx_salesorder.fk_projet, llx_salesorder.ref as salesorder_name from llx_salesorder join vw_domain_entity_between_salesorder_and_facture vwed on (llx_salesorder.rowid=vwed.salesorder_rowid) join vw_same_currency_between_salesorder_and_facture vwsc on (llx_salesorder.rowid=vwsc.salesorder_rowid);
 
-
-/************************************************************************************************************/
+--  --------------------------------------------------------------------------------------------------------------------
+--  --------------------------------------------------------------------------------------------------------------------
 create view vw_salesorder_facture_cotizacion as
  select
          salesorder.domain_salesorder
@@ -1329,17 +1048,18 @@ from
 		)
 	join llx_facture on(llx_facture.rowid=llx_element_element.fk_target);
 
--- select  *
--- from     vw_salesorder_domain where salesorder.salesorder_rowid=1047 ;
+--  select  *
+--  from     vw_salesorder_domain where salesorder.salesorder_rowid=1047 ;
 
--- select * from llx_element_element where llx_element_element.fk_source=1047 and llx_element_element.sourcetype="salesorder" and llx_element_element.targettype="facture"	;
-
-
+--  select * from llx_element_element where llx_element_element.fk_source=1047 and llx_element_element.sourcetype="salesorder" and llx_element_element.targettype="facture"	;
 
 
 
- -- create view vw_salesorder_facture_cotizacion as  select salesorder.domain_salesorder,salesorder.domain_facture,salesorder.salesorder_rowid,salesorder.same_currency,salesorder.moneda_salesorder,salesorder.fk_projet,salesorder.salesorder_name,llx_facture.fk_currency,llx_facture.rowid as facture_rowid,llx_facture.facnumber as facture_name from vw_salesorder_domain as salesorder join llx_element_element on(llx_element_element.fk_source=salesorder.salesorder_rowid and llx_element_element.sourcetype="salesorder" and llx_element_element.targettype="facture")join llx_facture on(llx_facture.rowid=llx_element_element.fk_target)
-/************************************************************************************************************/
+
+
+ --  create view vw_salesorder_facture_cotizacion as  select salesorder.domain_salesorder,salesorder.domain_facture,salesorder.salesorder_rowid,salesorder.same_currency,salesorder.moneda_salesorder,salesorder.fk_projet,salesorder.salesorder_name,llx_facture.fk_currency,llx_facture.rowid as facture_rowid,llx_facture.facnumber as facture_name from vw_salesorder_domain as salesorder join llx_element_element on(llx_element_element.fk_source=salesorder.salesorder_rowid and llx_element_element.sourcetype="salesorder" and llx_element_element.targettype="facture")join llx_facture on(llx_facture.rowid=llx_element_element.fk_target)
+--  --------------------------------------------------------------------------------------------------------------------
+--  --------------------------------------------------------------------------------------------------------------------
 create view vw_salesorder_facture_cotizacion_priorizada as
 select
 	 vw_sf.*

@@ -785,6 +785,8 @@ foreach ($listofreferent as $key => $value)
 				
                 $resqlFinal=0;
                 $id_de_consolidacion_manual=false;
+                $no_exite_cotizacion=false;
+                $isErronea=false;
                 //Solo si es diferente de usd y es cotizable si visualizara el form
                 if($element->fk_currency!='USD' &&  $esCotizable==1){
                 	//query de la entidad a realizar cotizacion
@@ -1025,8 +1027,9 @@ foreach ($listofreferent as $key => $value)
                     }
                     $obj='';
                 }
-
-				if(!empty($element->total_ht) and !empty($obj->valor_divisa_destino) and $element->fk_currency<>$obj->divisa_destino and $no_exite_cotizacion===false  && $isErronea===false ){
+ 
+                
+                if(!empty($element->total_ht) and !empty($obj->valor_divisa_destino) and $element->fk_currency<>$obj->divisa_destino and $no_exite_cotizacion===false  && $isErronea===false ){
                     $total_conversion=$element->total_ht * $obj->valor_divisa_destino;
                     $total_conversion_sin_formato=$total_conversion/$obj->valor_divisa_origen;
                     $total_conversion=price($total_conversion_sin_formato,0,'',0,2,2);

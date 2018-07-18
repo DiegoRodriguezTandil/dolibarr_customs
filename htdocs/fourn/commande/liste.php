@@ -45,7 +45,6 @@ $orderid = GETPOST('orderid');
 if ($user->societe_id) $socid=$user->societe_id;
 $result = restrictedArea($user, 'commande_fournisseur', $orderid,'');
 
-
 /*
  *	View
  */
@@ -119,7 +118,7 @@ if ($resql)
 	$num = $db->num_rows($resql);
 	$i = 0;
     $param="";
-    
+    //qwavee
     $param='&socid='.$socid.'&viewstatut='.$viewstatut;
     if (isset($sref))   	$param.='&search_ref=' .$sref;
     if (isset($snom))		$param.='&search_nom=' .$snom;
@@ -128,14 +127,21 @@ if ($resql)
     
 	print_barre_liste($title, $page, "liste.php", $param, $sortfield, $sortorder, '', $num);
 	print '<form action="liste.php" method="GET">';
+	//qwavee maintain sort
+    print '
+		<input type="text"  name="sortfield" value="'.$sortfield.'" hidden>
+		<input type="stext" name="sortorder" value="'.$sortorder.'" hidden>
+	';
 	print '<table class="noborder" width="100%">';
 	print '<tr class="liste_titre">';
-	print_liste_field_titre($langs->trans("Ref"),$_SERVER["PHP_SELF"],"cf.ref","","",'',$sortfield,$sortorder);
-	print_liste_field_titre($langs->trans("Company"),$_SERVER["PHP_SELF"],"s.nom","","",'',$sortfield,$sortorder);
-	print_liste_field_titre($langs->trans("Author"),$_SERVER["PHP_SELF"],"u.login","","",'',$sortfield,$sortorder);
-	print_liste_field_titre($langs->trans("AmountTTC"),$_SERVER["PHP_SELF"],"total_ttc","","",'',$sortfield,$sortorder);
-	print_liste_field_titre($langs->trans("OrderDate"),$_SERVER["PHP_SELF"],"dc","","",'align="center"',$sortfield,$sortorder);
-	print_liste_field_titre($langs->trans("Status"),$_SERVER["PHP_SELF"],"cf.fk_statut","","",'align="right"',$sortfield,$sortorder);
+	//qwavee add $param to print_liste_field_titre
+	print_liste_field_titre($langs->trans("Ref"),$_SERVER["PHP_SELF"],"cf.ref","",$param,'',$sortfield,$sortorder);
+	print_liste_field_titre($langs->trans("Company"),$_SERVER["PHP_SELF"],"s.nom","",$param,'',$sortfield,$sortorder);
+	print_liste_field_titre($langs->trans("Author"),$_SERVER["PHP_SELF"],"u.login","",$param,'',$sortfield,$sortorder);
+	print_liste_field_titre($langs->trans("AmountTTC"),$_SERVER["PHP_SELF"],"total_ttc","",$param,'',$sortfield,$sortorder);
+	print_liste_field_titre($langs->trans("OrderDate"),$_SERVER["PHP_SELF"],"dc","",$param,'align="center"',$sortfield,$sortorder);
+	print_liste_field_titre($langs->trans("Status"),$_SERVER["PHP_SELF"],"cf.fk_statut","",$param,'align="right"',$sortfield,$sortorder);
+	
 	print "</tr>\n";
 
 	print '<tr class="liste_titre">';

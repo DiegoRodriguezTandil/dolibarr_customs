@@ -118,9 +118,15 @@ if ($resql)
 
 	$num = $db->num_rows($resql);
 	$i = 0;
-
-
-	print_barre_liste($title, $page, "liste.php", "", $sortfield, $sortorder, '', $num);
+    $param="";
+    
+    $param='&socid='.$socid.'&viewstatut='.$viewstatut;
+    if (isset($sref))   	$param.='&search_ref=' .$sref;
+    if (isset($snom))		$param.='&search_nom=' .$snom;
+    if (isset($suser))     	$param.='&search_user=' .$suser;
+    if (isset($sttc))   	$param.='&search_ttc='.$sttc;
+    
+	print_barre_liste($title, $page, "liste.php", $param, $sortfield, $sortorder, '', $num);
 	print '<form action="liste.php" method="GET">';
 	print '<table class="noborder" width="100%">';
 	print '<tr class="liste_titre">';

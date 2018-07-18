@@ -57,6 +57,8 @@ $socid=GETPOST('socid','int');
 $action=GETPOST('action','alpha');
 $confirm=GETPOST('confirm','alpha');
 $lineid=GETPOST('lineid','int');
+$currencyid		= GETPOST('currencyid','alpha');
+
 
 //PDF
 $hidedetails = (GETPOST('hidedetails','int') ? GETPOST('hidedetails','int') : (! empty($conf->global->MAIN_GENERATE_DOCUMENTS_HIDE_DETAILS) ? 1 : 0));
@@ -263,6 +265,11 @@ else if ($action == 'setpurpose' && $user->rights->commande->creer)
 else if ($action == 'settender_number' && $user->rights->commande->creer)
 {	
 	$object->setTenderNumber(GETPOST('tender_number'));
+}
+//QWAVEE set currency
+else if ($action ==	'updatecurrency' && $user->rights->fournisseur->commande->creer)
+{
+    $object->setCurrency($currencyid);
 }
 // Create proposal
 else if ($action == 'add' && $user->rights->propal->creer)
@@ -1650,6 +1657,28 @@ if (! empty($conf->projet->enabled))
 	}
 	print '</tr>';
 }
+
+    //QWAVEE
+    print '<tr><td height="10">';
+    print '<table class="nobordernopadding" width="100%"><tr><td>';
+    print $langs->trans('Currency');
+    print '</td>';
+    if ($action != 'setcurrency') print '<td align="right"><a href="'.$_SERVER['PHP_SELF'].'?action=setcurrency&amp;id='.$object->id.'">'.img_edit($langs->trans('SetCurrency')).'</a></td>';
+    print '</tr></table>';
+    print '</td><td colspan="2">';
+    
+    if ($action == 'setcurrency')
+    {
+        //$form->select_currency($object->fk_currency,'fk_currency');
+        $form->form_currency($_SERVER['PHP_SELF'].'?id='.$object->id, $object->fk_currency, 'currencyid');
+    }
+    else
+    {
+        print ''.$langs->trans("Currency".$object->fk_currency).'';
+    }
+    print '</td>';
+    print '</tr>';
+    // FIN QWAVEE
 
 // Other attributes
 $parameters=array('colspan' => ' colspan="3"');

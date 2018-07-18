@@ -1663,7 +1663,7 @@ if (! empty($conf->projet->enabled))
     print '<table class="nobordernopadding" width="100%"><tr><td>';
     print $langs->trans('Currency');
     print '</td>';
-    if ($action != 'setcurrency') print '<td align="right"><a href="'.$_SERVER['PHP_SELF'].'?action=setcurrency&amp;id='.$object->id.'">'.img_edit($langs->trans('SetCurrency')).'</a></td>';
+    if ($action != 'setcurrency') print '<td align="right"><a href="'.$_SERVER['PHP_SELF'].'?action=setcurrency&amp;id='.$object->id.'">'.img_edit('Configurar Divisa').'</a></td>';
     print '</tr></table>';
     print '</td><td colspan="2">';
     

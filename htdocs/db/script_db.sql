@@ -936,7 +936,7 @@ group by llx_element_element.fk_source;
 --  --------------------------------------------------------------------------------------------------------------------
 
  drop view diff_cant_currencies_between_facture_salesorder;
- create view diff_cant_currencies_between_facture_salesorder as
+ create view diff_cant_currencies_between_facture_salesorder2 as
 select  s1.rowid as salesorder_rowid,1 as diff
 from llx_salesorder s1
 where exists(
@@ -966,8 +966,6 @@ group by llx_salesorder.rowid
 );
 
 
-
-DROP VIEW vw_same_currency_between_salesorder_and_facture;
 create view vw_same_currency_between_salesorder_and_facture as
 select
 salesorder_rowid ,
@@ -981,12 +979,9 @@ salesorder_rowid ,
 from diff_cant_currencies_between_facture_salesorder
 where diff=1;
 
-
-
-
 --  --------------------------------------------------------------------------------------------------------------------
 --  --------------------------------------------------------------------------------------------------------------------
-drop view vw_domain_entity_between_salesorder_and_facture;
+
 create view vw_domain_entity_between_salesorder_and_facture as
 select
 			vw_sum_fatcure_by_salesorder.salesorder_rowid ,
@@ -1011,10 +1006,6 @@ left join  	vw_sum_fatcure_by_salesorder on(llx_salesorder.rowid=vw_sum_fatcure_
 join 		vw_same_currency_between_salesorder_and_facture vwsc on(llx_salesorder.rowid=vwsc.salesorder_rowid)
 where 		(vw_sum_fatcure_by_salesorder.total_sum_facture > llx_salesorder.total_ttc and vwsc.same_currency=1);
 
-
-
-
-
 --  --------------------------------------------------------------------------------------------------------------------
 --  --------------------------------------------------------------------------------------------------------------------
 
@@ -1031,8 +1022,6 @@ create view vw_salesorder_domain as
 	from llx_salesorder
 	join vw_domain_entity_between_salesorder_and_facture vwed on (llx_salesorder.rowid=vwed.salesorder_rowid)
 	join vw_same_currency_between_salesorder_and_facture vwsc on (llx_salesorder.rowid=vwsc.salesorder_rowid);
-
-
 
 --  create view vw_salesorder_domain as select llx_salesorder.rowid as salesorder_rowid,vwed.domain_salesorder,vwed.domain_facture,vwsc.same_currency,llx_salesorder.fk_currency as moneda_salesorder,llx_salesorder.fk_projet, llx_salesorder.ref as salesorder_name from llx_salesorder join vw_domain_entity_between_salesorder_and_facture vwed on (llx_salesorder.rowid=vwed.salesorder_rowid) join vw_same_currency_between_salesorder_and_facture vwsc on (llx_salesorder.rowid=vwsc.salesorder_rowid);
 
@@ -1058,10 +1047,6 @@ from
 			and llx_element_element.sourcetype="salesorder" and llx_element_element.targettype="facture"
 		)
 	join llx_facture on(llx_facture.rowid=llx_element_element.fk_target);
-
-        JOIN `llx_facture` ON ((`llx_facture`.`rowid` = `llx_element_element`.`fk_target`)))
-
-
 
 --  select  *
 --  from     vw_salesorder_domain where salesorder.salesorder_rowid=1047 ;
@@ -1158,11 +1143,3 @@ VIEW `vw_salesorder_facture_cotizacion_priorizada` AS
 delete from llx_c_type_fees where id=5;
 alter table llx_c_type_fees add only_projet int(1) default 0;
 insert into llx_c_type_fees(code,libelle,active,only_projet)values('TF_PROJECT','Project Expenses',1,1);
-
-
---  --------------------------------------------------------------------------------------------------------------------
---  --------------------------------------------------------------------------------------------------------------------
-create view vw_facture_paiement_max_date as SELECT max(p.datep) as max_date,f.rowid FROM llx_facture f join llx_paiement_facture as pf on (f.rowid=pf.fk_facture) join llx_paiement as p on(pf.fk_paiement = p.rowid) group by f.rowid;
-
---  --------------------------------------------------------------------------------------------------------------------
---  --------------------------------------------------------------------------------------------------------------------

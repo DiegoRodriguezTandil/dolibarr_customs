@@ -935,8 +935,14 @@ function top_htmlhead($head, $title='', $disablejs=0, $disablehead=0, $arrayofjs
         		}
         	}
         }
-        
+
         print '<link rel="stylesheet" type="text/css" title="default" href="'.DOL_URL_ROOT.'/bower_components/select2/dist/css/select2.min.css" >';
+       // print '<link rel="stylesheet" type="text/css" title="default" href="'.DOL_URL_ROOT.'/bower_components/bootstrap-4.1.1/dist/css/bootstrap.min.css" >';
+        //print '<script type="text/javascript" src="'.DOL_URL_ROOT.'/bower_components/bootstrap-4.1.1/dist/js/bootstrap.min.js" ></script>';
+        
+        //bootstraps css
+        print '<link rel="stylesheet" type="text/css" title="default" href="'.DOL_URL_ROOT.'/core/class/bootstraps_css/bootstrap.css"    >';
+    
         // CSS forced by page in top_htmlhead call (relative url starting with /)
         if (is_array($arrayofcss))
         {
@@ -1073,6 +1079,13 @@ function top_htmlhead($head, $title='', $disablejs=0, $disablehead=0, $arrayofjs
             // Global js function
             print '<!-- Includes JS of Dolibarr -->'."\n";
             print '<script type="text/javascript" src="'.DOL_URL_ROOT.'/core/js/lib_head.js"></script>'."\n";
+    
+
+            
+            //bootstraps js
+            print '<script type="text/javascript" src="'.DOL_URL_ROOT.'/core/js/bootstraps_js/bootstrap.js"></script>';
+            print '<script type="text/javascript" src="'.DOL_URL_ROOT.'/core/js/bootstraps_js/popper.min.js   "></script>';
+            
             
             // Select2
             print '<script type="text/javascript" src="'.DOL_URL_ROOT.'/bower_components/select2/dist/js/select2.full.min.js"></script>'."\n";
@@ -1121,6 +1134,10 @@ function top_htmlhead($head, $title='', $disablejs=0, $disablehead=0, $arrayofjs
 
         if (! empty($head)) print $head."\n";
         if (! empty($conf->global->MAIN_HTML_HEADER)) print $conf->global->MAIN_HTML_HEADER."\n";
+
+
+
+
 
         print "</head>\n\n";
     }

@@ -239,7 +239,7 @@ if(!empty($_POST['entidad_id']) &&  empty($_POST['resetTipo']) ){
         $sql.= " ON DUPLICATE KEY UPDATE valor_divisa_origen=".$valor_divisa_origen.",valor_divisa_destino='".$valor_divisa_destino."',fecha_ingreso='".$fecha_i."';";
 	}else{
         $sql.=";";
-	}//var_dump($sql);die("res 236");
+	}
 	$resql = $db->query($sql);
 
 }else if(!empty($_POST['resetTipo'])){
@@ -764,9 +764,23 @@ foreach ($listofreferent as $key => $value)
                 print "</td>\n";
                 }
                 
-
-				// Date
-				$date=$element->date;
+                // Date
+                if($entidadName=="facture"){
+                    $paiment_exists = 0;
+                    //si la factura tiene pagos entonces obtengo la fecha del ultimo pago
+                    $sqlMaxDatePaiement= "
+                        SELECT *
+                        FROM   vw_facture_paiement_max_date
+                        where  rowid = {$element->id} limit 1;";
+                    $sqlMaxDatePaiement = $db->query($sqlMaxDatePaiement);
+                    $retMaxDatePaiement = $db->fetch_object($sqlMaxDatePaiement);
+                    //comprueba que existan tuplas,de lo contrario no se debe mostrar ni el check de priorización, ni el remarcado de la tupla
+                    if ( ($db->num_rows($sqlMaxDatePaiement) > 0) && isset($retMaxDatePaiement->max_date)) {
+                            $date=$retMaxDatePaiement->max_date;
+                    }else{
+                        $date=$element->date;
+                    }
+                }
 				if (empty($date)) $date=$element->datep;
 				if (empty($date)) $date=$element->date_contrat;
 				if (empty($date)) $date=$element->datev; //Fiche inter
@@ -785,10 +799,8 @@ foreach ($listofreferent as $key => $value)
 				
                 $resqlFinal=0;
                 $id_de_consolidacion_manual=false;
-                $no_exite_cotizacion=false;
-                $isErronea=false;
                 //Solo si es diferente de usd y es cotizable si visualizara el form
-                if($element->fk_currency!='USD' &&  $esCotizable==1){
+                    if($element->fk_currency!='USD' &&  $esCotizable==1){
                 	//query de la entidad a realizar cotizacion
                		 $sqlQueryEntidad = "
 						SELECT 	cs.id
@@ -1027,9 +1039,8 @@ foreach ($listofreferent as $key => $value)
                     }
                     $obj='';
                 }
- 
-                
-                if(!empty($element->total_ht) and !empty($obj->valor_divisa_destino) and $element->fk_currency<>$obj->divisa_destino and $no_exite_cotizacion===false  && $isErronea===false ){
+
+				if(!empty($element->total_ht) and !empty($obj->valor_divisa_destino) and $element->fk_currency<>$obj->divisa_destino and $no_exite_cotizacion===false  && $isErronea===false ){
                     $total_conversion=$element->total_ht * $obj->valor_divisa_destino;
                     $total_conversion_sin_formato=$total_conversion/$obj->valor_divisa_origen;
                     $total_conversion=price($total_conversion_sin_formato,0,'',0,2,2);
@@ -1133,7 +1144,6 @@ foreach ($listofreferent as $key => $value)
 
 
             $linea;
-		//	print_r($arrayCurrencys);
 			$total[$value['class']]=$total_ttc;
 			$costo[$value['class']]=$total_cost;
             $costo[$value['class']]=$total_tcccot;

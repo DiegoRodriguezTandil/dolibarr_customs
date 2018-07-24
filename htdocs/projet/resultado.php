@@ -74,8 +74,6 @@ echo "
 ";
 
 
-
-
 /************************************************************************
  show o hide form de consolidation
 */
@@ -329,12 +327,13 @@ print '</div>';
 echo
 	"<script>
 		function conversionManual(linea){
-
 		    var id_conversion_general='#conversion_general-'+linea;
 			var id_conversion_manual ='#conversion_manual-'+linea;
-		    $(id_conversion_general).hide();
-		    $(id_conversion_manual).show();
-		 	
+            $(id_conversion_general).data('placement',1);
+            console.log($(id_conversion_general).data('placement'));
+            $(id_conversion_general).data('toggle',1);
+		     $(id_conversion_general).hide();
+		     $(id_conversion_manual).show();
 		}
 		function cancelarConversionManual(linea){
 			var id_conversion_general='#conversion_general-'+linea;
@@ -425,9 +424,11 @@ echo
 		    $(className).show();
 
         }
-        
-        
-		
+        //active popover
+        $(function () {
+         $('[data-toggle=tooltip]').tooltip()
+        })
+	
 	</script>";
 
 
@@ -738,9 +739,6 @@ foreach ($listofreferent as $key => $value)
               
                 /****************************************************************************************************************************************************/
 
-
-                //print $classname;
-
 				$var=!$var;
 				echo "<tr class='{$classTableShowColums}' $bc[$var] {$styleTr}>";
 
@@ -763,15 +761,37 @@ foreach ($listofreferent as $key => $value)
                 $nameDoc=$element->ref;
                 print "</td>\n";
                 }
-                
-
-				// Date
-				$date=$element->date;
-				if (empty($date)) $date=$element->datep;
-				if (empty($date)) $date=$element->date_contrat;
-				if (empty($date)) $date=$element->datev; //Fiche inter
-				if (empty($date)) $date=$element->expiration_date;
-				print '<td align="center">'.dol_print_date($date,'day').'</td>';
+                  // Date
+                if($entidadName=="facture"){
+                    $date_text_noty = "";
+                    $paiment_exists = 0;
+                    //si la factura tiene pagos entonces obtengo la fecha del ultimo pago
+                    $sqlMaxDatePaiement= "
+                            SELECT *
+                            FROM   vw_facture_paiement_max_date
+                            where  rowid = {$element->id} limit 1;";
+                    $sqlMaxDatePaiement = $db->query($sqlMaxDatePaiement);
+                    $retMaxDatePaiement = $db->fetch_object($sqlMaxDatePaiement);
+                    //comprueba que existan tuplas,de lo contrario no se debe mostrar ni el check de priorización, ni el remarcado de la tupla
+                    if ( ($db->num_rows($sqlMaxDatePaiement) > 0) && isset($retMaxDatePaiement->max_date)) {
+                        $date_report      = $element->date;
+                        $date             = $retMaxDatePaiement->max_date;
+                        $time             = strtotime($date);
+                        $date_format      =   date("d/m/Y",$time);
+                        $date_text_noty   =
+                            "data-toggle='tooltip'
+                             data-placement='top'
+                             title='La fecha que se tomo como referencia para realizar la cotización, es la fecha  {$date_format},  que pertenece al último pago realizado.'";
+                    }else{
+                        $date_report    = $element->date;
+                        $date           = $element->date;
+                    }
+                }
+                if (empty($date)) $date=$element->datep;
+                if (empty($date)) $date=$element->date_contrat;
+                if (empty($date)) $date=$element->datev; //Fiche inter
+                if (empty($date)) $date=$element->expiration_date;
+				print '<td align="center">'.dol_print_date($date_report,'day').'</td>';
 
 				// Third party
                 print '<td align="left">';
@@ -871,8 +891,8 @@ foreach ($listofreferent as $key => $value)
 									
 					
                     $date = new DateTime();
-                    $fecha_ingreso_format_db= date_format($date, 'Y-m-d');
-                    $fecha_ingreso_format_view = date_format($date, 'd/m/Y');
+                    $fecha_ingreso_format_db    = date_format($date, 'Y-m-d');
+                    $fecha_ingreso_format_view  = date_format($date, 'd/m/Y');
                     $tipo_de_cotizacion="";
                     
                     if( $resqlFinal  && $db->num_rows($resqlFinal)>0){
@@ -892,7 +912,7 @@ foreach ($listofreferent as $key => $value)
                         $fecha_ingreso_format_view	= DateTime::createFromFormat('Y-m-d',$obj->fecha_ingreso)->format('d/m/Y');
                         echo"
 						<td  style='font-size:80%; padding-left:10px;' align='left' width='200px' >
-							 <div id='conversion_general-{$linea}'>";
+							 <div id='conversion_general-{$linea}' {$date_text_noty}>";
                                 if($isErronea){
                                    echo "<b><span style=' font-size: 1.3em; ;color:red;'>Esta cotización es errónea.</span></b><br>";
                                 }
@@ -1338,6 +1358,9 @@ echo
 		    var id_conversion_general='#conversion_general-'+linea;
 			var id_conversion_manual ='#conversion_manual-'+linea;
 		    $(id_conversion_general).hide();
+		    console.log(id_conversion_general);
+		     $(id_conversion_general).removeData('toggle');
+		     $(id_conversion_general).removeData('placement');
 		    $(id_conversion_manual).show();
 		 	
 		}

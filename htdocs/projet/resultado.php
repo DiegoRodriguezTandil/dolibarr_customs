@@ -530,14 +530,14 @@ foreach ($listofreferent as $key => $value)
    //propiedades de un reporte priorizado
    $dom= $_POST['domain'];
    $searchDomain=$value['searchDomain'];
-   if($searchDomain===1){
-    $defaultDomain=$value['defaultDomain'];
-    if($defaultDomain==0){
-     $entityFather= $value['entityFather'];
+    if($searchDomain===1){
+        $defaultDomain=$value['defaultDomain'];
+        if($defaultDomain==0){
+         $entityFather= $value['entityFather'];
+        }
+    }else{
+        $defaultDomain=-1;
     }
-   }else{
-    $defaultDomain=-1;
-   }
    // --------------------------------------
 
 	if ($qualified)
@@ -764,7 +764,7 @@ foreach ($listofreferent as $key => $value)
                   // Date
                 if($entidadName=="facture"){
                     $date_text_noty = "";
-                    $paiment_exists = 0;
+                    $addTooltip     = false;
                     //si la factura tiene pagos entonces obtengo la fecha del ultimo pago
                     $sqlMaxDatePaiement= "
                             SELECT *
@@ -774,19 +774,18 @@ foreach ($listofreferent as $key => $value)
                     $retMaxDatePaiement = $db->fetch_object($sqlMaxDatePaiement);
                     //comprueba que existan tuplas,de lo contrario no se debe mostrar ni el check de priorización, ni el remarcado de la tupla
                     if ( ($db->num_rows($sqlMaxDatePaiement) > 0) && isset($retMaxDatePaiement->max_date)) {
-                        $date_report      = $element->date;
-                        $date             = $retMaxDatePaiement->max_date;
-                        $time             = strtotime($date);
-                        $date_format      =   date("d/m/Y",$time);
-                        $date_text_noty   =
-                            "data-toggle='tooltip'
-                             data-placement='top'
-                             title='La fecha que se tomo como referencia para realizar la cotización, es la fecha  {$date_format},  que pertenece al último pago realizado.'";
+                        $date_report       = $element->date;
+                        $date              = strtotime($retMaxDatePaiement->max_date);
+                        $addTooltip=true;
                     }else{
                         $date_report    = $element->date;
                         $date           = $element->date;
                     }
+                }else{
+                    $date_report    = $element->date;
+                    $date           = $element->date;
                 }
+                
                 if (empty($date)) $date=$element->datep;
                 if (empty($date)) $date=$element->date_contrat;
                 if (empty($date)) $date=$element->datev; //Fiche inter
@@ -910,6 +909,13 @@ foreach ($listofreferent as $key => $value)
                         $valor_divisa_destino=$obj->valor_divisa_destino;
 
                         $fecha_ingreso_format_view	= DateTime::createFromFormat('Y-m-d',$obj->fecha_ingreso)->format('d/m/Y');
+                        //agrego tooltip para el caso de una factura con pagos
+                        if($addTooltip==true && $tipo_de_cotizacion==="General" ){
+                            $date_text_noty   =
+                             "data-toggle='tooltip'
+                             data-placement='top'
+                             title='La fecha que se tomo como referencia para realizar la cotización, es la fecha {$fecha_ingreso_format_view}, que pertenece al último pago realizado.'";
+                        }
                         echo"
 						<td  style='font-size:80%; padding-left:10px;' align='left' width='200px' >
 							 <div id='conversion_general-{$linea}' {$date_text_noty}>";

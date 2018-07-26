@@ -178,10 +178,10 @@ function task_prepare_head($object)
  *	@param	int		$maxlength	Maximum length of label
  *	@return int         		Nbre of project if OK, <0 if KO
  */
-function select_projects($socid=-1, $selected='', $htmlname='projectid', $maxlength=50)
+function select_projects($socid=-1, $selected='', $htmlname='projectid', $maxlength=50, $hiddeProjectNotFree=false)
 {
 	global $db,$user,$conf,$langs;
-     
+    
     $hideunselectables = false;
 	if (! empty($conf->global->PROJECT_HIDE_UNSELECTABLES)) $hideunselectables = true;
 
@@ -193,9 +193,10 @@ function select_projects($socid=-1, $selected='', $htmlname='projectid', $maxlen
 	}
 
 	// Search all projects
-	$sql = 'SELECT p.rowid, p.ref, p.title, p.fk_soc, p.fk_statut, p.public';
-	$sql.= ' FROM '.MAIN_DB_PREFIX .'projet as p';
-	$sql.= " WHERE p.entity = ".$conf->entity;
+	$sql = 'SELECT p.rowid, p.ref, p.title, p.fk_soc, p.fk_statut, p.public, s.nom ';
+	$sql.= 'FROM '.MAIN_DB_PREFIX .'projet as p ';
+	$sql.= 'LEFT JOIN '.MAIN_DB_PREFIX .'societe as s on (p.fk_soc=s.rowid) ';
+	$sql.= "WHERE p.entity = ".$conf->entity;
 	if ($projectsListId !== false) $sql.= " AND p.rowid IN (".$projectsListId.")";
 	if ($socid == 0) $sql.= " AND (p.fk_soc=0 OR p.fk_soc IS NULL)";
 	$sql.= " ORDER BY p.ref DESC";
@@ -238,7 +239,9 @@ function select_projects($socid=-1, $selected='', $htmlname='projectid', $maxlen
 						if ($socid > 0 && (! empty($obj->fk_soc) && $obj->fk_soc != $socid))
 						{
 							$disabled=1;
-							$labeltoshow.=' - '.$langs->trans("LinkedToAnotherCompany");
+                            $labeltoshow.=' - '.$obj->title;
+							$labeltoshow.=' ('.$langs->trans("LinkedToAnotherCompany");
+                            if(isset($obj->nom) ) $labeltoshow.=" -  ".dol_trunc($obj->nom,$maxlength).")";
 						}
 
 						if ($hideunselectables && $disabled)
@@ -248,10 +251,11 @@ function select_projects($socid=-1, $selected='', $htmlname='projectid', $maxlen
 						else
 						{
 							$resultat='<option value="'.$obj->rowid.'"';
-							if ($disabled) $resultat.=' disabled="disabled"';
+							if ($disabled && $hiddeProjectNotFree) $resultat.=' disabled="disabled"';
 							//if ($obj->public) $labeltoshow.=' ('.$langs->trans("Public").')';
 							//else $labeltoshow.=' ('.$langs->trans("Private").')';
 							$resultat.='>'.$labeltoshow;
+							
 							if (! $disabled) $resultat.=' - '.dol_trunc($obj->title,$maxlength);
 							$resultat.='</option>';
 						}

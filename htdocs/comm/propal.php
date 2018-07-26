@@ -266,12 +266,12 @@ else if ($action == 'setnote' && $user->rights->propal->creer)
 }
 // FEDE Purpose
 else if ($action == 'setpurpose' && $user->rights->commande->creer)
-{	
+{
 	$object->setPurpose(GETPOST('purpose'));
 }
 // FEDE Licitación
 else if ($action == 'settender_number' && $user->rights->commande->creer)
-{	
+{
 	$object->setTenderNumber(GETPOST('tender_number'));
 }
 //QWAVEE set currency
@@ -834,7 +834,7 @@ else if ($action == "addline" && $user->rights->propal->creer)
 			$mesg = $langs->trans("CantBeLessThanMinPrice",price2num($price_min,'MU').getCurrencySymbol($conf->currency));
 			setEventMessage($mesg, 'errors');
 		}
-		else 
+		else
 		{
 			// Insert line
 			$result=$object->addline(
@@ -1337,7 +1337,7 @@ print '<tr><td>'.$langs->trans('Ref').'</td><td colspan="5">';
 print $form->showrefnav($object, 'ref', $linkback, 1, 'ref', 'ref', '');
 print '</td></tr>';
 
-// FEDE - Objeto						
+// FEDE - Objeto
 print '<tr><td height="10">';
 print '<table class="nobordernopadding" width="100%"><tr><td>';
 print 'Objeto';
@@ -1362,7 +1362,7 @@ else
 print '</td></tr>';
 //FIN FEDE
 
-// FEDE - Licitación						
+// FEDE - Licitación
 print '<tr><td height="10">';
 print '<table class="nobordernopadding" width="100%"><tr><td>';
 print 'Número de licitación';
@@ -1638,7 +1638,7 @@ if (! empty($conf->projet->enabled))
 		print '</td><td colspan="5">';
 		if ($action == 'classify')
 		{
-			$form->form_project($_SERVER['PHP_SELF'].'?id='.$object->id, $object->socid, $object->fk_project, 'projectid');
+			$form->form_project($_SERVER['PHP_SELF'].'?id='.$object->id, $object->socid, $object->fk_project, 'projectid',false);
 		}
 		else
 		{
@@ -1880,14 +1880,14 @@ if ($action == 'statut')
 		if ($action == 'statut') //{ECHO "STATUT";}
 		{
 		
-		if ($action == 'confirm_validate' && $confirm == 'yes' && $user->rights->commande->valider) 
+		if ($action == 'confirm_validate' && $confirm == 'yes' && $user->rights->commande->valider)
 		{
 		
 		 if ($object->statut == 2 && $user->rights->propal->cloturer) {ECHO "OBJ STATUS 2 CLOTURER";}
 		 
 		 if ($object->statut == 1 && $user->rights->propal->cloturer) {ECHO "OBJ STATUS 1 CLOTURER";}
 		 
-		 if ($object->statut == 0 && $user->rights->propal->cloturer) {ECHO "OBJ STATUS 0 CLOTURER";} 
+		 if ($object->statut == 0 && $user->rights->propal->cloturer) {ECHO "OBJ STATUS 0 CLOTURER";}
 		 
 		 }
 		 
@@ -1931,7 +1931,7 @@ if ($action != 'presend')
 		if ($action != 'statut' && $action <> 'editline')
 		{
 	
-			$pricelevel = $object->client->price_level; 
+			$pricelevel = $object->client->price_level;
 			?>
 
 			<head>
@@ -1947,7 +1947,7 @@ if ($action != 'presend')
 		
 			// New product
 			if ($object->statut == 0)
-			{				
+			{
 				print '<a class="butAction" href="#" onclick="open_win()">'.$langs->trans('Crear Nuevo Producto').'</a>';
 			}
 		
@@ -1989,12 +1989,12 @@ if ($action != 'presend')
 					print '<a class="butAction" href="'.DOL_URL_ROOT.'/commande/fiche.php?action=create&amp;origin='.$object->element.'&amp;originid='.$object->id.'&amp;socid='.$object->socid.'">'.$langs->trans("AddOrder").'</a>';
 				}
 			}
-			// TEST ORDEN DE VENTA			
-			if (($object->statut == 2 || $object->statut == 3) && $user->rights->propal->cloturer)		
-			{		
+			// TEST ORDEN DE VENTA
+			if (($object->statut == 2 || $object->statut == 3) && $user->rights->propal->cloturer)
+			{
 				//ECHO "ACA";
-				print '<a class="butAction" href="../salesorder/fiche.php?action=create&amp;origin='.$object->element.'&amp;originid='.$object->id.'&amp;socid='.$object->socid.'">'."Crear Orden de Venta".'</a>';			
-			}			
+				print '<a class="butAction" href="../salesorder/fiche.php?action=create&amp;origin='.$object->element.'&amp;originid='.$object->id.'&amp;socid='.$object->socid.'">'."Crear Orden de Venta".'</a>';
+			}
 			//FIN TEST ORDEN DE VENTA
 			// Create an invoice and classify billed
 			if ($object->statut == 2 && $user->societe_id == 0)
@@ -2013,7 +2013,7 @@ if ($action != 'presend')
 
 			// Close
 			if ($object->statut == 1 && $user->rights->propal->cloturer)
-			{				
+			{
 				print '<a class="butAction" href="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'&amp;action=statut'.(empty($conf->global->MAIN_JUMP_TAG)?'':'#close').'"';
 				print '>'.$langs->trans('Close').'</a>';
 			}
@@ -2046,9 +2046,9 @@ if ($action != 'presend')
 
 
 
-		/*AGREGAR NUEVO PRODUCTO Y PASAR EL NIVEL DE PRECIO A FICHE2.PHP	
+		/*AGREGAR NUEVO PRODUCTO Y PASAR EL NIVEL DE PRECIO A FICHE2.PHP
 		
-		$pricelevel = $object->client->price_level; 
+		$pricelevel = $object->client->price_level;
 		
 		?>
 
@@ -2057,7 +2057,7 @@ if ($action != 'presend')
 		function open_win()
 		{
 		var prlevel = $('#pricelevel').val();
-       
+    
 		 
 		  window.open(".././product/fiche2.php?leftmenu=product&action=create&type=0&"+ "pricelevel=" + prlevel, "newwindow", "height=700, width=600, modal=yes, alwaysRaised=yes, toolbar=no, menubar=no, scrollbars=no, resizable=no")
 	 

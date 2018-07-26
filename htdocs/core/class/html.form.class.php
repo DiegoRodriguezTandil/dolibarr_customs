@@ -2660,7 +2660,7 @@ class Form
      *    @param    string	$htmlname    Name of select field
      *    @return	void
      */
-    function form_project($page, $socid, $selected='', $htmlname='projectid')
+    function form_project($page, $socid, $selected='', $htmlname='projectid',$hiddeProjectNotFree=false)
     {
         global $langs;
 
@@ -2675,7 +2675,7 @@ class Form
             print '<table class="nobordernopadding" cellpadding="0" cellspacing="0" style="width: 100%;" >';
             print '<tr><td style="width: 100%;">';
             //print "$socid,$selected,$htmlname";
-            select_projects($socid,$selected,$htmlname);
+            select_projects($socid,$selected,$htmlname,70,$hiddeProjectNotFree);
             print '</td>';
             print '<td align="left"><input type="submit" class="button" value="'.$langs->trans("Modify").'"></td>';
             print '</tr></table></form>';

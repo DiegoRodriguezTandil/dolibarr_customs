@@ -61,7 +61,35 @@ abstract class CommonInvoice extends CommonObject
 			return -1;
 		}
 	}
-
+    //Qwavee
+    //Reset sort of line_ref
+    function resetReferences($baseTable,$rowid,$fk_entity)
+    {
+        $baseTable = strtolower($baseTable);
+        $baseTable.="det";
+        $query="
+            SELECT
+                  pt.rowid
+                , pt.line_ref
+            FROM   ".MAIN_DB_PREFIX.$baseTable." as pt
+            WHERE pt.{$fk_entity} = {$rowid}
+            order by  pt.rowid";
+        $retsql = $this->db->query($query);
+        $ref        = 1;
+        $cantRows  = $this->db->num_rows($retsql);
+        $count      = 0;
+        while ($retsql  && $cantRows>$count) {
+            $lineRef = str_pad($ref, 3, "0", STR_PAD_LEFT);
+            $obj = $this->db->fetch_object($retsql);
+            $sqlUpdate    = " UPDATE ".MAIN_DB_PREFIX.$baseTable;
+            $sqlUpdate   .= " SET line_ref='{$lineRef}'";
+            $sqlUpdate   .= " WHERE rowid = {$obj->rowid}";
+            $retSqlUpdate = $this->db->query($sqlUpdate);
+            $ref++;
+            $count++;
+        }
+        return 1;
+    }
 	/**
 	 *	Renvoie tableau des ids de facture avoir issus de la facture
 	 *

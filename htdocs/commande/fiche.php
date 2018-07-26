@@ -62,7 +62,7 @@ $confirm=GETPOST('confirm','alpha');
 $lineid=GETPOST('lineid','int');
 $origin=GETPOST('origin','alpha');
 $originid=(GETPOST('originid','int')?GETPOST('originid','int'):GETPOST('origin_id','int')); // For backward compatibility
-
+$resetLineRef   = GETPOST('resetlineref','int');
 $mesg    = GETPOST('mesg');
 
 //PDF
@@ -82,6 +82,13 @@ if (! empty($user->societe_id)) $socid=$user->societe_id;
 $result=restrictedArea($user,'commande',$id);
 
 $object = new Commande($db);
+//Qwavee
+if(isset($resetLineRef) && isset($id) && $resetLineRef==1){
+    $baseTable = get_class($object);
+    $fk_entity = "fk_Commande";
+    $rowid     = $id;
+    $object->resetReferences($baseTable,$rowid,$fk_entity);
+}
 
 // Load object
 if ($id > 0 || ! empty($ref))
@@ -2324,8 +2331,16 @@ if ($action == 'send' && ! GETPOST('addfile') && ! GETPOST('removedfile') && ! G
 			{
 				include DOL_DOCUMENT_ROOT.'/core/tpl/ajaxrow.tpl.php';
 			}
-
-			print '<table id="tablelines" class="noborder" width="100%">';
+            if ($object->statut == 0){
+                print '
+                        <form action="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'" method="post" >
+                        <input type="text" name="resetlineref" value="1" id="" hidden>
+                            <button>Ordenar Número de Referencia</button>
+                        </form>';
+            }
+            
+    
+            print '<table id="tablelines" class="noborder" width="100%">';
 
 			// Show object lines
 			if (! empty($object->lines))

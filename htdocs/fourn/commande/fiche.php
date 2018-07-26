@@ -60,6 +60,7 @@ $socid			= GETPOST('socid','int');
 $projectid		= GETPOST('projectid','int');
 $currencyid		= GETPOST('currencyid','alpha');
 $shiptoid		= GETPOST('shiptoid','int');
+$resetLineRef   = GETPOST('resetlineref','int');
 
 //PDF
 $hidedetails = (GETPOST('hidedetails','int') ? GETPOST('hidedetails','int') : (! empty($conf->global->MAIN_GENERATE_DOCUMENTS_HIDE_DETAILS) ? 1 : 0));
@@ -77,7 +78,13 @@ $hookmanager=new HookManager($db);
 $hookmanager->initHooks(array('ordersuppliercard'));
 
 $object = new CommandeFournisseur($db);
-
+//Qwavee
+if(isset($resetLineRef) && isset($id) && $resetLineRef==1){
+    $baseTable = "commande_fournisseur";
+    $fk_entity = "fk_commande";
+    $rowid     = $id;
+    $object->resetReferences($baseTable,$rowid,$fk_entity);
+}
 // Load object
 if ($id > 0 || ! empty($ref))
 {
@@ -95,6 +102,7 @@ else if (! empty($socid))
 	$ret = $object->fetch_thirdparty();
 	if ($ret < 0) dol_print_error($db,$object->error);
 }
+
 
 /*
  * Actions
@@ -299,13 +307,13 @@ else if ($action == 'addline' && $user->rights->fournisseur->commande->creer)
                 if (!empty($_POST['pu']))
                 {
                     $price_base_type = 'HT';
-                    $ht = price2num($_POST['pu']);					
+                    $ht = price2num($_POST['pu']);
                     $result=$object->addline($desc, $ht, $_POST['qty'], $tva_tx, $localtax1_tx, $localtax2_tx, 0, 0, '', $_POST['remise_percent'], $price_base_type, 0, $type);
                 }
                 else
                 {
                     $ttc = price2num($_POST['amountttc']);
-                    $ht = $ttc / (1 + ($tauxtva / 100));					
+                    $ht = $ttc / (1 + ($tauxtva / 100));
                     $price_base_type = 'HT';
                     $result=$object->addline($desc, $ht, $_POST['qty'], $tva_tx, $localtax1_tx, $localtax2_tx, 0, 0, '', $_POST['remise_percent'], $price_base_type, $ttc, $type);
                 }
@@ -686,10 +694,10 @@ else if ($action == 'create' && ! empty($object->socid) && $user->rights->fourni
 
     $db->begin();
 
-    $id=$object->create($user);	
+    $id=$object->create($user);
     if (! $id > 0)
-    {		
-        $error++;		
+    {
+        $error++;
         setEventMessage($object->error, 'errors');
     }
 
@@ -698,7 +706,7 @@ else if ($action == 'create' && ! empty($object->socid) && $user->rights->fourni
         if ($comclientid !=	'')
         {
     		$object->updateFromCommandeClient($user, $id, $comclientid);
-        }		
+        }
 		$ret=$object->fetch($id);    // Reload to get new records
         $db->commit();
     }
@@ -1471,7 +1479,7 @@ if (! empty($object->id))
 		{
 			print "\n";
 			print '<form action="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'&amp;etat=1&amp;ligne_id='.$line->id.'" method="post">';
-				
+			
 			print '<input type="hidden" name="token" value="'.$_SESSION['newtoken'].'">';
 			print '<input type="hidden" name="action" value="updateligne">';
 			print '<input type="hidden" name="id" value="'.$object->id.'">';
@@ -1480,7 +1488,7 @@ if (! empty($object->id))
 			print "<td style='text-align:center;'>
 					<input style='text-align:center;' type='text' name='line_ref_edit'";
 					echo   (!empty($line->line_ref))?" value='".$line->line_ref:'';
-					print "'>"; 
+					print "'>";
 			print "</td>";
 			print '<td>';
 			print '<a name="'.$line->id.'"></a>'; // ancre pour retourner sur la ligne
@@ -1603,7 +1611,13 @@ if (! empty($object->id))
 		print '</tr>';
 
 		print '</form>';*/
-
+        if ($object->statut == 0){
+            print '
+                <form action="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'" method="post" >
+                <input type="text" name="resetlineref" value="1" id="" hidden>
+                    <button>Ordenar Número de Referencia</button>
+                </form>';
+        }
 		// Ajout de produits/services predefinis
 		if (! empty($conf->product->enabled) || ! empty($conf->service->enabled))
 		{

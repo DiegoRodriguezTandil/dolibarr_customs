@@ -70,6 +70,8 @@ $search_montant_ht=GETPOST('search_montant_ht','alpha');
 $search_montant_ttc=GETPOST('search_montant_ttc','alpha');
 $origin=GETPOST('origin','alpha');
 $originid=(GETPOST('originid','int')?GETPOST('originid','int'):GETPOST('origin_id','int')); // For backward compatibility
+$resetLineRef   = GETPOST('resetlineref','int');
+
 
 //PDF
 $hidedetails = (GETPOST('hidedetails','int') ? GETPOST('hidedetails','int') : (! empty($conf->global->MAIN_GENERATE_DOCUMENTS_HIDE_DETAILS) ? 1 : 0));
@@ -87,7 +89,13 @@ $NBLINES=4;
 $usehm=(! empty($conf->global->MAIN_USE_HOURMIN_IN_DATE_RANGE)?$conf->global->MAIN_USE_HOURMIN_IN_DATE_RANGE:0);
 
 $object=new Facture($db);
-
+//Qwavee
+if(isset($resetLineRef) && isset($id) && $resetLineRef==1){
+    $baseTable = get_class($object);
+    $fk_entity = "fk_facture";
+    $rowid     = $id;
+    $object->resetReferences($baseTable,$rowid,$fk_entity);
+}
 // Load object
 if ($id > 0 || ! empty($ref))
 {
@@ -3136,7 +3144,14 @@ else if ($id > 0 || ! empty($ref))
         {
             include DOL_DOCUMENT_ROOT.'/core/tpl/ajaxrow.tpl.php';
         }
-
+    
+        print '
+            <form action="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'" method="post" >
+                <input type="text" name="resetlineref" value="1" id="" hidden>
+                <button>Ordenar Número de Referencia</button>
+            </form>';
+    
+    
         print '<table id="tablelines" class="noborder noshadow" width="100%">';
 
         // Show object lines

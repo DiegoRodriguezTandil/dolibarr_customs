@@ -1143,3 +1143,4 @@ VIEW `vw_salesorder_facture_cotizacion_priorizada` AS
 delete from llx_c_type_fees where id=5;
 alter table llx_c_type_fees add only_projet int(1) default 0;
 insert into llx_c_type_fees(code,libelle,active,only_projet)values('TF_PROJECT','Project Expenses',1,1);
+alter table llx_facturedet add line_ref varchar(3) default null;

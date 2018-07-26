@@ -926,6 +926,7 @@ class Facture extends CommonInvoice
         $sql.= ' l.date_start as date_start, l.date_end as date_end,';
         $sql.= ' l.info_bits, l.total_ht, l.total_tva, l.total_localtax1, l.total_localtax2, l.total_ttc, l.fk_code_ventilation, l.fk_export_compta, l.fk_product_fournisseur_price as fk_fournprice, l.buy_price_ht as pa_ht,';
         $sql.= ' p.ref as product_ref, p.fk_product_type as fk_product_type, p.label as product_label, p.description as product_desc';
+        $sql.= ' ,l.line_ref';
         $sql.= ' FROM '.MAIN_DB_PREFIX.'facturedet as l';
         $sql.= ' LEFT JOIN '.MAIN_DB_PREFIX.'product as p ON l.fk_product = p.rowid';
         $sql.= ' WHERE l.fk_facture = '.$this->id;
@@ -984,6 +985,7 @@ class Facture extends CommonInvoice
                 $line->rang				= $objp->rang;
                 $line->special_code		= $objp->special_code;
                 $line->fk_parent_line	= $objp->fk_parent_line;
+                $line->line_ref     	= $objp->line_ref;
 
                 // Ne plus utiliser
                 //$line->price            = $objp->price;

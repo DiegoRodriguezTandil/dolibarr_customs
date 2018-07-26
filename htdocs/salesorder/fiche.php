@@ -62,7 +62,7 @@ $confirm=GETPOST('confirm','alpha');
 $lineid=GETPOST('lineid','int');
 $origin=GETPOST('origin','alpha');
 $originid=(GETPOST('originid','int')?GETPOST('originid','int'):GETPOST('origin_id','int')); // For backward compatibility
-
+$resetLineRef   = GETPOST('resetlineref','int');
 //FEDE
 $shipment_location='shipment_location';
 //FIN FEDE
@@ -79,7 +79,13 @@ if (! empty($user->societe_id)) $socid=$user->societe_id;
 $result=restrictedArea($user,'salesorder',$id);
 
 $object = new salesorder($db);
-
+//Qwavee
+if(isset($resetLineRef) && isset($id) && $resetLineRef==1){
+    $baseTable = get_class($object);
+    $fk_entity = "fk_salesorder";
+    $rowid     = $id;
+    $object->resetReferences($baseTable,$rowid,$fk_entity);
+}
 // Load object
 if ($id > 0 || ! empty($ref))
 {
@@ -1838,7 +1844,6 @@ if ($action == 'send' && ! GETPOST('addfile') && ! GETPOST('removedfile') && ! G
 							//array('type' => 'checkbox', 'name' => 'update_prices',   'label' => $langs->trans("PuttingPricesUpToDate"),   'value' => 1),
 					array('type' => 'other', 'name' => 'idwarehouse',   'label' => $langs->trans("SelectWarehouseForStockIncrease"),   'value' => $formproduct->selectWarehouses(GETPOST('idwarehouse'),'idwarehouse','',1)));
 				}
-
 				$formconfirm=$form->formconfirm($_SERVER["PHP_SELF"].'?id='.$object->id, $langs->trans('UnvalidateOrder'), $text, 'confirm_modif', $formquestion, "yes", 1, 220);
 			}
 
@@ -2273,8 +2278,16 @@ if ($action == 'send' && ! GETPOST('addfile') && ! GETPOST('removedfile') && ! G
 			{
 				include DOL_DOCUMENT_ROOT.'/core/tpl/ajaxrow.tpl.php';
 			}
-
-			print '<table id="tablelines" class="noborder" width="100%">';
+    
+            if($object->statut == 0 ){
+                print '
+                    <form action="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'" method="post" >
+                        <input type="text" name="resetlineref" value="1" id="" hidden>
+                        <button>Ordenar Número de Referencia</button>
+                    </form>';
+            }
+            
+            print ' <table id="tablelines" class="noborder" width="100%">';
 
 			// Show object lines
 			if (! empty($object->lines))

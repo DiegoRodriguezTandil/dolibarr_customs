@@ -57,8 +57,8 @@ $socid=GETPOST('socid','int');
 $action=GETPOST('action','alpha');
 $confirm=GETPOST('confirm','alpha');
 $lineid=GETPOST('lineid','int');
-$currencyid		= GETPOST('currencyid','alpha');
-
+$currencyid= GETPOST('currencyid','alpha');
+$resetLineRef=GETPOST('resetlineref','int');
 
 //PDF
 $hidedetails = (GETPOST('hidedetails','int') ? GETPOST('hidedetails','int') : (! empty($conf->global->MAIN_GENERATE_DOCUMENTS_HIDE_DETAILS) ? 1 : 0));
@@ -77,6 +77,7 @@ if (! empty($user->societe_id))	$socid=$user->societe_id;
 $result = restrictedArea($user, 'propal', $id);
 
 $object = new Propal($db);
+
 
 // Load object
 if ($id > 0 || ! empty($ref))
@@ -110,6 +111,13 @@ $hookmanager=new HookManager($db);
 $hookmanager->initHooks(array('propalcard'));
 
 
+//Qwavee
+if(isset($resetLineRef) && isset($id) && $resetLineRef==1){
+    $baseTable = get_class($object);
+    $fk_entity = "fk_propal";
+    $rowid     = $id;
+    $object->resetReferences($baseTable,$rowid,$fk_entity);
+}
 
 /*
  * Actions
@@ -1780,6 +1788,15 @@ if (! empty($conf->use_javascript_ajax) && $object->statut == 0)
 {
 	include DOL_DOCUMENT_ROOT.'/core/tpl/ajaxrow.tpl.php';
 }
+if ($object->statut == 0){
+    print '
+        <form action="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'" method="post" >
+        <input type="text" name="resetlineref" value="1" id="" hidden>
+            <button>Ordenar Número de Referencia</button>
+        </form>
+         ';
+}
+
 
 print '<table id="tablelines" class="noborder" width="100%">';
 
@@ -1787,7 +1804,6 @@ print '<table id="tablelines" class="noborder" width="100%">';
 $result = $object->getLinesArray();
 if (! empty($object->lines))
 	$ret=$object->printObjectLines($action,$mysoc,$soc,$lineid,0,$hookmanager);
-
 // Form to add new line
 if ($object->statut == 0 && $user->rights->propal->creer)
 {

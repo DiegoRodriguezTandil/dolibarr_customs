@@ -73,11 +73,15 @@ if ($projectid == '' && $ref == '')
     ini_set('display_errors', TRUE);
     ini_set('display_startup_errors', TRUE);
     date_default_timezone_set('Europe/London');
+    
+    
+$arraySettings['cell'] =array("A"=>"REF","B"=>"SALDO");
+$arraySettings['title']="Reporte Resultado";
 
 $pruebaExcel= new  Phpexcelconfiguration();
 $pruebaExcel->setExcelProperties();
+$pruebaExcel->setExcelFormat($arraySettings);
 $pruebaExcel->setDataExcel(1);
-$pruebaExcel->setExcelFormat();
 $pruebaExcel->saveExcel();
     var_dump($pruebaExcel->getObjPHPExcel() );
     die("68");

@@ -22,19 +22,18 @@
        public function getObjPHPExcel(){
                 return $this->objPHPExcel;
         }
-        function setExcelFormat($arraySettings=0){
+        function setExcelFormat($arraySettings=null){
             
-           /* if( (!empty($arraySettings) ) && (is_array($arraySettings)) && (array_key_exists('title',$arraySettings))) $this->objPHPExcel->getActiveSheet()->setTitle("Reporte Resultado");
+            if( (!empty($arraySettings) ) && (is_array($arraySettings)) && (array_key_exists('title',$arraySettings))) $this->objPHPExcel->getActiveSheet()->setTitle("Reporte Resultado");
     
             if( (!empty($arraySettings) ) && (is_array($arraySettings)) && (array_key_exists('cells',$arraySettings)) && (!empty($arraySettings['cells'])) && (is_array($arraySettings['cells'])) ) {
-                if(){
-                    $this->objPHPExcel->setActiveSheetIndex(0)->getColumnDimension('B')->setAutoSize(true);
+                foreach ($arraySettings['cells'] as $celda=>$nombre){
+                    $celda        = $celda;
+                    $description  = $nombre;
+                    $this->objPHPExcel->setActiveSheetIndex(0)->setCellValue($celda, $description);
                 }
             }
-            */
-            $this->objPHPExcel->getActiveSheet()->setTitle("Reporte Resultado");
             $this->objPHPExcel->setActiveSheetIndex(0);
-    
         }
         
         function setExcelProperties(){

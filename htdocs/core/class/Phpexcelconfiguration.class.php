@@ -95,18 +95,23 @@
         function saveRowExcel($arrayRow,$row){
             if( (!empty($arrayRow) )  &&  (is_array($arrayRow)) ){
                 if( !empty($arrayRow['Documento']) && array_key_exists('Documento',$arrayRow))
+                    var_dump("Documento");
                     $this->objPHPExcel->getActiveSheet()->setCellValue('A'.$row, $arrayRow["Documento"]);
                 
                 if( !empty($arrayRow['Codigo']) && array_key_exists('Codigo',$arrayRow))
+                    var_dump("Codigo");
                     $this->objPHPExcel->getActiveSheet()->setCellValue('B'.$row, $arrayRow["Codigo"]);
                 
                 if( !empty($arrayRow['Divisa']) && array_key_exists('Divisa',$arrayRow))
+                    var_dump("Divisa");
                     $this->objPHPExcel->getActiveSheet()->setCellValue('C'.$row, $arrayRow["Divisa"]);
                 
                 if( !empty($arrayRow['ImporteOriginal']) && array_key_exists('ImporteOriginal',$arrayRow))
+                    var_dump("ImporteOriginal");
                     $this->objPHPExcel->getActiveSheet()->setCellValue('D'.$row, round($arrayRow["ImporteOriginal"]),2 );
                 
                 if( !empty($arrayRow['ImporteDolares']) && array_key_exists('ImporteDolares',$arrayRow))
+                    var_dump("ImporteDolares");
                     $this->objPHPExcel->getActiveSheet()->setCellValue('E'.$row,round( $arrayRow["ImporteDolares"]),2 );
         
                 $this->objPHPExcel->getActiveSheet()->getRowDimension($row)->setRowHeight(20);

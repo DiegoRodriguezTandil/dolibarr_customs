@@ -81,7 +81,7 @@ $pruebaExcel= new  Phpexcelconfiguration();
 $pruebaExcel->setExcelProperties();
 $pruebaExcel->setExcelFormat($arraySettings);
 $arrayaux=array("Documento"=>1,"Codigo"=>22,"Divisa"=>"USD","ImporteOriginal"=>1024,"ImporteDolares"=>58 );
-$pruebaExcel->saveRowExcel($arrayaux);
+$pruebaExcel->saveRowExcel($arrayaux,2);
 $pruebaExcel->saveExcel();
 var_dump($pruebaExcel->getObjPHPExcel() );
 die("68");

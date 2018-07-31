@@ -22,10 +22,28 @@
        public function getObjPHPExcel(){
                 return $this->objPHPExcel;
         }
+        
+        
         function setExcelFormat($arraySettings=null){
-            
-            if( (!empty($arraySettings) ) && (is_array($arraySettings)) && (array_key_exists('title',$arraySettings))) $this->objPHPExcel->getActiveSheet()->setTitle("Reporte Resultado");
+            $this->objPHPExcel->setActiveSheetIndex(0)
+             ->setCellValue('A0', 'Documento')
+             ->setCellValue('B0', 'Código(Ref)')
+             ->setCellValue('C0', 'Divísa')
+             ->setCellValue('D0', 'Importe Original')
+             ->setCellValue('e0', 'Importe Dolares')
+             ->setCellValue('f0', 'Importe Total(USD)');
+            $this->objPHPExcel->getActiveSheet()->setTitle("Reporte Resultado");
+        }
     
+       /* function setExcelFormat2($arraySettings=null){
+        
+            if( (!empty($arraySettings) ) && (is_array($arraySettings)) && (array_key_exists('title',$arraySettings))) $this->objPHPExcel->getActiveSheet()->setTitle("Reporte Resultado");
+        
+            var_dump((!empty($arraySettings));
+            var_dump(is_array($arraySettings));
+            var_dump(array_key_exists('cells',$arraySettings));
+            var_dump(!empty($arraySettings['cells']));
+            var_dump(is_array($arraySettings['cells']));
             if( (!empty($arraySettings) ) && (is_array($arraySettings)) && (array_key_exists('cells',$arraySettings)) && (!empty($arraySettings['cells'])) && (is_array($arraySettings['cells'])) ) {
                 foreach ($arraySettings['cells'] as $celda=>$nombre){
                     $celda        = $celda;
@@ -34,8 +52,7 @@
                 }
             }
             $this->objPHPExcel->setActiveSheetIndex(0);
-        }
-        
+        }*/
         function setExcelProperties(){
             // Set document properties
             $this->objPHPExcel->getProperties()->setCreator("Maarten Balliauw")
@@ -59,43 +76,14 @@
             header ('Cache-Control: cache, must-revalidate'); // HTTP/1.1
             header ('Pragma: public'); // HTTP/1.0
         }
-        //crea un archivo excel nuevo y crea la cabecera adecuada
-        function cleanExcel($cleanPercentage,$movilNumber,$titular,$NroFactura,$totalFactura,$cuit,$date){
-            
-            setExcelFormat();
-            $this->objPHPExcel->getActiveSheet()->setCellValue('A1', "Perido: ");
-           /* $objPHPExcel->getActiveSheet()->setCellValue('B1', "{$date->format("Y-m")}");
-            $objPHPExcel->getActiveSheet()->setCellValue('A2', "Nombre Titular");
-            $objPHPExcel->getActiveSheet()->setCellValue('B2', "$titular");
-            $objPHPExcel->getActiveSheet()->setCellValue('C2', "Cuit: $cuit");
-            $objPHPExcel->getActiveSheet()->setCellValue('A3', "Movil  $movilNumber");
-            $objPHPExcel->getActiveSheet()->setCellValue('A4', "Factura: $NroFactura");
-            $objPHPExcel->getActiveSheet()->setCellValue('A5', "Total:");
-            $objPHPExcel->getActiveSheet()->setCellValue('B5', "$totalFactura");
-           */
-            $this->objPHPExcel->getActiveSheet()->getRowDimension('1')->setRowHeight(20);
-            /*
-            $objPHPExcel->getActiveSheet()->getRowDimension('2')->setRowHeight(20);
-            $objPHPExcel->getActiveSheet()->getRowDimension('3')->setRowHeight(20);
-            $objPHPExcel->getActiveSheet()->getRowDimension('4')->setRowHeight(20);
-            $objPHPExcel->getActiveSheet()->getRowDimension('5')->setRowHeight(20);
-            $objPHPExcel->getActiveSheet()->getRowDimension('6')->setRowHeight(20);
-            $objPHPExcel->getActiveSheet()->getRowDimension('7')->setRowHeight(20);
-            $objPHPExcel->getActiveSheet()->getRowDimension('8')->setRowHeight(20);
-            */
-            
-            
-            
-            return $this->objPHPExcel;
-        }
     
         //Guarda un viaje en una fila de excel
        // function saveTripInExcel($date,$importeFinal,$comison,$row,$objPHPExcel){
         function setDataExcel(){
             $this->objPHPExcel->setActiveSheetIndex(0)
-             ->setCellValue('A1', 'hola')
+             ->setCellValue('A2', 'hola')
              ->setCellValue('B2', 'prueba')
-             ->setCellValue('C1', 'fran')
+             ->setCellValue('C2', 'fran')
              ->setCellValue('D2', 'world!');
            // $this->objPHPExcel->setActiveSheetIndex(0)->setCellValue('A', "hola");
             /*$this->objPHPExcel->getActiveSheet()->setCellValue('B'.$row, $importeFinal);
@@ -103,14 +91,30 @@
             */
 
         }
-    
-        //convierte la informacion de un viaje para que se pueda guardar en el excel
-        function saveTripInfo($trip,$row,$objPHPExcel){
-            $fecha_hora = new \DateTime($trip['fecha_hora']);
-            $importeFinal = $trip['importe_final_ajustado'];
-            $comison   = $trip['comision_ajustada'];
-            saveTripInExcel($fecha_hora,$importeFinal,$comison,$row,$objPHPExcel);
+        //Guarda un viaje en una fila de excel
+        function saveRowExcel($arrayRow,$row){
+            if( (!empty($arrayRow) )  &&  (is_array($arrayRow)) ){
+                if( !empty($arrayRow['Documento']) && array_key_exists('Documento',$arrayRow))
+                    $this->objPHPExcel->getActiveSheet()->setCellValue('A'.$row, $arrayRow["Documento"]);
+                
+                if( !empty($arrayRow['Codigo']) && array_key_exists('Codigo',$arrayRow))
+                    $this->objPHPExcel->getActiveSheet()->setCellValue('B'.$row, $arrayRow["Codigo"]);
+                
+                if( !empty($arrayRow['Divisa']) && array_key_exists('Divisa',$arrayRow))
+                    $this->objPHPExcel->getActiveSheet()->setCellValue('C'.$row, $arrayRow["Divisa"]);
+                
+                if( !empty($arrayRow['ImporteOriginal']) && array_key_exists('ImporteOriginal',$arrayRow))
+                    $this->objPHPExcel->getActiveSheet()->setCellValue('D'.$row, round($arrayRow["ImporteOriginal"]),2 );
+                
+                if( !empty($arrayRow['ImporteDolares']) && array_key_exists('ImporteDolares',$arrayRow))
+                    $this->objPHPExcel->getActiveSheet()->setCellValue('E'.$row,round( $arrayRow["ImporteDolares"]),2 );
+        
+                $this->objPHPExcel->getActiveSheet()->getRowDimension($row)->setRowHeight(20);
+            }
         }
+
+        
+
     
         //Funcion que setea el formato de las columnas correctamente
         function formatExcelRows($objPHPExcel,$row){

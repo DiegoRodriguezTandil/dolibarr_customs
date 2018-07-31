@@ -77,14 +77,14 @@ if ($projectid == '' && $ref == '')
     
 $arraySettings['cell'] =array("A"=>"REF","B"=>"SALDO");
 $arraySettings['title']="Reporte Resultado";
-
 $pruebaExcel= new  Phpexcelconfiguration();
 $pruebaExcel->setExcelProperties();
 $pruebaExcel->setExcelFormat($arraySettings);
-$pruebaExcel->setDataExcel(1);
+$arrayaux=array("Documento"=>1,"Codigo"=>22,"Divisa"=>"USD","ImporteOriginal"=>1024,"ImporteDolares"=>58 );
+$pruebaExcel->saveRowExcel($arrayaux);
 $pruebaExcel->saveExcel();
-    var_dump($pruebaExcel->getObjPHPExcel() );
-    die("68");
+var_dump($pruebaExcel->getObjPHPExcel() );
+die("68");
   
     
     

@@ -61,20 +61,7 @@ if ($projectid == '' && $ref == '')
 	dol_print_error('','Bad parameter');
 	exit;
 }
-/*    error_reporting(E_ALL);
-    ini_set('display_errors', TRUE);
-    ini_set('display_startup_errors', TRUE);
-    date_default_timezone_set('Europe/London');
-*/
-    
-    
-    
-    error_reporting(E_ALL);
-    ini_set('display_errors', TRUE);
-    ini_set('display_startup_errors', TRUE);
-    date_default_timezone_set('Europe/London');
-    
-    
+   /*
 $arraySettings['cell'] =array("A"=>"REF","B"=>"SALDO");
 $arraySettings['title']="Reporte Resultado";
 $pruebaExcel= new  Phpexcelconfiguration();
@@ -83,8 +70,9 @@ $pruebaExcel->setExcelFormat($arraySettings);
 $arrayaux=array("Documento"=>1,"Codigo"=>22,"Divisa"=>"USD","ImporteOriginal"=>1024,"ImporteDolares"=>58 );
 $pruebaExcel->saveRowExcel($arrayaux,2);
 $pruebaExcel->saveExcel();
-var_dump($pruebaExcel->getObjPHPExcel() );
 die("68");
+var_dump($pruebaExcel->getObjPHPExcel() );
+*/
   
     
     
@@ -1354,34 +1342,68 @@ excel: insert de datos en el archivo
  */
 
 if(!empty($_GET['download'])){
- ob_end_clean();
+
  $projectRef=str_replace("/",'-',$project->ref);
  $fileName       =   "export_resultado_projecto_{$projectRef}.csv";
  $path           =    DOL_DATA_ROOT."/projet/resultado/".$fileName;
+    
+    
+// Create new PHPExcel object
+    $objPHPExcel = new PHPExcel();
 
- $myfile = fopen($path, "w") or die("Unable to open file!") ;
- fwrite($myfile, "Documento;Código(Ref);Cliente;Divísa;Importe;Cotizable;Valor de Cotización Divisa Origen;Valor de Cotización USD;Excluido/Desligado;Referencia;Tipo de Asiento ;Importe USD");
- fwrite($myfile, "\n");
- foreach ($arrayExport as $arr=>$arraId){
-  foreach ($arraId as $k=>$v){
-   fwrite($myfile, $langs->trans($arr));
-   fwrite($myfile, ";");
-   $dataString=implode(";",$v)."\n";
-   fwrite($myfile, $dataString);
-  }
- }
- fwrite($myfile, "\n");
- fwrite($myfile, ";;;;;;;;;;Total;{$tt_ht_format}");
- fclose($myfile);
+// Set document properties
+    $objPHPExcel->getProperties()->setCreator("Maarten Balliauw")
+     ->setLastModifiedBy("Maarten Balliauw")
+     ->setTitle("Office 2007 XLSX Test Document")
+     ->setSubject("Office 2007 XLSX Test Document")
+     ->setDescription("Test document for Office 2007 XLSX, generated using PHP classes.")
+     ->setKeywords("office 2007 openxml php")
+     ->setCategory("Test result file");
+ // set titles
+    $objPHPExcel->setActiveSheetIndex(0)
+     ->setCellValue('A0', 'Documento')
+     ->setCellValue('B0', 'Código(Ref)')
+     ->setCellValue('C0', 'Divísa')
+     ->setCellValue('D0', 'Importe Original')
+     ->setCellValue('e0', 'Importe Dolares')
+     ->setCellValue('f0', 'Importe Total(USD)');
+    
+    $row=1;
+    foreach ($arrayExport as $arr=>$arraId){
+        $objPHPExcel->setActiveSheetIndex(0)
+        ->setCellValue('A'.$row, $arr);
+        $objPHPExcel->setActiveSheetIndex(0)
+        ->setCellValue('B'.$row, $arr)
+        ->setCellValue('C'.$row, $arr[0])
+        ->setCellValue('D'.$row, $arr[1])
+        ->setCellValue('E'.$row, $arr[2]);
+        $row++;
+    }
 
- 
- header('Content-Type: application/csv');
- header("Content-Disposition: attachment; filename={$fileName}");
- header('Pragma: no-cache');
- readfile($path);
- die();
+// Rename worksheet
+    $objPHPExcel->getActiveSheet()->setTitle('Resultados de Proyecto');
 
- 
+
+// Set active sheet index to the first sheet, so Excel opens this as the first sheet
+    $objPHPExcel->setActiveSheetIndex(0);
+
+
+// Redirect output to a client’s web browser (Excel2007)
+    header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    header('Content-Disposition: attachment;filename="01simple.xlsx"');
+    header('Cache-Control: max-age=0');
+// If you're serving to IE 9, then the following may be needed
+    header('Cache-Control: max-age=1');
+
+// If you're serving to IE over SSL, then the following may be needed
+    header ('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
+    header ('Last-Modified: '.gmdate('D, d M Y H:i:s').' GMT'); // always modified
+    header ('Cache-Control: cache, must-revalidate'); // HTTP/1.1
+    header ('Pragma: public'); // HTTP/1.0
+    
+    $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
+    $objWriter->save('php://output');
+    exit;
  
  
 }

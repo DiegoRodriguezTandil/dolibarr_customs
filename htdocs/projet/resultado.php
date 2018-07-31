@@ -29,6 +29,9 @@ require_once DOL_DOCUMENT_ROOT.'/projet/class/project.class.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/project.lib.php';
 
 require_once DOL_DOCUMENT_ROOT.'/core/class/policy.class.php';
+require_once DOL_DOCUMENT_ROOT.'/core/class/Phpexcelconfiguration.class.php';
+
+require_once DOL_DOCUMENT_ROOT.'/includes/phpexcel/PHPExcel.php';
 
 if (! empty($conf->propal->enabled))      require_once DOL_DOCUMENT_ROOT.'/comm/propal/class/propal.class.php';
 if (! empty($conf->facture->enabled))     require_once DOL_DOCUMENT_ROOT.'/compta/facture/class/facture.class.php';
@@ -58,6 +61,12 @@ if ($projectid == '' && $ref == '')
 	dol_print_error('','Bad parameter');
 	exit;
 }
+
+$pruebaExcel= new  Phpexcelconfiguration();
+$pruebaExcel->setExcelFormat();
+var_dump($pruebaExcel->getObjPHPExcel() );
+die("68");
+
 echo "
 <style>
 	 
@@ -1348,6 +1357,9 @@ if(!empty($_GET['download'])){
  readfile($path);
  die();
 
+ 
+ 
+ 
 }
 
 /*********************************************************************************************************************************************************

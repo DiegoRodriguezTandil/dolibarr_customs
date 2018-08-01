@@ -17,9 +17,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-    error_reporting(E_ALL);
-    ini_set('display_errors', TRUE);
-    ini_set('display_startup_errors', TRUE);
+ 
 /**
  *      \file       htdocs/projet/element.php
  *      \ingroup    projet facture
@@ -31,12 +29,10 @@ require_once DOL_DOCUMENT_ROOT.'/projet/class/project.class.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/project.lib.php';
 
 require_once DOL_DOCUMENT_ROOT.'/core/class/policy.class.php';
-require_once DOL_DOCUMENT_ROOT.'/core/class/Phpexcelconfiguration.class.php';
-
 require_once DOL_DOCUMENT_ROOT.'/includes/phpexcel/PHPExcel.php';
+require_once DOL_DOCUMENT_ROOT.'/comm/project_result_excel_configuration.php';
 
-
-
+/*
 if(!empty($_GET['download'])) {
 
     $objPHPExcel = new PHPExcel();
@@ -44,11 +40,17 @@ if(!empty($_GET['download'])) {
      'Factura' => Array (
       796 => Array ( 0 => 'FC0051-201707', 1 => 'Ejército Argentino', 2 => 'ARS', 3=> '148 860,00',4 => 'NO',5 => '0,00' ,6 => '0,00' ,
        7 => 'SI', 8 => 'OV0044-201704',9 => 'Credito',10 =>'852.3' ),744 => Array ( 0 => 'FC0051-7000', 1 => 'Ejército Argentino', 2 => 'ARS', 3=> '148 860,00',4 => 'NO',5 => '0,00' ,6 => '0,00' ,
-       7 => 'SI', 8 => 'OV0044-808080',9 => 'Credito',10 =>'400.3' ) ) );
+       7 => 'SI', 8 => 'OV0044-808080',9 => 'Credito',10 =>'400.3' ) )
+    ,
+    "Pedido a Proveedor" => Array ( 1395 => Array (0 => "PO0114-201706",1 => "FixPro Distribution Corp.",2 => "USD", 3 => "3 055,00",4=> "NO" ,5 => "0,00",6 => "0,00",7 => "SI",8 => "FC0051-201707",9 => "Debito", 10 => "1272206.5454545455" ) ),
+    
+    "Gasto" => Array ( 1668 => Array ( 0 => 1668, 1 => "Carlos Diego Rodriguez", 2 => "ARS",3 => "10 069,65",4 => "NO",5 => "55,00", 6 => "1,00",7 => "SI", 8 => "FC0051-201707",9 => "Debito",10 =>"3446.5454545455" ) )
+    );
+    
     exportExcel($objPHPExcel,$arrayExport);
    
 }
-
+*/
 
 if (! empty($conf->propal->enabled))      require_once DOL_DOCUMENT_ROOT.'/comm/propal/class/propal.class.php';
 if (! empty($conf->facture->enabled))     require_once DOL_DOCUMENT_ROOT.'/compta/facture/class/facture.class.php';
@@ -78,23 +80,7 @@ if ($projectid == '' && $ref == '')
 	dol_print_error('','Bad parameter');
 	exit;
 }
-   /*
-$arraySettings['cell'] =array("A"=>"REF","B"=>"SALDO");
-$arraySettings['title']="Reporte Resultado";
-$pruebaExcel= new  Phpexcelconfiguration();
-$pruebaExcel->setExcelProperties();
-$pruebaExcel->setExcelFormat($arraySettings);
-$arrayaux=array("Documento"=>1,"Codigo"=>22,"Divisa"=>"USD","ImporteOriginal"=>1024,"ImporteDolares"=>58 );
-$pruebaExcel->saveRowExcel($arrayaux,2);
-$pruebaExcel->saveExcel();
-die("68");
-var_dump($pruebaExcel->getObjPHPExcel() );
-*/
 
-
-
-
-    
     
 echo "
 <style>
@@ -1148,14 +1134,14 @@ foreach ($listofreferent as $key => $value)
                 $tupla[]     =   $nameDoc;
                 $tupla[]     =   $element->client->name;
                 $tupla[]     =   $element->fk_currency;
-                $tupla[]     =   price($element->total_ht);
+                $tupla[]     =   $element->total_ht;
                 $tupla[]     =  ((is_array($arrayReferemces) && sizeof($arrayReferemces)>0 ) || $element->fk_currency=="USD") ? "NO": "SI";
                 $tupla[]     =   price($obj->valor_divisa_origen);
                 $tupla[]     =   price($obj->valor_divisa_destino);
                 $tupla[]     =   is_array($arrayReferemces) && sizeof($arrayReferemces)>0? "SI": "NO";
                 $tupla[]     =   implode(",", $arrayReferemces);
                 $tupla[]     =   $value['operation']==='+' ? "Credito": "Debito";
-                $tupla[]     =   $total_conversion;
+                $tupla[]     =   $total_conversion_sin_formato;
                 $titleTupla  = (!empty($value['name']) && is_array($value)  && array_key_exists('name',$value) ) ? $value['name'] : "";
                 $arrayExport[$titleTupla][$element->id]  = $tupla;
 
@@ -1460,17 +1446,16 @@ echo
     }
     $('.hideWhenOnload').click();
 </script>";
-/************************************************************************
- */
+/************************************************************************/
 
-//print_r($arrayExport);
-
+llxFooter();
+$db->close();
 /*********************************************************************************************************************************************************
 excel: insert de datos en el archivo
  */
-/*
+
 if(!empty($_GET['download'])){
-    ob_end_flush();
+    ob_end_clean();
     $projectRef = str_replace("/", '-', $project->ref);
     $fileName   = "export_resultado_projecto_{$projectRef}.xls";
     $allPath    = DOL_DATA_ROOT . "/projet/resultado/" . $fileName;
@@ -1478,122 +1463,7 @@ if(!empty($_GET['download'])){
     $objPHPExcel= new PHPExcel();
     exportExcel($objPHPExcel,$arrayExport);
 }
- */
-    
-    function saveExcel($objPHPExcel){
-        $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
-        $objWriter->save('php://output');
-        exit;
-        //$objWriter = new PHPExcel_Writer_Excel5($objPHPExcel);
-        //$objWriter->setTempDir('/tmp/');
-        //$objWriter->save('/tmp/hola.xls');
-        
-        //$objWriter->save('php://output');
-        //$objWriter->setTempDir($folderPath);
-        //$objWriter->save($allPath);
-    }
-
-function setTotals(&$objPHPExcel,$row){
-    $totalRow=$row+1;
-    $objPHPExcel->getActiveSheet()
-     ->getStyle('D1:D'.$row)
-     ->getNumberFormat()
-     ->setFormatCode(\PHPExcel_Style_NumberFormat::FORMAT_CURRENCY_USD_SIMPLE);
-    
-    $objPHPExcel->getActiveSheet()
-     ->getStyle('E1:E'.$row)
-     ->getNumberFormat()
-     ->setFormatCode(\PHPExcel_Style_NumberFormat::FORMAT_CURRENCY_CUSTOM_USD);
-    
-    $objPHPExcel->getActiveSheet()
-     ->getStyle('F1:F'.$totalRow)
-     ->getNumberFormat()
-     ->setFormatCode(\PHPExcel_Style_NumberFormat::FORMAT_CURRENCY_CUSTOM_USD);
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue('F'.$totalRow, "=SUM(E2:E{$row})");
-}
-
-function addValues(&$objPHPExcel,$arrayExport,&$row){
-    if ( !empty($arrayExport) && is_array($arrayExport) ) {
-        foreach ($arrayExport as $arr=>$arraId){
-            if(!empty($arraId)){
-                $tipoDoc = ( !empty($arr) ) ? $arr:"";
-                foreach ($arraId as $id=>$arraData) {
-                    $codigo          = ( !empty($arraData[0]) && is_array($arraData) && array_key_exists(0,$arraData) && !empty($arraData[0]) )? $arraData[0]:"";
-                    $divisa          = ( !empty($arraData[2]) && is_array($arraData) && array_key_exists(2,$arraData) && !empty($arraData[2]) )? $arraData[2]:"";
-                    if ( !empty($arraData[3]) && is_array($arraData) && array_key_exists(3,$arraData) && !empty($arraData[3]) ){
-                        $importeOriginal = $arraData[3];
-                        $importeOriginal = number_format($importeOriginal);
-                    };
-                    if ( !empty($arraData[10]) && is_array($arraData) && array_key_exists(10,$arraData) && !empty($arraData[10]) ){
-                        $importeDolares = $arraData[10];
-                        $importeDolares = number_format($importeDolares);
-                    }
-                    $row++;
-                    $objPHPExcel
-                     ->setActiveSheetIndex(0)
-                     ->setCellValue('A'.$row, $tipoDoc);
-                    $objPHPExcel
-                     ->setActiveSheetIndex(0)
-                     ->setCellValue('B'.$row, $codigo)
-                     ->setCellValue('C'.$row, $divisa)
-                     ->setCellValue('D'.$row, $importeOriginal)
-                     ->setCellValue('E'.$row, $importeDolares);
-                }
-            }
-        }
-    }
-}
-//Funcion que setea el formato de las columnas correctamente
-function formatExcelRows(&$objPHPExcel){
-    $objPHPExcel->getProperties()->setCreator("Maarten Balliauw")
-     ->setLastModifiedBy("Maarten Balliauw")
-     ->setTitle("Office 2007 XLSX Test Document")
-     ->setSubject("Office 2007 XLSX Test Document")
-     ->setDescription("Test document for Office 2007 XLSX, generated using PHP classes.")
-     ->setKeywords("office 2007 openxml php")
-     ->setCategory("Test result file");
-    // set titles
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue('A1', 'Documento');
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue('B1', 'Código(Ref)');
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue('C1', 'Divísa');
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue('D1', 'Importe Original');
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue('E1', 'Importe Dolares');
-    $objPHPExcel->setActiveSheetIndex(0)->setCellValue('F1', 'Importe Total(USD)');
-    
-    $objPHPExcel->setActiveSheetIndex(0)->getColumnDimension('A')->setAutoSize(true);
-    $objPHPExcel->setActiveSheetIndex(0)->getColumnDimension('B')->setAutoSize(true);
-    $objPHPExcel->setActiveSheetIndex(0)->getColumnDimension('C')->setAutoSize(true);
-    $objPHPExcel->setActiveSheetIndex(0)->getColumnDimension('D')->setAutoSize(true);
-    $objPHPExcel->setActiveSheetIndex(0)->getColumnDimension('E')->setAutoSize(true);
-    $objPHPExcel->setActiveSheetIndex(0)->getColumnDimension('F')->setAutoSize(true);
-    
-    // Rename worksheet
-    $objPHPExcel->getActiveSheet()->setTitle('Resultados de Proyecto');
-    // Redirect output to a client’s web browser (Excel2007)
-    header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-    header('Content-Disposition: attachment;filename="01simple.xlsx"');
-    header('Cache-Control: max-age=0');
-    // If you're serving to IE 9, then the following may be needed
-    header('Cache-Control: max-age=1');
-    
-    // If you're serving to IE over SSL, then the following may be needed
-    header ('Last-Modified: '.gmdate('D, d M Y H:i:s').' GMT'); // always modified
-    header ('Cache-Control: cache, must-revalidate'); // HTTP/1.1
-    header ('Pragma: public'); // HTTP/1.0
-}
-
-
-function exportExcel($objPHPExcel,$arrayExport){
-    $row = 1;
-    formatExcelRows($objPHPExcel,1);
-    addValues($objPHPExcel,$arrayExport,$row);
-    setTotals($objPHPExcel,$row);
-    saveExcel($objPHPExcel);
-}
-
-llxFooter();
-$db->close();
-
+ print_r($arrayExport);
 /*********************************************************************************************************************************************************
 fin insert de datos en el archivo
  */

@@ -1463,7 +1463,7 @@ if(!empty($_GET['download'])){
     $objPHPExcel= new PHPExcel();
     exportExcel($objPHPExcel,$arrayExport);
 }
- print_r($arrayExport);
+ 
 /*********************************************************************************************************************************************************
 fin insert de datos en el archivo
  */

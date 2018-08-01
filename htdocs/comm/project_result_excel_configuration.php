@@ -150,7 +150,7 @@
         $objPHPExcel->getActiveSheet()->setTitle('Resultados de Proyecto');
         
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        header("Content-Disposition: attachment;filename='{$fileName}'");
+        header("Content-Disposition: attachment;filename={$fileName}");
         header('Cache-Control: max-age=0');
         // If you're serving to IE 9, then the following may be needed
         header('Cache-Control: max-age=1');

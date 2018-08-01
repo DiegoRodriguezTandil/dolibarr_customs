@@ -74,6 +74,7 @@ class PHPExcel_Style_NumberFormat implements PHPExcel_IComparable
 	const FORMAT_CURRENCY_USD_SIMPLE		= '"$"#,##0.00_-';
 	const FORMAT_CURRENCY_USD				= '$#,##0_-';
 	const FORMAT_CURRENCY_EUR_SIMPLE		= '[$EUR ]#,##0.00_-';
+    const FORMAT_CURRENCY_CUSTOM_USD        = '[$USD ]#,##0.00_-';
 
 	/**
 	 * Excel built-in number formats

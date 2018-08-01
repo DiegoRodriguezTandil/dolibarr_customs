@@ -17,7 +17,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-
+    error_reporting(E_ALL);
+    ini_set('display_errors', TRUE);
+    ini_set('display_startup_errors', TRUE);
 /**
  *      \file       htdocs/projet/element.php
  *      \ingroup    projet facture
@@ -32,6 +34,21 @@ require_once DOL_DOCUMENT_ROOT.'/core/class/policy.class.php';
 require_once DOL_DOCUMENT_ROOT.'/core/class/Phpexcelconfiguration.class.php';
 
 require_once DOL_DOCUMENT_ROOT.'/includes/phpexcel/PHPExcel.php';
+
+
+
+if(!empty($_GET['download'])) {
+
+    $objPHPExcel = new PHPExcel();
+    $arrayExport=Array (
+     'Factura' => Array (
+      796 => Array ( 0 => 'FC0051-201707', 1 => 'Ejército Argentino', 2 => 'ARS', 3=> '148 860,00',4 => 'NO',5 => '0,00' ,6 => '0,00' ,
+       7 => 'SI', 8 => 'OV0044-201704',9 => 'Credito',10 =>'852.3' ),744 => Array ( 0 => 'FC0051-7000', 1 => 'Ejército Argentino', 2 => 'ARS', 3=> '148 860,00',4 => 'NO',5 => '0,00' ,6 => '0,00' ,
+       7 => 'SI', 8 => 'OV0044-808080',9 => 'Credito',10 =>'400.3' ) ) );
+    exportExcel($objPHPExcel,$arrayExport);
+   
+}
+
 
 if (! empty($conf->propal->enabled))      require_once DOL_DOCUMENT_ROOT.'/comm/propal/class/propal.class.php';
 if (! empty($conf->facture->enabled))     require_once DOL_DOCUMENT_ROOT.'/compta/facture/class/facture.class.php';
@@ -73,10 +90,10 @@ $pruebaExcel->saveExcel();
 die("68");
 var_dump($pruebaExcel->getObjPHPExcel() );
 */
-  
-    
-    
-    
+
+
+
+
     
     
 echo "
@@ -1137,7 +1154,7 @@ foreach ($listofreferent as $key => $value)
                 $tupla[]     =   price($obj->valor_divisa_destino);
                 $tupla[]     =   is_array($arrayReferemces) && sizeof($arrayReferemces)>0? "SI": "NO";
                 $tupla[]     =   implode(",", $arrayReferemces);
-                $tupla[]     =   $value['operation']==='+' ? "Crédito": "Débito";
+                $tupla[]     =   $value['operation']==='+' ? "Credito": "Debito";
                 $tupla[]     =   $total_conversion;
                 $titleTupla  = (!empty($value['name']) && is_array($value)  && array_key_exists('name',$value) ) ? $value['name'] : "";
                 $arrayExport[$titleTupla][$element->id]  = $tupla;
@@ -1334,24 +1351,200 @@ print "</table>";
 
 
 
-llxFooter();
 
-$db->close();
+    
+/************************************************************************
+show o hide form de consolidation
+ */
+echo
+"<script>
+    function conversionManual(linea){
+
+        var id_conversion_general='#conversion_general-'+linea;
+        var id_conversion_manual ='#conversion_manual-'+linea;
+        $(id_conversion_general).hide();
+        console.log(id_conversion_general);
+         $(id_conversion_general).removeData('toggle');
+         $(id_conversion_general).removeData('placement');
+        $(id_conversion_manual).show();
+        
+    }
+    function cancelarConversionManual(linea){
+        var id_conversion_general='#conversion_general-'+linea;
+        var id_conversion_manual ='#conversion_manual-'+linea;
+        var id_input_nueva_conversion='.input_nueva_conversion-'+linea;
+        $(id_conversion_general).show();
+        $(id_conversion_manual).hide();
+        $(id_input_nueva_conversion).prop('required',false);
+        $(id_input_nueva_conversion).val('');
+        
+    }
+    function resetTipoGeneral(linea){
+        var id_conversion_general='#conversion_general-'+linea;
+        var id_conversion_manual ='#conversion_manual-'+linea;
+        var id_input_nueva_conversion='.input_nueva_conversion-'+linea;
+        var id_resetTipoGeneral ='#resetTipoGeneral-'+linea;
+        var id_form='#form-'+linea;
+        $(id_input_nueva_conversion).val('');
+        $(id_resetTipoGeneral).val('1');
+        $(id_input_nueva_conversion).attr('required',false);
+        $(id_form).submit();
+    }
+    $( document ).ready(function() {
+
+
+        /*valida que los campos valor_unitario y valor_total de detalle pedido sean numericos pero permitan ingresar coma*/
+        $(document).on('keydown', '.input_only_number', function(e){
+             -1!==$.inArray(e.keyCode,[46,8,9,27,13,110,190,188])||(/65|67|86|88/.test(e.keyCode)&&(e.ctrlKey===true||e.metaKey===true))&&(!0===e.ctrlKey||!0===e.metaKey)||35<=e.keyCode&&40>=e.keyCode||(e.shiftKey||48>e.keyCode||57<e.keyCode)&&(96>e.keyCode||105<e.keyCode)&&e.preventDefault()
+        });
+    
+        /*controla el ingreso de datos con formato ###.###,## para los campos valor_unitario y valor_total de detalle pedido */
+        $(document).on('keyup', '.input_only_number', function () {
+            $(this).val( numberFormat($(this).val() )  );
+        
+        });
+    
+        function numberFormat(numero){
+            // Variable que contendra el resultado final
+            var resultado = '';
+    
+            // Si el numero empieza por el valor \"-\" (numero negativo)
+            if(numero[0]=='-')
+            {
+                // Cogemos el numero eliminando los posibles puntos que tenga, y sin
+                // el signo negativo
+                nuevoNumero=numero.replace(/\./g,'').substring(1);
+    
+            }else{
+                // Cogemos el numero eliminando los posibles puntos que tenga
+                nuevoNumero=numero.replace(/\./g,'');
+            }
+            // Si tiene decimales, se los quitamos al numero
+            if(numero.indexOf(',')>=0)
+                nuevoNumero=nuevoNumero.substring(0,nuevoNumero.indexOf(','));
+    
+            // Ponemos un punto cada 3 caracteres
+            for (var j, i = nuevoNumero.length - 1, j = 0; i >= 0; i--, j++)
+    
+                resultado = nuevoNumero.charAt(i) + ((j > 0) && (j % 3 == 0)? '.': '') + resultado;
+            // Si tiene decimales, se lo añadimos al numero una vez forateado con
+            // los separadores de miles
+            if(numero.indexOf(',')>=0)
+                resultado+=numero.substring(numero.indexOf(','));
+            if(numero[0]=='-')
+            {
+                // Devolvemos el valor añadiendo al inicio el signo negativo
+                return '-'+resultado;
+            }else{
+                return resultado;
+            }
+        }
+    });
+    function ocultarDetalleTabla(classTableShowColums){
+        var className ='.'+classTableShowColums;
+        var ocultarDetalleTabla     ='.ocultarDetalleTabla-'+classTableShowColums;
+        var visualizarDetalleTabla  ='.visualizarDetalleTabla-'+classTableShowColums;
+        $(ocultarDetalleTabla).hide();
+        $(visualizarDetalleTabla).show();
+        $(className).hide();
+
+    }
+    function visualizarDetalleTabla(classTableShowColums){
+        var className ='.'+classTableShowColums;
+        var ocultarDetalleTabla     ='.ocultarDetalleTabla-'+classTableShowColums;
+        var visualizarDetalleTabla  ='.visualizarDetalleTabla-'+classTableShowColums;
+        $(ocultarDetalleTabla).show();
+        $(visualizarDetalleTabla).hide();
+        $(className).show();
+
+    }
+    $('.hideWhenOnload').click();
+</script>";
+/************************************************************************
+ */
+
+//print_r($arrayExport);
+
 /*********************************************************************************************************************************************************
 excel: insert de datos en el archivo
  */
-
+/*
 if(!empty($_GET['download'])){
-
- $projectRef=str_replace("/",'-',$project->ref);
- $fileName       =   "export_resultado_projecto_{$projectRef}.csv";
- $path           =    DOL_DATA_ROOT."/projet/resultado/".$fileName;
+    ob_end_flush();
+    $projectRef = str_replace("/", '-', $project->ref);
+    $fileName   = "export_resultado_projecto_{$projectRef}.xls";
+    $allPath    = DOL_DATA_ROOT . "/projet/resultado/" . $fileName;
+    $folderPath = DOL_DATA_ROOT . "/projet/resultado/";
+    $objPHPExcel= new PHPExcel();
+    exportExcel($objPHPExcel,$arrayExport);
+}
+ */
     
-    
-// Create new PHPExcel object
-    $objPHPExcel = new PHPExcel();
+    function saveExcel($objPHPExcel){
+        $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
+        $objWriter->save('php://output');
+        exit;
+        //$objWriter = new PHPExcel_Writer_Excel5($objPHPExcel);
+        //$objWriter->setTempDir('/tmp/');
+        //$objWriter->save('/tmp/hola.xls');
+        
+        //$objWriter->save('php://output');
+        //$objWriter->setTempDir($folderPath);
+        //$objWriter->save($allPath);
+    }
 
-// Set document properties
+function setTotals(&$objPHPExcel,$row){
+    $totalRow=$row+1;
+    $objPHPExcel->getActiveSheet()
+     ->getStyle('D1:D'.$row)
+     ->getNumberFormat()
+     ->setFormatCode(\PHPExcel_Style_NumberFormat::FORMAT_CURRENCY_USD_SIMPLE);
+    
+    $objPHPExcel->getActiveSheet()
+     ->getStyle('E1:E'.$row)
+     ->getNumberFormat()
+     ->setFormatCode(\PHPExcel_Style_NumberFormat::FORMAT_CURRENCY_CUSTOM_USD);
+    
+    $objPHPExcel->getActiveSheet()
+     ->getStyle('F1:F'.$totalRow)
+     ->getNumberFormat()
+     ->setFormatCode(\PHPExcel_Style_NumberFormat::FORMAT_CURRENCY_CUSTOM_USD);
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue('F'.$totalRow, "=SUM(E2:E{$row})");
+}
+
+function addValues(&$objPHPExcel,$arrayExport,&$row){
+    if ( !empty($arrayExport) && is_array($arrayExport) ) {
+        foreach ($arrayExport as $arr=>$arraId){
+            if(!empty($arraId)){
+                $tipoDoc = ( !empty($arr) ) ? $arr:"";
+                foreach ($arraId as $id=>$arraData) {
+                    $codigo          = ( !empty($arraData[0]) && is_array($arraData) && array_key_exists(0,$arraData) && !empty($arraData[0]) )? $arraData[0]:"";
+                    $divisa          = ( !empty($arraData[2]) && is_array($arraData) && array_key_exists(2,$arraData) && !empty($arraData[2]) )? $arraData[2]:"";
+                    if ( !empty($arraData[3]) && is_array($arraData) && array_key_exists(3,$arraData) && !empty($arraData[3]) ){
+                        $importeOriginal = $arraData[3];
+                        $importeOriginal = number_format($importeOriginal);
+                    };
+                    if ( !empty($arraData[10]) && is_array($arraData) && array_key_exists(10,$arraData) && !empty($arraData[10]) ){
+                        $importeDolares = $arraData[10];
+                        $importeDolares = number_format($importeDolares);
+                    }
+                    $row++;
+                    $objPHPExcel
+                     ->setActiveSheetIndex(0)
+                     ->setCellValue('A'.$row, $tipoDoc);
+                    $objPHPExcel
+                     ->setActiveSheetIndex(0)
+                     ->setCellValue('B'.$row, $codigo)
+                     ->setCellValue('C'.$row, $divisa)
+                     ->setCellValue('D'.$row, $importeOriginal)
+                     ->setCellValue('E'.$row, $importeDolares);
+                }
+            }
+        }
+    }
+}
+//Funcion que setea el formato de las columnas correctamente
+function formatExcelRows(&$objPHPExcel){
     $objPHPExcel->getProperties()->setCreator("Maarten Balliauw")
      ->setLastModifiedBy("Maarten Balliauw")
      ->setTitle("Office 2007 XLSX Test Document")
@@ -1359,169 +1552,51 @@ if(!empty($_GET['download'])){
      ->setDescription("Test document for Office 2007 XLSX, generated using PHP classes.")
      ->setKeywords("office 2007 openxml php")
      ->setCategory("Test result file");
- // set titles
-    $objPHPExcel->setActiveSheetIndex(0)
-     ->setCellValue('A0', 'Documento')
-     ->setCellValue('B0', 'Código(Ref)')
-     ->setCellValue('C0', 'Divísa')
-     ->setCellValue('D0', 'Importe Original')
-     ->setCellValue('e0', 'Importe Dolares')
-     ->setCellValue('f0', 'Importe Total(USD)');
+    // set titles
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue('A1', 'Documento');
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue('B1', 'Código(Ref)');
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue('C1', 'Divísa');
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue('D1', 'Importe Original');
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue('E1', 'Importe Dolares');
+    $objPHPExcel->setActiveSheetIndex(0)->setCellValue('F1', 'Importe Total(USD)');
     
-    $row=1;
-    foreach ($arrayExport as $arr=>$arraId){
-        $objPHPExcel->setActiveSheetIndex(0)
-        ->setCellValue('A'.$row, $arr);
-        $objPHPExcel->setActiveSheetIndex(0)
-        ->setCellValue('B'.$row, $arr)
-        ->setCellValue('C'.$row, $arr[0])
-        ->setCellValue('D'.$row, $arr[1])
-        ->setCellValue('E'.$row, $arr[2]);
-        $row++;
-    }
-
-// Rename worksheet
+    $objPHPExcel->setActiveSheetIndex(0)->getColumnDimension('A')->setAutoSize(true);
+    $objPHPExcel->setActiveSheetIndex(0)->getColumnDimension('B')->setAutoSize(true);
+    $objPHPExcel->setActiveSheetIndex(0)->getColumnDimension('C')->setAutoSize(true);
+    $objPHPExcel->setActiveSheetIndex(0)->getColumnDimension('D')->setAutoSize(true);
+    $objPHPExcel->setActiveSheetIndex(0)->getColumnDimension('E')->setAutoSize(true);
+    $objPHPExcel->setActiveSheetIndex(0)->getColumnDimension('F')->setAutoSize(true);
+    
+    // Rename worksheet
     $objPHPExcel->getActiveSheet()->setTitle('Resultados de Proyecto');
-
-
-// Set active sheet index to the first sheet, so Excel opens this as the first sheet
-    $objPHPExcel->setActiveSheetIndex(0);
-
-
-// Redirect output to a client’s web browser (Excel2007)
+    // Redirect output to a client’s web browser (Excel2007)
     header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     header('Content-Disposition: attachment;filename="01simple.xlsx"');
     header('Cache-Control: max-age=0');
-// If you're serving to IE 9, then the following may be needed
+    // If you're serving to IE 9, then the following may be needed
     header('Cache-Control: max-age=1');
-
-// If you're serving to IE over SSL, then the following may be needed
-    header ('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
+    
+    // If you're serving to IE over SSL, then the following may be needed
     header ('Last-Modified: '.gmdate('D, d M Y H:i:s').' GMT'); // always modified
     header ('Cache-Control: cache, must-revalidate'); // HTTP/1.1
     header ('Pragma: public'); // HTTP/1.0
-    
-    $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
-    $objWriter->save('php://output');
-    exit;
- 
- 
 }
+
+
+function exportExcel($objPHPExcel,$arrayExport){
+    $row = 1;
+    formatExcelRows($objPHPExcel,1);
+    addValues($objPHPExcel,$arrayExport,$row);
+    setTotals($objPHPExcel,$row);
+    saveExcel($objPHPExcel);
+}
+
+llxFooter();
+$db->close();
 
 /*********************************************************************************************************************************************************
 fin insert de datos en el archivo
  */
-
-/************************************************************************
-show o hide form de consolidation
- */
-echo
-"<script>
-		function conversionManual(linea){
-
-		    var id_conversion_general='#conversion_general-'+linea;
-			var id_conversion_manual ='#conversion_manual-'+linea;
-		    $(id_conversion_general).hide();
-		    console.log(id_conversion_general);
-		     $(id_conversion_general).removeData('toggle');
-		     $(id_conversion_general).removeData('placement');
-		    $(id_conversion_manual).show();
-		 	
-		}
-		function cancelarConversionManual(linea){
-			var id_conversion_general='#conversion_general-'+linea;
-			var id_conversion_manual ='#conversion_manual-'+linea;
-			var id_input_nueva_conversion='.input_nueva_conversion-'+linea;
-		    $(id_conversion_general).show();
-		    $(id_conversion_manual).hide();
-		    $(id_input_nueva_conversion).prop('required',false);
-		    $(id_input_nueva_conversion).val('');
-		    
-		}
-		function resetTipoGeneral(linea){
-			var id_conversion_general='#conversion_general-'+linea;
-			var id_conversion_manual ='#conversion_manual-'+linea;
-			var id_input_nueva_conversion='.input_nueva_conversion-'+linea;
-			var id_resetTipoGeneral ='#resetTipoGeneral-'+linea;
-			var id_form='#form-'+linea;
-		    $(id_input_nueva_conversion).val('');
-		    $(id_resetTipoGeneral).val('1');
-		    $(id_input_nueva_conversion).attr('required',false);
-		 	$(id_form).submit();
-		}
-		$( document ).ready(function() {
-	
-	
-			/*valida que los campos valor_unitario y valor_total de detalle pedido sean numericos pero permitan ingresar coma*/
-			$(document).on('keydown', '.input_only_number', function(e){
-				 -1!==$.inArray(e.keyCode,[46,8,9,27,13,110,190,188])||(/65|67|86|88/.test(e.keyCode)&&(e.ctrlKey===true||e.metaKey===true))&&(!0===e.ctrlKey||!0===e.metaKey)||35<=e.keyCode&&40>=e.keyCode||(e.shiftKey||48>e.keyCode||57<e.keyCode)&&(96>e.keyCode||105<e.keyCode)&&e.preventDefault()
-			});
-		
-			/*controla el ingreso de datos con formato ###.###,## para los campos valor_unitario y valor_total de detalle pedido */
-			$(document).on('keyup', '.input_only_number', function () {
-				$(this).val( numberFormat($(this).val() )  );
-			
-			});
-		
-			function numberFormat(numero){
-				// Variable que contendra el resultado final
-				var resultado = '';
-		
-				// Si el numero empieza por el valor \"-\" (numero negativo)
-				if(numero[0]=='-')
-				{
-					// Cogemos el numero eliminando los posibles puntos que tenga, y sin
-					// el signo negativo
-					nuevoNumero=numero.replace(/\./g,'').substring(1);
-		
-				}else{
-					// Cogemos el numero eliminando los posibles puntos que tenga
-					nuevoNumero=numero.replace(/\./g,'');
-				}
-				// Si tiene decimales, se los quitamos al numero
-				if(numero.indexOf(',')>=0)
-					nuevoNumero=nuevoNumero.substring(0,nuevoNumero.indexOf(','));
-		
-				// Ponemos un punto cada 3 caracteres
-				for (var j, i = nuevoNumero.length - 1, j = 0; i >= 0; i--, j++)
-		
-					resultado = nuevoNumero.charAt(i) + ((j > 0) && (j % 3 == 0)? '.': '') + resultado;
-				// Si tiene decimales, se lo añadimos al numero una vez forateado con
-				// los separadores de miles
-				if(numero.indexOf(',')>=0)
-					resultado+=numero.substring(numero.indexOf(','));
-				if(numero[0]=='-')
-				{
-					// Devolvemos el valor añadiendo al inicio el signo negativo
-					return '-'+resultado;
-				}else{
-					return resultado;
-				}
-			}
-		});
-		function ocultarDetalleTabla(classTableShowColums){
-		    var className ='.'+classTableShowColums;
-		    var ocultarDetalleTabla     ='.ocultarDetalleTabla-'+classTableShowColums;
-            var visualizarDetalleTabla  ='.visualizarDetalleTabla-'+classTableShowColums;
-		    $(ocultarDetalleTabla).hide();
-		    $(visualizarDetalleTabla).show();
-		    $(className).hide();
-
-        }
-        function visualizarDetalleTabla(classTableShowColums){
-		    var className ='.'+classTableShowColums;
-		    var ocultarDetalleTabla     ='.ocultarDetalleTabla-'+classTableShowColums;
-            var visualizarDetalleTabla  ='.visualizarDetalleTabla-'+classTableShowColums;
-		    $(ocultarDetalleTabla).show();
-		    $(visualizarDetalleTabla).hide();
-		    $(className).show();
-
-        }
-		$('.hideWhenOnload').click();
-	</script>";
-/************************************************************************
- */
-
 
 ob_end_flush();
 ?>

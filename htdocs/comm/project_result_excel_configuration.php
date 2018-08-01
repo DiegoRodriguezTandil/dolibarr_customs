@@ -59,7 +59,7 @@
         }
     }
     
-    function generalProperties(&$objPHPExcel){
+    function generalProperties(&$objPHPExcel,$fileName){
         $objPHPExcel
         ->getProperties()
         ->setCreator("Maarten Balliauw")
@@ -150,7 +150,7 @@
         $objPHPExcel->getActiveSheet()->setTitle('Resultados de Proyecto');
         
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        header('Content-Disposition: attachment;filename="01simple.xlsx"');
+        header("Content-Disposition: attachment;filename='{$fileName}'");
         header('Cache-Control: max-age=0');
         // If you're serving to IE 9, then the following may be needed
         header('Cache-Control: max-age=1');
@@ -174,9 +174,9 @@
         ->setFormatCode(\PHPExcel_Style_NumberFormat::FORMAT_CURRENCY_CUSTOM_USD);
     }
     
-    function exportExcel($objPHPExcel,$arrayExport){
+    function exportExcel($objPHPExcel,$arrayExport,$fileName){
         $row = 1;
-        generalProperties($objPHPExcel);
+        generalProperties($objPHPExcel,$fileName);
         addValues($objPHPExcel,$arrayExport,$row);
         formatExcelRows($objPHPExcel,$row);
         saveExcel($objPHPExcel);

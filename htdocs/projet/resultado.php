@@ -1457,13 +1457,13 @@ excel: insert de datos en el archivo
 if(!empty($_GET['download'])){
     ob_end_clean();
     $projectRef = str_replace("/", '-', $project->ref);
-    $fileName   = "export_resultado_projecto_{$projectRef}.xls";
+    $fileName   = "Resultado_de_Proyecto_{$projectRef}.xls";
     $allPath    = DOL_DATA_ROOT . "/projet/resultado/" . $fileName;
     $folderPath = DOL_DATA_ROOT . "/projet/resultado/";
     $objPHPExcel= new PHPExcel();
-    exportExcel($objPHPExcel,$arrayExport);
+    exportExcel($objPHPExcel,$arrayExport,$fileName);
 }
- 
+
 /*********************************************************************************************************************************************************
 fin insert de datos en el archivo
  */

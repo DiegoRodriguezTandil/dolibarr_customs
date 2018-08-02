@@ -32,26 +32,6 @@ require_once DOL_DOCUMENT_ROOT.'/core/class/policy.class.php';
 require_once DOL_DOCUMENT_ROOT.'/includes/phpexcel/PHPExcel.php';
 require_once DOL_DOCUMENT_ROOT.'/comm/project_result_excel_configuration.php';
 
-/*
-if(!empty($_GET['download'])) {
-
-    $objPHPExcel = new PHPExcel();
-    $arrayExport=Array (
-     'Factura' => Array (
-      796 => Array ( 0 => 'FC0051-201707', 1 => 'Ejército Argentino', 2 => 'ARS', 3=> '148 860,00',4 => 'NO',5 => '0,00' ,6 => '0,00' ,
-       7 => 'SI', 8 => 'OV0044-201704',9 => 'Credito',10 =>'852.3' ),744 => Array ( 0 => 'FC0051-7000', 1 => 'Ejército Argentino', 2 => 'ARS', 3=> '148 860,00',4 => 'NO',5 => '0,00' ,6 => '0,00' ,
-       7 => 'SI', 8 => 'OV0044-808080',9 => 'Credito',10 =>'400.3' ) )
-    ,
-    "Pedido a Proveedor" => Array ( 1395 => Array (0 => "PO0114-201706",1 => "FixPro Distribution Corp.",2 => "USD", 3 => "3 055,00",4=> "NO" ,5 => "0,00",6 => "0,00",7 => "SI",8 => "FC0051-201707",9 => "Debito", 10 => "1272206.5454545455" ) ),
-    
-    "Gasto" => Array ( 1668 => Array ( 0 => 1668, 1 => "Carlos Diego Rodriguez", 2 => "ARS",3 => "10 069,65",4 => "NO",5 => "55,00", 6 => "1,00",7 => "SI", 8 => "FC0051-201707",9 => "Debito",10 =>"3446.5454545455" ) )
-    );
-    
-    exportExcel($objPHPExcel,$arrayExport);
-   
-}
-*/
-
 if (! empty($conf->propal->enabled))      require_once DOL_DOCUMENT_ROOT.'/comm/propal/class/propal.class.php';
 if (! empty($conf->facture->enabled))     require_once DOL_DOCUMENT_ROOT.'/compta/facture/class/facture.class.php';
 if (! empty($conf->facture->enabled))     require_once DOL_DOCUMENT_ROOT.'/compta/facture/class/facture-rec.class.php';

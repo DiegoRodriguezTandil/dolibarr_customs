@@ -166,7 +166,7 @@
         $objPHPExcel->getActiveSheet()
         ->getStyle('D1:D'.$row)
         ->getNumberFormat()
-        ->setFormatCode(\PHPExcel_Style_NumberFormat::FORMAT_CURRENCY_USD_SIMPLE);
+        ->setFormatCode(\PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED2);
     
         $objPHPExcel->getActiveSheet()
         ->getStyle('E1:E'.$row)

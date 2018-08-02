@@ -162,14 +162,24 @@
     }
     
     function formatExcelRows(&$objPHPExcel,$row){
-        
-        $objPHPExcel->getActiveSheet()
-        ->getStyle('D1:D'.$row)
-        ->getNumberFormat()
-        ->setFormatCode(\PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED2);
     
         $objPHPExcel->getActiveSheet()
-        ->getStyle('E1:E'.$row)
+         ->getStyle('D1:D'.$row)
+         ->getNumberFormat()
+         ->setFormatCode(\PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED2);
+        
+        $objPHPExcel->getActiveSheet()
+         ->getStyle('D1:D1000')
+         ->getNumberFormat()
+         ->setFormatCode(\PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED2);
+    
+        $objPHPExcel->getActiveSheet()
+         ->getStyle('E1:E'.$row)
+         ->getNumberFormat()
+         ->setFormatCode(\PHPExcel_Style_NumberFormat::FORMAT_CURRENCY_CUSTOM_USD);
+
+        $objPHPExcel->getActiveSheet()
+        ->getStyle('E1:E1000')
         ->getNumberFormat()
         ->setFormatCode(\PHPExcel_Style_NumberFormat::FORMAT_CURRENCY_CUSTOM_USD);
     }

@@ -74,6 +74,45 @@ echo "
      table {
 		font-size:1em;
 	 }
+	 
+.tooltip {
+    position: relative;
+    display: inline-block;
+}
+
+.tooltip .tooltiptext {
+    visibility: hidden;
+    width: 120px;
+    background-color: black;
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 5px 0;
+    position: absolute;
+    z-index: 1;
+    bottom: 125%;
+    left: 50%;
+    margin-left: -60px;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.tooltip .tooltiptext::after {
+    content: \"\";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: #555 transparent transparent transparent;
+}
+
+.tooltip:hover .tooltiptext {
+    visibility: visible;
+    opacity: 1;
+}
+	
 	</style>
 ";
 
@@ -767,7 +806,7 @@ foreach ($listofreferent as $key => $value)
                 }
                   // Date
                 if($entidadName=="facture"){
-                    $date_text_noty = "";
+                    
                     $addTooltip     = false;
                     //si la factura tiene pagos entonces obtengo la fecha del ultimo pago
                     $sqlMaxDatePaiement= "
@@ -915,14 +954,14 @@ foreach ($listofreferent as $key => $value)
                         $fecha_ingreso_format_view	= DateTime::createFromFormat('Y-m-d',$obj->fecha_ingreso)->format('d/m/Y');
                         //agrego tooltip para el caso de una factura con pagos
                         if($addTooltip==true && $tipo_de_cotizacion==="General" ){
-                            $date_text_noty   =
-                             "data-toggle='tooltip'
-                             data-placement='top'
-                             title='La fecha que se tomo como referencia para realizar la cotización, es la fecha {$fecha_ingreso_format_view}, que pertenece al último pago realizado.'";
+                            $date_text_noty="tooltip";
                         }
                         echo"
 						<td  style='font-size:80%; padding-left:10px;' align='left' width='200px' >
-							 <div id='conversion_general-{$linea}' {$date_text_noty}>";
+							 <div id='conversion_general-{$linea}'  class='{$date_text_noty}'>";
+                                if(isset($date_text_noty)){
+                                    echo "<span class='tooltiptext'>La fecha que se tomo como referencia para realizar la cotización, es la fecha {$fecha_ingreso_format_view}, que pertenece al último pago realizado.</span>";
+                                }
                                 if($isErronea){
                                    echo "<b><span style=' font-size: 1.3em; ;color:red;'>Esta cotización es errónea.</span></b><br>";
                                 }

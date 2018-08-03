@@ -806,7 +806,7 @@ foreach ($listofreferent as $key => $value)
                 }
                   // Date
                 if($entidadName=="facture"){
-                    
+                    $date_text_noty = null;
                     $addTooltip     = false;
                     //si la factura tiene pagos entonces obtengo la fecha del ultimo pago
                     $sqlMaxDatePaiement= "
@@ -815,7 +815,7 @@ foreach ($listofreferent as $key => $value)
                             where  rowid = {$element->id} limit 1;";
                     $sqlMaxDatePaiement = $db->query($sqlMaxDatePaiement);
                     $retMaxDatePaiement = $db->fetch_object($sqlMaxDatePaiement);
-                    //comprueba que existan tuplas,de lo contrario no se debe mostrar ni el check de priorización, ni el remarcado de la tupla
+                    //comprueba que existan tuplas
                     if ( ($db->num_rows($sqlMaxDatePaiement) > 0) && isset($retMaxDatePaiement->max_date)) {
                         $date_report       = $element->date;
                         $date              = strtotime($retMaxDatePaiement->max_date);
@@ -955,12 +955,15 @@ foreach ($listofreferent as $key => $value)
                         //agrego tooltip para el caso de una factura con pagos
                         if($addTooltip==true && $tipo_de_cotizacion==="General" ){
                             $date_text_noty="tooltip";
+                        }else
+                        {
+                            $date_text_noty=null;
                         }
                         echo"
 						<td  style='font-size:80%; padding-left:10px;' align='left' width='200px' >
 							 <div id='conversion_general-{$linea}'  class='{$date_text_noty}'>";
-                                if(isset($date_text_noty)){
-                                    echo "<span class='tooltiptext'>La fecha que se tomo como referencia para realizar la cotización, es la fecha {$fecha_ingreso_format_view}, que pertenece al último pago realizado.</span>";
+                                if(!empty($date_text_noty)){
+                                    echo "<span class='tooltiptext'>La fecha que se tomo como referencia para realizar la cotización, es la fecha {$fecha}, que pertenece al último pago realizado.</span>";
                                 }
                                 if($isErronea){
                                    echo "<b><span style=' font-size: 1.3em; ;color:red;'>Esta cotización es errónea.</span></b><br>";

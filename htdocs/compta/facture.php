@@ -3148,7 +3148,7 @@ else if ($id > 0 || ! empty($ref))
         print '
             <form action="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'" method="post" >
                 <input type="text" name="resetlineref" value="1" id="" hidden>
-                <button>Ordenar Número de Referencia</button>
+                <button style=" margin-left:0;margin-bottom:2px;font-size:11px;" class="butAction ">Ordenar Número de Referencia</button>
             </form>';
     
     
@@ -3243,7 +3243,7 @@ else if ($id > 0 || ! empty($ref))
                 }
 
 				//FEDE
-				$pricelevel = $object->client->price_level; 
+				$pricelevel = $object->client->price_level;
 				?>
 
 				<head>
@@ -3259,7 +3259,7 @@ else if ($id > 0 || ! empty($ref))
 				
 				//FEDE New product
 				if ($object->statut == 0)
-				{				
+				{
 					print '<a class="butAction" href="#" onclick="open_win()">'.$langs->trans('Crear Nuevo Producto').'</a>';
 				}
 				

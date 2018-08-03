@@ -1615,7 +1615,7 @@ if (! empty($object->id))
             print '
                 <form action="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'" method="post" >
                 <input type="text" name="resetlineref" value="1" id="" hidden>
-                    <button>Ordenar Número de Referencia</button>
+                    <button style=" margin-left:0;margin-bottom:2px;font-size:11px;" class="butAction ">Ordenar Número de Referencia</button>
                 </form>';
         }
 		// Ajout de produits/services predefinis
